@@ -2,6 +2,8 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
 
 export default function App() {
+
+  console.log("this work")
   return (
     <View style={styles.container}>
       <Text>Sergio and Dylan and Gabe and Aiesha and Eden </Text>
