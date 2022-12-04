@@ -16,7 +16,7 @@ const screens = {
         screen: ViewAccountScreen,
         navigationOptions: {
             title: 'My Account',
-            headerTintColor: 'white',
+            headerTintColor:  'white',
             headerStyle: { backgroundColor: '#2d2e30'}
         }
     }

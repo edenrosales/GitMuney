@@ -1,10 +1,18 @@
 import React, {useState} from 'react';
-import { StyleSheet, Text, View, FlatList, Button, TextInput, Input, StatusBar } from 'react-native';
+import { StyleSheet, Text, View, FlatList, Button, TextInput, Input, StatusBar, Dimensions } from 'react-native';
 import * as Progress from 'react-native-progress';
 import Modal from "react-native-modal";
-
 export default function ViewAccountScreen() {
-
+const[money,setMoney] = useState({
+  totalMoney: 5000,
+  totalSpent: 3188
+});
+const handleSetSpent = () => { //this is how we would edit state for this component. It is not being used right now 
+  setMoney( (previousState) =>({
+    ...previousState, 
+    totalSpent: 0
+  }))
+}
 const [people, setPeople] = useState([
   { title: 'E-bike Jetson', amount: 276.13, date: 'Nov 9', type: 'p', key: '1' },
   { title: 'iPhone 14', amount: 1311.98, date: 'Nov 11', type: 'p', key: '2'},
@@ -24,19 +32,26 @@ const [isDepModalVisible, setIsDepModalVisible] = useState(false);
 
 const handleDepModal = () => setIsDepModalVisible(() => !isDepModalVisible);
 
+const screenWidth = Dimensions.get('window').width; 
+const pixel80Percent = (screenWidth/100) * 80;
   return (
+    //going to try to get state to work here and get it into components
     <View style={styles.container}>
       <StatusBar barStyle='light-content'/>
       <View style={styles.titleContainer}>
         <Text>
-          <Text style={styles.title}>$1,812</Text>
+          <Text style={styles.title}>${money.totalMoney - money.totalSpent}</Text>
           <Text style={{fontSize: 40, color: 'white'}}> Left</Text>
         </Text>
         <Text style={{color: 'white', paddingBottom: 10}}>
-          Month Started With: $5,000
+          Month Started With: ${money.totalMoney}
         </Text>
-        <Progress.Bar progress={0.3} width={400}
-        borderRadius={10} height={20} color={'#414141'} unfilledColor={'#d9d9d9'}/>
+        <View style = {{display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%'}}>
+          <Progress.Bar style = {{display: 'flex'}} progress={money.totalSpent/ money.totalMoney} width={pixel80Percent} borderRadius={10} height={20} color={'#414141'} unfilledColor={'#d9d9d9'}/>
+        </View>
+        
+
+
         <View style={{paddingTop: 10, alignItems: 'flex-start'}}>
           <Button color='tomato' title="Add Transaction" onPress={handleTraModal}/>
           <Button color='greenyellow' title="Deposit" onPress={handleDepModal}/>
