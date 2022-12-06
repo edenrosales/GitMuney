@@ -5,26 +5,17 @@ import Modal from "react-native-modal";
 import TransactionModal from '../components/TransactionModal';
 
 export default function ViewAccountScreen() {
-const[money,setMoney] = useState({
-  totalMoney: 5000,
-  totalSpent: 3188
-});
-const handleSetSpent = () => { //this is how we would edit state for this component. It is not being used right now 
-  setMoney( (previousState) =>({
-    ...previousState, 
-    totalSpent: 0
-  }))
-}
-const [people, setPeople] = useState([
-  { title: 'E-bike Jetson', amount: 276.13, date: 'Nov 9', type: 'p', key: '1' },
-  { title: 'iPhone 14', amount: 1311.98, date: 'Nov 11', type: 'p', key: '2'},
-  { title: '', amount: 40, date: 'Nov 11', type: 'd', key: '3'},
-  { title: '', amount: 50, date: 'Nov 12', type: 'd', key: '4'},
-  { title: 'Macbook Air', amount: 881.21, date: 'Nov 16', type: 'p', key: '5'},
-  { title: '', amount: 120, date: 'Nov 21', type: 'd', key: '6'},
-  { title: 'Subway', amount: 11.13, date: 'Nov 21', type: 'p', key: '7'},
-  { title: 'El Pollo Loco', amount: 7.66, date: 'Nov 29', type: 'p', key: '8'},
-  { title: '', amount: 50, date: 'Dec 2', type: 'd', key: '9'},
+
+const [expenses, setExpenses] = useState([
+  { title: 'E-bike Jetson', amount: 276.13, date: 'Nov 9', type: 'p', key: 1 },
+  { title: 'iPhone 14', amount: 1311.98, date: 'Nov 11', type: 'p', key: 2},
+  { title: '', amount: 40, date: 'Nov 11', type: 'd', key: 3},
+  { title: '', amount: 50, date: 'Nov 12', type: 'd', key: 4},
+  { title: 'Macbook Air', amount: 881.21, date: 'Nov 16', type: 'p', key: 5},
+  { title: '', amount: 120, date: 'Nov 21', type: 'd', key: 6},
+  { title: 'Subway', amount: 11.13, date: 'Nov 21', type: 'p', key: 7},
+  { title: 'El Pollo Loco', amount: 7.66, date: 'Nov 29', type: 'p', key: 8},
+  { title: '', amount: 50, date: 'Dec 2', type: 'd', key: 9},
 ]);
 
 // const budgets = [{
@@ -63,6 +54,37 @@ const [budgets, setBudgets] = useState(
     }
   ]);
 
+const addTransaction = () => {
+  expenses.unshift({
+    title: transactionInput[0],
+    amount: transactionInput[1],
+    date: 'Dec 7',
+    type: 'p',
+    key: curKeyValue
+  });
+  setTotalSpent(totalSpent + parseFloat(transactionInput[1]));
+  setCurKeyValue(curKeyValue + 1)
+}
+
+const addDeposit = () => {
+  expenses.unshift({
+    title: '',
+    amount: depositInput,
+    date: 'Dec 7',
+    type: 'd',
+    key: curKeyValue
+  });
+  setTotalSpent(totalSpent - parseFloat(depositInput));
+  setCurKeyValue(curKeyValue + 1)
+}
+
+const [transactionInput, setTransactionInput] = useState(["", ""]); 
+
+const [totalSpent, setTotalSpent] = useState(4500.56);
+
+const [depositInput, setDepositInput] = useState("");
+
+const [curKeyValue, setCurKeyValue] = useState(10);
 
 const [isTraModalVisible, setIsTraModalVisible] = useState(false);
 
@@ -79,18 +101,24 @@ const pixel80Percent = (screenWidth/100) * 90;
     <View style={styles.container}>
       <StatusBar barStyle='light-content'/>
       <View style={styles.titleContainer}>
-      <View style = {{marginLeft: 20}}>
-        <Text>
-            <Text style={styles.title}>${money.totalMoney - money.totalSpent}</Text>
-            <Text style={{fontSize: 40, color: 'white'}}> Left</Text>
-          </Text>
-          <Text style={{color: 'white', paddingBottom: 10}}>
-            Month Started With: ${money.totalMoney}
-          </Text>
-      </View>
+        <View style = {{marginLeft: 20}}>
+          <Text>
+              <Text style={styles.title}>{
+                new Intl.NumberFormat('en-US', {
+                  style: 'currency',
+                  currency: 'USD',
+                  currencyDisplay: 'symbol',
+                }).format(5000 - totalSpent)
+              }</Text>
+              <Text style={{fontSize: 40, color: 'white'}}> Left</Text>
+            </Text>
+            <Text style={{color: 'white', paddingBottom: 10}}>
+              Month Started With: $5000
+            </Text>
+        </View>
 
         <View style = {{display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%'}}>
-          <Progress.Bar style = {{display: 'flex'}} progress={money.totalSpent/ money.totalMoney} width={pixel80Percent} borderRadius={10} height={20} color={'#414141'} unfilledColor={'#d9d9d9'}/>
+          <Progress.Bar style = {{display: 'flex'}} progress={(5000 - totalSpent)/5000} width={pixel80Percent} borderRadius={10} height={20} color={'#414141'} unfilledColor={'#d9d9d9'}/>
           <View style ={{ display:'flex', flexDirection: 'row' , marginTop: 10 , width: '100%', justifyContent: 'center'}}>
               <View style= {{marginRight: 20}}>
                 <Button color='tomato' title="Add Transaction" onPress={handleTraModal}/>
@@ -109,16 +137,23 @@ const pixel80Percent = (screenWidth/100) * 90;
             <Text style={styles.modalTitle}>Add a Transaction</Text>
             <View>
               <Text style={styles.modalText}>Transaction Title</Text>
-              <TextInput placeholderTextColor={'gray'}
+              <TextInput value = {transactionInput[0]}
+              onChangeText = {(text) => setTransactionInput([text, transactionInput[1]])}
+              placeholderTextColor={'gray'}
               style={styles.input}
               placeholder='e.g Turkey Sandwich'/>
               <Text style={styles.modalText}>Transaction Amount</Text>
-              <TextInput placeholderTextColor={'gray'}
+              <TextInput value = {transactionInput[1]}
+              onChangeText = {(text) => setTransactionInput([transactionInput[0], text])}
+              placeholderTextColor={'gray'}
               style={styles.input}
               placeholder='e.g $13.45'/>
             </View>
             <View style={{flexDirection: 'row'}}>
-              <Button title="Add" onPress={handleTraModal} />
+              <Button title="Add" onPress={() => {
+                handleTraModal();
+                addTransaction();
+              }} />
               <Button title="Cancel" onPress={handleTraModal} />
             </View>
           </View>
@@ -131,11 +166,16 @@ const pixel80Percent = (screenWidth/100) * 90;
           <Text style={styles.modalTitle}>Make a Deposit</Text>
             <View>
               <Text style={styles.modalText}>Deposit Amount</Text>
-              <TextInput placeholderTextColor={'gray'}
+              <TextInput value = {depositInput}
+              onChangeText = {(text) => setDepositInput(text)}
+              placeholderTextColor={'gray'}
               placeholder={'e.g $100'} style={styles.input}/>
             </View>
             <View style={{flexDirection: 'row'}}>
-              <Button title="Deposit" onPress={handleDepModal} />
+              <Button title="Deposit" onPress={()=>{
+                handleDepModal();
+                addDeposit();
+              }} />
               <Button title="Cancel" onPress={handleDepModal} />
             </View>
           </View>
@@ -170,7 +210,7 @@ const pixel80Percent = (screenWidth/100) * 90;
       <Text style={[styles.recTran, {padding: 10}]}>Recent Transactions</Text>
       <FlatList
         style={styles.fStyle}
-        data={people}
+        data={expenses}
         renderItem={({item}) => (
           <View style={styles.topGroup}>
             <View style={styles.tranGroup}>
