@@ -3,6 +3,8 @@ import { StyleSheet, Text, View, FlatList, Button, TextInput, Input, StatusBar, 
 import * as Progress from 'react-native-progress';
 import Modal from "react-native-modal";
 import TransactionModal from '../components/TransactionModal';
+import 'intl';
+import 'intl/locale-data/jsonp/en';
 
 export default function ViewAccountScreen() {
 
@@ -35,19 +37,19 @@ const [expenses, setExpenses] = useState([
 const [budgets, setBudgets] = useState(
   [
     {
-      id: 1,
+      key: 1,
       title: "Groceries",
       budgetAmount: 5000,
       amountSpent: 2500
     },
     {
-      id: 2,
+      key: 2,
       title: "Rent",
       budgetAmount: 5000,
       amountSpent: 4500
     },
     {
-      id: 3,
+      key: 3,
       title: "Entertainment",
       budgetAmount: 5000,
       amountSpent: 1000
