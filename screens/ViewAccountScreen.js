@@ -2,6 +2,8 @@ import React, {useState} from 'react';
 import { StyleSheet, Text, View, FlatList, Button, TextInput, Input, StatusBar, Dimensions } from 'react-native';
 import * as Progress from 'react-native-progress';
 import Modal from "react-native-modal";
+import TransactionModal from '../components/TransactionModal';
+
 export default function ViewAccountScreen() {
 const[money,setMoney] = useState({
   totalMoney: 5000,
@@ -33,7 +35,7 @@ const [isDepModalVisible, setIsDepModalVisible] = useState(false);
 const handleDepModal = () => setIsDepModalVisible(() => !isDepModalVisible);
 
 const screenWidth = Dimensions.get('window').width; 
-const pixel80Percent = (screenWidth/100) * 80;
+const pixel80Percent = (screenWidth/100) * 90;
   return (
     //going to try to get state to work here and get it into components
     <View style={styles.container}>
@@ -48,16 +50,23 @@ const pixel80Percent = (screenWidth/100) * 80;
         </Text>
         <View style = {{display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%'}}>
           <Progress.Bar style = {{display: 'flex'}} progress={money.totalSpent/ money.totalMoney} width={pixel80Percent} borderRadius={10} height={20} color={'#414141'} unfilledColor={'#d9d9d9'}/>
+          <View style ={{ display:'flex', flexDirection: 'row' , marginTop: 10 , width: '100%', justifyContent: 'center'}}>
+              <View style= {{marginRight: 20}}>
+                <Button color='tomato' title="Add Transaction" onPress={handleTraModal}/>
+              </View>
+              <View>
+                <Button color='greenyellow' title="Deposit Money" onPress={handleDepModal}/>
+              </View>
+          </View>
         </View>
         
 
 
         <View style={{paddingTop: 10, alignItems: 'flex-start'}}>
-          <Button color='tomato' title="Add Transaction" onPress={handleTraModal}/>
-          <Button color='greenyellow' title="Deposit" onPress={handleDepModal}/>
+
         </View>
       </View>
-
+      {/* <TransactionModal handleTraModal = {handleTraModal} isTraModalVisible = {isTraModalVisible}></TransactionModal> */}
       <Modal isVisible={isTraModalVisible}>
         <View style={styles.modalView}>
           <View style={styles.modalViewable}>
@@ -138,11 +147,11 @@ const styles = StyleSheet.create({
   },
   titleContainer:{
     backgroundColor: '#2d2e30',
-    flex: 0.75,
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'flex-start',
     paddingLeft: 20,
-    paddingTop: 40
+    paddingTop: 5
   },
   container: {
     flex: 1,
