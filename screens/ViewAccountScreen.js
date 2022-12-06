@@ -41,13 +41,16 @@ const pixel80Percent = (screenWidth/100) * 90;
     <View style={styles.container}>
       <StatusBar barStyle='light-content'/>
       <View style={styles.titleContainer}>
+      <View style = {{marginLeft: 20}}>
         <Text>
-          <Text style={styles.title}>${money.totalMoney - money.totalSpent}</Text>
-          <Text style={{fontSize: 40, color: 'white'}}> Left</Text>
-        </Text>
-        <Text style={{color: 'white', paddingBottom: 10}}>
-          Month Started With: ${money.totalMoney}
-        </Text>
+            <Text style={styles.title}>${money.totalMoney - money.totalSpent}</Text>
+            <Text style={{fontSize: 40, color: 'white'}}> Left</Text>
+          </Text>
+          <Text style={{color: 'white', paddingBottom: 10}}>
+            Month Started With: ${money.totalMoney}
+          </Text>
+      </View>
+
         <View style = {{display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%'}}>
           <Progress.Bar style = {{display: 'flex'}} progress={money.totalSpent/ money.totalMoney} width={pixel80Percent} borderRadius={10} height={20} color={'#414141'} unfilledColor={'#d9d9d9'}/>
           <View style ={{ display:'flex', flexDirection: 'row' , marginTop: 10 , width: '100%', justifyContent: 'center'}}>
@@ -150,7 +153,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'flex-start',
-    paddingLeft: 20,
+    // paddingLeft: 20,
     paddingTop: 5
   },
   container: {
