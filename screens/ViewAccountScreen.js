@@ -26,6 +26,44 @@ const [people, setPeople] = useState([
   { title: 'El Pollo Loco', amount: 7.66, date: 'Nov 29', type: 'p', key: '8'},
   { title: '', amount: 50, date: 'Dec 2', type: 'd', key: '9'},
 ]);
+
+// const budgets = [{
+//   {
+//     title: "Groceries",
+//     budgetAmount: 5000
+//   },
+//   {
+//     title: "Rent",
+//     budgetAmount: 5000
+//   },
+//   {
+//     title: "Entertainment",
+//     budgetAmount: 5000
+//   }
+// }];
+const [budgets, setBudgets] = useState(
+  [
+    {
+      id: 1,
+      title: "Groceries",
+      budgetAmount: 5000,
+      amountSpent: 2500
+    },
+    {
+      id: 2,
+      title: "Rent",
+      budgetAmount: 5000,
+      amountSpent: 4500
+    },
+    {
+      id: 3,
+      title: "Entertainment",
+      budgetAmount: 5000,
+      amountSpent: 1000
+    }
+  ]);
+
+
 const [isTraModalVisible, setIsTraModalVisible] = useState(false);
 
 const handleTraModal = () => setIsTraModalVisible(() => !isTraModalVisible);
@@ -62,14 +100,9 @@ const pixel80Percent = (screenWidth/100) * 90;
               </View>
           </View>
         </View>
-        
-
-
-        <View style={{paddingTop: 10, alignItems: 'flex-start'}}>
-
-        </View>
       </View>
       {/* <TransactionModal handleTraModal = {handleTraModal} isTraModalVisible = {isTraModalVisible}></TransactionModal> */}
+      {/*this is for the Add Transaction Modal*/}
       <Modal isVisible={isTraModalVisible}>
         <View style={styles.modalView}>
           <View style={styles.modalViewable}>
@@ -91,7 +124,7 @@ const pixel80Percent = (screenWidth/100) * 90;
           </View>
         </View>
       </Modal>
-
+      {/*this is for the Deposit Money Modal*/}
       <Modal isVisible={isDepModalVisible}>
         <View style={styles.modalView}>
           <View style={styles.modalViewable}>
@@ -109,7 +142,20 @@ const pixel80Percent = (screenWidth/100) * 90;
         </View>
       </Modal>
 
-      <View style={styles.categories}>
+
+      <View>
+        {budgets.map((item) =>
+        {
+          return(
+            <View>
+              <Text style = {[styles.recTran, {marginTop: 10}]}>{item.title}</Text>
+              <Progress.Bar progress={item.amountSpent/ item.budgetAmount} width={pixel80Percent} borderRadius={10} height={20} color={'#414141'} unfilledColor={'#d9d9d9'}></Progress.Bar>
+            </View>
+          );
+        })}
+      </View>
+
+      {/* <View style={styles.categories}>
         <Text style={[styles.recTran, {marginTop: 10}]}>Groceries</Text>
         <Progress.Bar progress={0.15}width={400}
           borderRadius={10} height={20} color={'tomato'} unfilledColor={'#d9d9d9'} borderWidth={0}/>
@@ -119,7 +165,7 @@ const pixel80Percent = (screenWidth/100) * 90;
         <Text style={[styles.recTran, {marginTop: 10}]}>Gas</Text>
         <Progress.Bar progress={0.23}width={400}
           borderRadius={10} height={20} color={'yellow'} unfilledColor={'#d9d9d9'} borderWidth={0}/>
-      </View>
+      </View> */}
 
       <Text style={[styles.recTran, {padding: 10}]}>Recent Transactions</Text>
       <FlatList
