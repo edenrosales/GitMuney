@@ -14,6 +14,7 @@ const [totalSpent, setTotalSpent] = useState(2234.56);
 
 const [depositInput, setDepositInput] = useState("");
 
+
 const [myBudgetInput, setMyBudgetInput] = useState("");
 
 const [curKeyValue, setCurKeyValue] = useState();
