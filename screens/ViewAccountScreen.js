@@ -5,6 +5,13 @@ import Modal from "react-native-modal";
 import TransactionModal from '../components/TransactionModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import uuid from 'react-native-uuid';
+var intl; 
+var intllocal; 
+if (Platform.OS === 'android') {
+  intl = require('intl');
+  intl = require('intl/locale-data/jsonp/en');
+  // import 'intl/locale-data/jsonp/en';
+}
 
 export default function ViewAccountScreen() {
 
@@ -78,6 +85,7 @@ const load = async() => {
 }
 
 useEffect(() =>{
+  remove();
   load();
 }, []);
 
