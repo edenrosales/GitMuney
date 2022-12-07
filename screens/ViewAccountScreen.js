@@ -5,13 +5,9 @@ import Modal from "react-native-modal";
 import TransactionModal from '../components/TransactionModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import uuid from 'react-native-uuid';
-var intl; 
-var intllocal; 
-if (Platform.OS === 'android') {
-  intl = require('intl').default
-  intllocal = require('intl/locale-data/jsonp/en').default
-  // import 'intl/locale-data/jsonp/en';
-}
+import 'intl'; 
+import 'intl/locale-data/jsonp/en';
+
 export default function ViewAccountScreen() {
 
 const [transactionInput, setTransactionInput] = useState(["", ""]); 
@@ -237,8 +233,8 @@ const pixel80Percent = (screenWidth/100) * 90;
 
                 <View style = {{display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%'}}>
                   <Progress.Bar style = {{display: 'flex'}} progress={(myBudget - totalSpent)/myBudget} width={pixel80Percent} borderRadius={10} height={20} color={'#414141'} unfilledColor={'#d9d9d9'}/>
-                  <View style ={{ display:'flex', flexDirection: 'row' , marginTop: 10 , width: '100%', justifyContent: 'center'}}>
-                      <View style= {{marginRight: 20}}>
+                  <View style ={{ display:'flex', flexDirection: 'row' , marginTop: 10 , width: '100%', justifyContent: 'space-around'}}>
+                      <View style= {{marginRight: 0}}>
                         <Button color='tomato' title="Add Transaction" onPress={handleTraModal}/>
                       </View>
                       <View>
