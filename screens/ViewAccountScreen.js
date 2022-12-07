@@ -216,13 +216,7 @@ const pixel80Percent = (screenWidth/100) * 90;
               <View style={styles.titleContainer}>
                 <View style = {{marginLeft: 20}}>
                   <Text>
-                      <Text style={styles.title}>{
-                        new Intl.NumberFormat('en-US', {
-                          style: 'currency',
-                          currency: 'USD',
-                          currencyDisplay: 'symbol',
-                        }).format(myBudget - totalSpent)
-                      }</Text>
+                      <Text style={styles.title}>${(Math.round((myBudget - totalSpent) * 100) / 100).toFixed(2)}</Text>
                       <Text style={{fontSize: 40, color: 'white'}}> Left</Text>
                     </Text>
                     <Text style={{color: 'white', paddingBottom: 10}}>
