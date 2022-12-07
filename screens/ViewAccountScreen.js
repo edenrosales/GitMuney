@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import { StyleSheet, Text, View, FlatList, Button, TextInput, Input, StatusBar, Dimensions} from 'react-native';
+import { StyleSheet, Text, View, FlatList, Button, TextInput, Input, StatusBar, Dimensions, TouchableOpacity} from 'react-native';
 import * as Progress from 'react-native-progress';
 import Modal from "react-native-modal";
 import TransactionModal from '../components/TransactionModal';
@@ -249,7 +249,9 @@ const pixel80Percent = (screenWidth/100) * 90;
               
 
               <View style={styles.categories}>
-                <Text style={[styles.recTran, {marginTop: 10}]}>Groceries</Text>
+                <TouchableOpacity onPress={remove}>
+                  <Text style={[styles.recTran, {marginTop: 10}]}>Groceries</Text>
+                </TouchableOpacity>
                 <Progress.Bar progress={0.15}width={400}
                   borderRadius={10} height={20} color={'tomato'} unfilledColor={'#d9d9d9'} borderWidth={0}/>
                 <Text style={[styles.recTran, {marginTop: 10}]}>Rent</Text>
