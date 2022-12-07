@@ -8,10 +8,11 @@ import uuid from 'react-native-uuid';
 var intl; 
 var intllocal; 
 if (Platform.OS === 'android') {
-  intl = require('intl');
-  intl = require('intl/locale-data/jsonp/en');
+  intl = require('intl').default
+  intl = require('intl/locale-data/jsonp/en').default
   // import 'intl/locale-data/jsonp/en';
 }
+
 
 export default function ViewAccountScreen() {
 
