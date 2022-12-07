@@ -5,8 +5,6 @@ import Modal from "react-native-modal";
 import TransactionModal from '../components/TransactionModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import uuid from 'react-native-uuid';
-import 'intl'; 
-import 'intl/locale-data/jsonp/en';
 
 export default function ViewAccountScreen() {
 
@@ -24,26 +22,28 @@ const [curKeyValue, setCurKeyValue] = useState();
 const [myBudget, setMyBudget] = useState(5000);
 
 const [expenses, setExpenses] = useState([
-  { title: 'E-bike Jetson', amount: 276.13, date: 'Nov 9', type: 'p', key: uuid.v4() },
-  { title: 'iPhone 14', amount: 1311.98, date: 'Nov 11', type: 'p', key: uuid.v4()},
-  { title: '', amount: 40, date: 'Nov 11', type: 'd', key: uuid.v4()},
-  { title: '', amount: 50, date: 'Nov 12', type: 'd', key: uuid.v4()},
-  { title: 'Macbook Air', amount: 881.21, date: 'Nov 16', type: 'p', key: uuid.v4()},
-  { title: '', amount: 120, date: 'Nov 21', type: 'd', key: uuid.v4()},
-  { title: 'Subway', amount: 11.13, date: 'Nov 21', type: 'p', key: uuid.v4()},
-  { title: 'El Pollo Loco', amount: 7.66, date: 'Nov 29', type: 'p', key: uuid.v4()},
-  { title: '', amount: 50, date: 'Dec 2', type: 'd', key: uuid.v4()},
+  { title: 'E-bike Jetson', amount: 276.13, date: '12/6/2022, 10:34:22', type: 'p', key: uuid.v4() },
+  { title: 'iPhone 14', amount: 1311.98, date: '12/6/2022, 10:34:22', type: 'p', key: uuid.v4()},
+  { title: '', amount: 40, date: '12/6/2022, 10:34:22', type: 'd', key: uuid.v4()},
+  { title: '', amount: 50, date: '12/6/2022, 10:34:22', type: 'd', key: uuid.v4()},
+  { title: 'Macbook Air', amount: 881.21, date: '12/6/2022, 10:34:22', type: 'p', key: uuid.v4()},
+  { title: '', amount: 120, date: '12/6/2022, 10:34:22', type: 'd', key: uuid.v4()},
+  { title: 'Subway', amount: 11.13, date: '12/6/2022, 10:34:22', type: 'p', key: uuid.v4()},
+  { title: 'El Pollo Loco', amount: 7.66, date: '12/6/2022, 10:34:22', type: 'p', key: uuid.v4()},
+  { title: '', amount: 50, date: '12/6/2022, 10:34:22', type: 'd', key: uuid.v4()},
 ]);
 
 const remove = async() => {
   try{
     await AsyncStorage.removeItem("MyList");
     await AsyncStorage.removeItem("TotalSpent");
+    await AsyncStorage.removeItem("MyBudget");
   } catch(error){
     alert(error);
   } finally {
     setExpenses(expenses);
     setTotalSpent(totalSpent);
+    setMyBudget(myBudget);
   }
 }
 
@@ -80,7 +80,6 @@ const load = async() => {
 }
 
 useEffect(() =>{
-  remove
   load();
 }, []);
 
