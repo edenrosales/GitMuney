@@ -9,11 +9,9 @@ var intl;
 var intllocal; 
 if (Platform.OS === 'android') {
   intl = require('intl').default
-  intl = require('intl/locale-data/jsonp/en').default
+  intllocal = require('intl/locale-data/jsonp/en').default
   // import 'intl/locale-data/jsonp/en';
 }
-
-
 export default function ViewAccountScreen() {
 
 const [transactionInput, setTransactionInput] = useState(["", ""]); 
@@ -86,7 +84,7 @@ const load = async() => {
 }
 
 useEffect(() =>{
-  remove();
+  remove
   load();
 }, []);
 
