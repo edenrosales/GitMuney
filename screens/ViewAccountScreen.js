@@ -131,46 +131,7 @@ const pixel80Percent = (screenWidth/100) * 90;
     //going to try to get state to work here and get it into components
     <View style={styles.container}>
       <StatusBar barStyle='light-content'/>
-
-      
-      <FlatList
-        ListHeaderComponent={() => {
-          return(
-            <View>
-              <View style={styles.titleContainer}>
-                <View style = {{marginLeft: 20}}>
-                  <Text>
-                      <Text style={styles.title}>{
-                        new Intl.NumberFormat('en-US', {
-                          style: 'currency',
-                          currency: 'USD',
-                          currencyDisplay: 'symbol',
-                        }).format(myBudget - totalSpent)
-                      }</Text>
-                      <Text style={{fontSize: 40, color: 'white'}}> Left</Text>
-                    </Text>
-                    <Text style={{color: 'white', paddingBottom: 10}}>
-                      Month Started With: ${myBudget}
-                    </Text>
-                </View>
-
-                <View style = {{display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%'}}>
-                  <Progress.Bar style = {{display: 'flex'}} progress={(myBudget - totalSpent)/myBudget} width={pixel80Percent} borderRadius={10} height={20} color={'#414141'} unfilledColor={'#d9d9d9'}/>
-                  <View style ={{ display:'flex', flexDirection: 'row' , marginTop: 10 , width: '100%', justifyContent: 'center'}}>
-                      <View style= {{marginRight: 20}}>
-                        <Button color='tomato' title="Add Transaction" onPress={handleTraModal}/>
-                      </View>
-                      <View>
-                        <Button color='greenyellow' title="Deposit Money" onPress={handleDepModal}/>
-                      </View>
-                      <View>
-                        <Button color='yellow' title="Set Budget" onPress={handleBudgetModal}/>
-                      </View>
-                  </View>
-                </View>
-              </View>
-              {/* <TransactionModal handleTraModal = {handleTraModal} isTraModalVisible = {isTraModalVisible}></TransactionModal> */}
-              <Modal isVisible={isTraModalVisible}>
+      <Modal isVisible={isTraModalVisible}>
                 <View style={styles.modalView}>
                   <View style={styles.modalViewable}>
                     <Text style={styles.modalTitle}>Add a Transaction</Text>
@@ -245,6 +206,45 @@ const pixel80Percent = (screenWidth/100) * 90;
                   </View>
                 </View>
               </Modal>
+
+      <FlatList
+        ListHeaderComponent={() => {
+          return(
+            <View>
+              <View style={styles.titleContainer}>
+                <View style = {{marginLeft: 20}}>
+                  <Text>
+                      <Text style={styles.title}>{
+                        new Intl.NumberFormat('en-US', {
+                          style: 'currency',
+                          currency: 'USD',
+                          currencyDisplay: 'symbol',
+                        }).format(myBudget - totalSpent)
+                      }</Text>
+                      <Text style={{fontSize: 40, color: 'white'}}> Left</Text>
+                    </Text>
+                    <Text style={{color: 'white', paddingBottom: 10}}>
+                      Month Started With: ${myBudget}
+                    </Text>
+                </View>
+
+                <View style = {{display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%'}}>
+                  <Progress.Bar style = {{display: 'flex'}} progress={(myBudget - totalSpent)/myBudget} width={pixel80Percent} borderRadius={10} height={20} color={'#414141'} unfilledColor={'#d9d9d9'}/>
+                  <View style ={{ display:'flex', flexDirection: 'row' , marginTop: 10 , width: '100%', justifyContent: 'center'}}>
+                      <View style= {{marginRight: 20}}>
+                        <Button color='tomato' title="Add Transaction" onPress={handleTraModal}/>
+                      </View>
+                      <View>
+                        <Button color='greenyellow' title="Deposit Money" onPress={handleDepModal}/>
+                      </View>
+                      <View>
+                        <Button color='yellow' title="Set Budget" onPress={handleBudgetModal}/>
+                      </View>
+                  </View>
+                </View>
+              </View>
+              {/* <TransactionModal handleTraModal = {handleTraModal} isTraModalVisible = {isTraModalVisible}></TransactionModal> */}
+              
 
               <View style={styles.categories}>
                 <Text style={[styles.recTran, {marginTop: 10}]}>Groceries</Text>
