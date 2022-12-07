@@ -5,9 +5,6 @@ import Modal from "react-native-modal";
 import TransactionModal from '../components/TransactionModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import uuid from 'react-native-uuid';
-import 'intl';
-import 'intl/locale-data/jsonp/en';
-import Budgets from '../components/Budgets';
 
 export default function ViewAccountScreen() {
 
@@ -82,44 +79,6 @@ const load = async() => {
 useEffect(() =>{
   load();
 }, []);
-// const budgets = [{
-//   {
-//     title: "Groceries",
-//     budgetAmount: 5000
-//   },
-//   {
-//     title: "Rent",
-//     budgetAmount: 5000
-//   },
-//   {
-//     title: "Entertainment",
-//     budgetAmount: 5000
-//   }
-// }];
-const [budgets, setBudgets] = useState(
-  [
-    {
-      key: 1,
-      title: "Groceries",
-      budgetAmount: 5000,
-      amountSpent: 2500,
-      color: "tomato"
-    },
-    {
-      key: 2,
-      title: "Rent",
-      budgetAmount: 5000,
-      amountSpent: 4500,
-      color: "dodgerblue"
-    },
-    {
-      key: 3,
-      title: "Entertainment",
-      budgetAmount: 5000,
-      amountSpent: 1000,
-      color: "yellow"
-    }
-  ]);
 
 const addTransaction = () => {
   expenses.unshift({
@@ -171,8 +130,116 @@ const pixel80Percent = (screenWidth/100) * 90;
     //going to try to get state to work here and get it into components
     <View style={styles.container}>
       <StatusBar barStyle='light-content'/>
+      <View style={styles.titleContainer}>
+        <View style = {{marginLeft: 20}}>
+          <Text>
+              <Text style={styles.title}>{
+                new Intl.NumberFormat('en-US', {
+                  style: 'currency',
+                  currency: 'USD',
+                  currencyDisplay: 'symbol',
+                }).format(myBudget - totalSpent)
+              }</Text>
+              <Text style={{fontSize: 40, color: 'white'}}> Left</Text>
+            </Text>
+            <Text style={{color: 'white', paddingBottom: 10}}>
+              Month Started With: ${myBudget}
+            </Text>
+        </View>
 
-      {/* <View style={styles.categories}>
+        <View style = {{display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%'}}>
+          <Progress.Bar style = {{display: 'flex'}} progress={(myBudget - totalSpent)/myBudget} width={pixel80Percent} borderRadius={10} height={20} color={'#414141'} unfilledColor={'#d9d9d9'}/>
+          <View style ={{ display:'flex', flexDirection: 'row' , marginTop: 10 , width: '100%', justifyContent: 'center'}}>
+              <View style= {{marginRight: 20}}>
+                <Button color='tomato' title="Add Transaction" onPress={handleTraModal}/>
+              </View>
+              <View>
+                <Button color='greenyellow' title="Deposit Money" onPress={handleDepModal}/>
+              </View>
+              <View>
+                <Button color='yellow' title="Set Budget" onPress={handleBudgetModal}/>
+              </View>
+          </View>
+        </View>
+      </View>
+      {/* <TransactionModal handleTraModal = {handleTraModal} isTraModalVisible = {isTraModalVisible}></TransactionModal> */}
+      <Modal isVisible={isTraModalVisible}>
+        <View style={styles.modalView}>
+          <View style={styles.modalViewable}>
+            <Text style={styles.modalTitle}>Add a Transaction</Text>
+            <View>
+              <Text style={styles.modalText}>Transaction Title</Text>
+              <TextInput value = {transactionInput[0]}
+              onChangeText = {(text) => setTransactionInput([text, transactionInput[1]])}
+              placeholderTextColor={'gray'}
+              style={styles.input}
+              placeholder='e.g Turkey Sandwich'/>
+              <Text style={styles.modalText}>Transaction Amount</Text>
+              <TextInput value = {transactionInput[1]}
+              onChangeText = {(text) => setTransactionInput([transactionInput[0], text])}
+              placeholderTextColor={'gray'}
+              style={styles.input}
+              placeholder='e.g $13.45'/>
+            </View>
+            <View style={{flexDirection: 'row'}}>
+              <Button title="Add" onPress={() => {
+                handleTraModal();
+                addTransaction();
+                save();
+              }} />
+              <Button title="Cancel" onPress={handleTraModal} />
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal isVisible={isDepModalVisible}>
+        <View style={styles.modalView}>
+          <View style={styles.modalViewable}>
+          <Text style={styles.modalTitle}>Make a Deposit</Text>
+            <View>
+              <Text style={styles.modalText}>Deposit Amount</Text>
+              <TextInput value = {depositInput}
+              onChangeText = {(text) => setDepositInput(text)}
+              placeholderTextColor={'gray'}
+              placeholder={'e.g $100'} style={styles.input}/>
+            </View>
+            <View style={{flexDirection: 'row'}}>
+              <Button title="Deposit" onPress={()=>{
+                handleDepModal();
+                addDeposit();
+                save();
+              }} />
+              <Button title="Cancel" onPress={handleDepModal} />
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal isVisible={isBudgetModalVisible}>
+        <View style={styles.modalView}>
+          <View style={styles.modalViewable}>
+          <Text style={styles.modalTitle}>Set a Budget</Text>
+            <View>
+              <Text style={styles.modalText}>Budget Amount</Text>
+              <TextInput value = {myBudgetInput}
+              onChangeText = {(text) => setMyBudgetInput(text)}
+              placeholderTextColor={'gray'}
+              placeholder={'e.g $100'} style={styles.input}/>
+            </View>
+            <View style={{flexDirection: 'row'}}>
+              <Button title="Set Budget" onPress={()=>{
+                handleBudgetModal();
+                addBudget();
+                save();
+              }} />
+              <Button title="Cancel" onPress={handleBudgetModal} />
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <View style={styles.categories}>
         <Text style={[styles.recTran, {marginTop: 10}]}>Groceries</Text>
         <Progress.Bar progress={0.15}width={400}
           borderRadius={10} height={20} color={'tomato'} unfilledColor={'#d9d9d9'} borderWidth={0}/>
@@ -182,100 +249,10 @@ const pixel80Percent = (screenWidth/100) * 90;
         <Text style={[styles.recTran, {marginTop: 10}]}>Gas</Text>
         <Progress.Bar progress={0.23}width={400}
           borderRadius={10} height={20} color={'yellow'} unfilledColor={'#d9d9d9'} borderWidth={0}/>
-      </View> */}
+      </View>
 
-      
+      <Text style={[styles.recTran, {padding: 10}]}>Recent Transactions</Text>
       <FlatList
-        ListHeaderComponent={() => {return(
-          <View>
-              <View style={styles.titleContainer}>
-              <View style = {{marginLeft: 20}}>
-                <Text>
-                    <Text style={styles.title}>{
-                      new Intl.NumberFormat('en-US', {
-                        style: 'currency',
-                        currency: 'USD',
-                        currencyDisplay: 'symbol',
-                      }).format(5000 - totalSpent)
-                    }</Text>
-                    <Text style={{fontSize: 40, color: 'white'}}> Left</Text>
-                  </Text>
-                  <Text style={{color: 'white', paddingBottom: 10}}>
-                    Month Started With: $5000
-                  </Text>
-              </View>
-
-              <View style = {{display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%'}}>
-                <Progress.Bar style = {{display: 'flex'}} progress={(5000 - totalSpent)/5000} width={pixel80Percent} borderRadius={10} height={20} color={'#414141'} unfilledColor={'#d9d9d9'}/>
-                <View style ={{ display:'flex', flexDirection: 'row' , marginTop: 10 , width: '100%', justifyContent: 'center'}}>
-                    <View style= {{marginRight: 20}}>
-                      <Button color='tomato' title="Add Transaction" onPress={handleTraModal}/>
-                    </View>
-                    <View>
-                      <Button color='greenyellow' title="Deposit Money" onPress={handleDepModal}/>
-                    </View>
-                </View>
-              </View>
-            </View>
-            {/* <TransactionModal handleTraModal = {handleTraModal} isTraModalVisible = {isTraModalVisible}></TransactionModal> */}
-            {/*this is for the Add Transaction Modal*/}
-            <Modal isVisible={isTraModalVisible}>
-              <View style={styles.modalView}>
-                <View style={styles.modalViewable}>
-                  <Text style={styles.modalTitle}>Add a Transaction</Text>
-                  <View>
-                    <Text style={styles.modalText}>Transaction Title</Text>
-                    <TextInput value = {transactionInput[0]}
-                    onChangeText = {(text) => setTransactionInput([text, transactionInput[1]])}
-                    placeholderTextColor={'gray'}
-                    style={styles.input}
-                    placeholder='e.g Turkey Sandwich'/>
-                    <Text style={styles.modalText}>Transaction Amount</Text>
-                    <TextInput value = {transactionInput[1]}
-                    onChangeText = {(text) => setTransactionInput([transactionInput[0], text])}
-                    placeholderTextColor={'gray'}
-                    style={styles.input}
-                    placeholder='e.g $13.45'/>
-                  </View>
-                  <View style={{flexDirection: 'row'}}>
-                    <Button title="Add" onPress={() => {
-                      handleTraModal();
-                      addTransaction();
-                    }} />
-                    <Button title="Cancel" onPress={handleTraModal} />
-                  </View>
-                </View>
-              </View>
-            </Modal>
-            {/*this is for the Deposit Money Modal*/}
-            <Modal isVisible={isDepModalVisible}>
-              <View style={styles.modalView}>
-                <View style={styles.modalViewable}>
-                <Text style={styles.modalTitle}>Make a Deposit</Text>
-                  <View>
-                    <Text style={styles.modalText}>Deposit Amount</Text>
-                    <TextInput value = {depositInput}
-                    onChangeText = {(text) => setDepositInput(text)}
-                    placeholderTextColor={'gray'}
-                    placeholder={'e.g $100'} style={styles.input}/>
-                  </View>
-                  <View style={{flexDirection: 'row'}}>
-                    <Button title="Deposit" onPress={()=>{
-                      handleDepModal();
-                      addDeposit();
-                    }} />
-                    <Button title="Cancel" onPress={handleDepModal} />
-                  </View>
-                </View>
-              </View>
-            </Modal>
-
-            <View syles ={{width:'100%'}}>
-              <Budgets budget = {budgets} pixel80Percent = {pixel80Percent}/>
-            </View>
-            <Text style={[styles.recTran, {padding: 10}]}>Recent Transactions</Text>
-          </View>
-        )}}
         style={styles.fStyle}
         data={expenses}
         renderItem={({item}) => (
