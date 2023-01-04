@@ -5,6 +5,8 @@ import Modal from "react-native-modal";
 import TransactionModal from '../components/TransactionModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import uuid from 'react-native-uuid';
+import TopBarStats from '../components/TopBarStats';
+import Categories from '../components/Categories';
 
 export default function ViewAccountScreen() {
 
@@ -128,7 +130,8 @@ const [isBudgetModalVisible, setIsBudgetModalVisible] = useState(false);
 const handleBudgetModal = () => setIsBudgetModalVisible(() => !isBudgetModalVisible);
 
 const screenWidth = Dimensions.get('window').width; 
-const pixel80Percent = (screenWidth/100) * 90;
+// console.log(screenWidth)
+const pixel80percent = (screenWidth/100) * 90;
   return (
     //going to try to get state to work here and get it into components
     <View style={styles.container}>
@@ -161,101 +164,78 @@ const pixel80Percent = (screenWidth/100) * 90;
                     </View>
                   </View>
                 </View>
-              </Modal>
+      </Modal>
 
-              <Modal isVisible={isDepModalVisible}>
-                <View style={styles.modalView}>
-                  <View style={styles.modalViewable}>
-                  <Text style={styles.modalTitle}>Make a Deposit</Text>
-                    <View>
-                      <Text style={styles.modalText}>Deposit Amount</Text>
-                      <TextInput value = {depositInput}
-                      onChangeText = {(text) => setDepositInput(text)}
-                      placeholderTextColor={'gray'}
-                      placeholder={'e.g $100'} style={styles.input}/>
-                    </View>
-                    <View style={{flexDirection: 'row'}}>
-                      <Button title="Deposit" onPress={()=>{
-                        handleDepModal();
-                        addDeposit();
-                        save();
-                      }} />
-                      <Button title="Cancel" onPress={handleDepModal} />
-                    </View>
-                  </View>
-                </View>
-              </Modal>
+      <Modal isVisible={isDepModalVisible}>
+        <View style={styles.modalView}>
+          <View style={styles.modalViewable}>
+          <Text style={styles.modalTitle}>Make a Deposit</Text>
+            <View>
+              <Text style={styles.modalText}>Deposit Amount</Text>
+              <TextInput value = {depositInput}
+              onChangeText = {(text) => setDepositInput(text)}
+              placeholderTextColor={'gray'}
+              placeholder={'e.g $100'} style={styles.input}/>
+            </View>
+            <View style={{flexDirection: 'row'}}>
+              <Button title="Deposit" onPress={()=>{
+                handleDepModal();
+                addDeposit();
+                save();
+              }} />
+              <Button title="Cancel" onPress={handleDepModal} />
+            </View>
+          </View>
+        </View>
+      </Modal>
 
-              <Modal isVisible={isBudgetModalVisible}>
-                <View style={styles.modalView}>
-                  <View style={styles.modalViewable}>
-                  <Text style={styles.modalTitle}>Set a Budget</Text>
-                    <View>
-                      <Text style={styles.modalText}>Budget Amount</Text>
-                      <TextInput value = {myBudgetInput}
-                      onChangeText = {(text) => setMyBudgetInput(text)}
-                      placeholderTextColor={'gray'}
-                      placeholder={'e.g $100'} style={styles.input}/>
-                    </View>
-                    <View style={{flexDirection: 'row'}}>
-                      <Button title="Set Budget" onPress={()=>{
-                        handleBudgetModal();
-                        addBudget();
-                        save();
-                      }} />
-                      <Button title="Cancel" onPress={handleBudgetModal} />
-                    </View>
-                  </View>
-                </View>
-              </Modal>
+      <Modal isVisible={isBudgetModalVisible}>
+        <View style={styles.modalView}>
+          <View style={styles.modalViewable}>
+          <Text style={styles.modalTitle}>Set a Budget</Text>
+            <View>
+              <Text style={styles.modalText}>Budget Amount</Text>
+              <TextInput value = {myBudgetInput}
+              onChangeText = {(text) => setMyBudgetInput(text)}
+              placeholderTextColor={'gray'}
+              placeholder={'e.g $100'} style={styles.input}/>
+            </View>
+            <View style={{flexDirection: 'row'}}>
+              <Button title="Set Budget" onPress={()=>{
+                handleBudgetModal();
+                addBudget();
+                save();
+              }} />
+              <Button title="Cancel" onPress={handleBudgetModal} />
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       <FlatList
         ListHeaderComponent={() => {
           return(
             <View>
-              <View style={styles.titleContainer}>
-                <View style = {{marginLeft: 20}}>
-                  <Text>
-                      <Text style={styles.title}>${(Math.round((myBudget - totalSpent) * 100) / 100).toFixed(2)}</Text>
-                      <Text style={{fontSize: 40, color: 'white'}}> Left</Text>
-                    </Text>
-                    <Text style={{color: 'white', paddingBottom: 10}}>
-                      Month Started With: ${myBudget}
-                    </Text>
-                </View>
+            {/* 
+            to change this to a component 
+            props: 
+            - myBudget
+            - totalSpent
+            - pixel80percent 
+            - handleTraModal [function]
+            - handleDepModal [function]
+            - handleBudgetModal [function]
 
-                <View style = {{display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%'}}>
-                  <Progress.Bar style = {{display: 'flex'}} progress={(myBudget - totalSpent)/myBudget} width={pixel80Percent} borderRadius={10} height={20} color={'#414141'} unfilledColor={'#d9d9d9'}/>
-                  <View style ={{ display:'flex', flexDirection: 'row' , marginTop: 10 , width: '100%', justifyContent: 'space-around'}}>
-                      <View style= {{marginRight: 0}}>
-                        <Button color='tomato' title="Add Transaction" onPress={handleTraModal}/>
-                      </View>
-                      <View>
-                        <Button color='greenyellow' title="Deposit Money" onPress={handleDepModal}/>
-                      </View>
-                      <View>
-                        <Button color='yellow' title="Set Budget" onPress={handleBudgetModal}/>
-                      </View>
-                  </View>
-                </View>
-              </View>
+            */}
+
               {/* <TransactionModal handleTraModal = {handleTraModal} isTraModalVisible = {isTraModalVisible}></TransactionModal> */}
-              
 
-              <View style={styles.categories}>
-                <TouchableOpacity onPress={remove}>
-                  <Text style={[styles.recTran, {marginTop: 10}]}>Groceries</Text>
-                </TouchableOpacity>
-                <Progress.Bar progress={0.15}width={400}
-                  borderRadius={10} height={20} color={'tomato'} unfilledColor={'#d9d9d9'} borderWidth={0}/>
-                <Text style={[styles.recTran, {marginTop: 10}]}>Rent</Text>
-                <Progress.Bar progress={0.45}width={400}
-                  borderRadius={10} height={20} color={'dodgerblue'} unfilledColor={'#d9d9d9'} borderWidth={0}/>
-                <Text style={[styles.recTran, {marginTop: 10}]}>Gas</Text>
-                <Progress.Bar progress={0.23}width={400}
-                  borderRadius={10} height={20} color={'yellow'} unfilledColor={'#d9d9d9'} borderWidth={0}/>
-              </View>
-              <Text style={[styles.recTran, {padding: 10}]}>Recent Transactions</Text>
+              <TopBarStats myBudget = {myBudget} totalSpent = {totalSpent} pixel80percent = {pixel80percent} handleTraModal = {handleTraModal} handleDepModal = {handleDepModal} handleBudgetModal = {handleBudgetModal}></TopBarStats>
+              {/*
+              - remove [function]
+              - 
+              */}
+              <Categories remove={remove} pixel80percent = {pixel80percent}></Categories>
             </View>
           )
         }}
