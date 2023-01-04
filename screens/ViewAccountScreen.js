@@ -216,25 +216,7 @@ const pixel80percent = (screenWidth/100) * 90;
         ListHeaderComponent={() => {
           return(
             <View>
-            {/* 
-            to change this to a component 
-            props: 
-            - myBudget
-            - totalSpent
-            - pixel80percent 
-            - handleTraModal [function]
-            - handleDepModal [function]
-            - handleBudgetModal [function]
-
-            */}
-
-              {/* <TransactionModal handleTraModal = {handleTraModal} isTraModalVisible = {isTraModalVisible}></TransactionModal> */}
-
               <TopBarStats myBudget = {myBudget} totalSpent = {totalSpent} pixel80percent = {pixel80percent} handleTraModal = {handleTraModal} handleDepModal = {handleDepModal} handleBudgetModal = {handleBudgetModal}></TopBarStats>
-              {/*
-              - remove [function]
-              - 
-              */}
               <Categories remove={remove} pixel80percent = {pixel80percent}></Categories>
             </View>
           )
