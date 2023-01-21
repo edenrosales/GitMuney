@@ -7,7 +7,6 @@ class TopBarStats extends Component {
     render() {
       return (
         <View style={styles.titleContainer}>
-        <Text>{console.log(this.props.pixel80percent + "and this")}</Text>
         <View style = {{marginLeft: 20}}>
           <Text>
               <Text style={styles.title}>${(Math.round((this.props.myBudget - this.props.totalSpent) * 100) / 100).toFixed(2)}</Text>
@@ -22,13 +21,13 @@ class TopBarStats extends Component {
           <Progress.Bar style = {{display: 'flex'}} progress={(this.props.myBudget - this.props.totalSpent)/this.props.myBudget} width={this.props.pixel80percent} borderRadius={10} height={20} color={'#414141'} unfilledColor={'#d9d9d9'}/>
           <View style ={{ display:'flex', flexDirection: 'row' , marginTop: 10 , width: '100%', justifyContent: 'space-around'}}>
               <View>
-                <Button color='tomato' title="Add Transaction" onPress={() => this.handleTraModal()}/>
+                <Button color='tomato' title="Add Transaction" onPress={() => this.props.handleTraModal()}/>
               </View>
               <View>
-                <Button color='greenyellow' title="Deposit Money" onPress={() => this.handleDepModal()}/>
+                <Button color='greenyellow' title="Deposit Money" onPress={() => this.props.handleDepModal()}/>
               </View>
               <View>
-                <Button color='yellow' title="Set Budget" onPress={() => this.handleBudgetModal()}/>
+                <Button color='yellow' title="Set Budget" onPress={() => this.props.handleBudgetModal()}/>
               </View>
               {/* <View>
                 <Button color = 'black' title = "Log" onPress={showAsyncStorageContentInDev}/>
@@ -40,7 +39,7 @@ class TopBarStats extends Component {
       )
 
     }
-  }
+  } 
 
   const styles = StyleSheet.create({
     TopBar: {

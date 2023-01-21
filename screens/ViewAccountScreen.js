@@ -16,6 +16,7 @@ const [totalSpent, setTotalSpent] = useState(2234.56);
 
 const [depositInput, setDepositInput] = useState("");
 
+const [categories,setCategories] = useState(["Groceries","Rent","Gas"]);
 
 const [myBudgetInput, setMyBudgetInput] = useState("");
 
@@ -24,15 +25,15 @@ const [curKeyValue, setCurKeyValue] = useState();
 const [myBudget, setMyBudget] = useState(5000);
 
 const [expenses, setExpenses] = useState([
-  { title: 'E-bike Jetson', amount: 276.13, date: '12/6/2022, 10:34:22', type: 'p', key: uuid.v4() },
-  { title: 'iPhone 14', amount: 1311.98, date: '12/6/2022, 10:34:22', type: 'p', key: uuid.v4()},
-  { title: '', amount: 40, date: '12/6/2022, 10:34:22', type: 'd', key: uuid.v4()},
-  { title: '', amount: 50, date: '12/6/2022, 10:34:22', type: 'd', key: uuid.v4()},
-  { title: 'Macbook Air', amount: 881.21, date: '12/6/2022, 10:34:22', type: 'p', key: uuid.v4()},
-  { title: '', amount: 120, date: '12/6/2022, 10:34:22', type: 'd', key: uuid.v4()},
-  { title: 'Subway', amount: 11.13, date: '12/6/2022, 10:34:22', type: 'p', key: uuid.v4()},
-  { title: 'El Pollo Loco', amount: 7.66, date: '12/6/2022, 10:34:22', type: 'p', key: uuid.v4()},
-  { title: '', amount: 50, date: '12/6/2022, 10:34:22', type: 'd', key: uuid.v4()},
+  { title: 'E-bike Jetson', amount: 276.13, date: '12/6/2022, 10:34:22', type: 'p', key: uuid.v4(), category: "Groceries" },
+  { title: 'iPhone 14', amount: 1311.98, date: '12/6/2022, 10:34:22', type: 'p', key: uuid.v4(), category: "Groceries" },
+  { title: '', amount: 40, date: '12/6/2022, 10:34:22', type: 'd', key: uuid.v4(), category: "Groceries" },
+  { title: '', amount: 50, date: '12/6/2022, 10:34:22', type: 'd', key: uuid.v4(), category: "Groceries" },
+  { title: 'Macbook Air', amount: 881.21, date: '12/6/2022, 10:34:22', type: 'p', key: uuid.v4(), category: "Groceries" },
+  { title: '', amount: 120, date: '12/6/2022, 10:34:22', type: 'd', key: uuid.v4(), category: "Groceries" },
+  { title: 'Subway', amount: 11.13, date: '12/6/2022, 10:34:22', type: 'p', key: uuid.v4(), category: "Groceries" },
+  { title: 'El Pollo Loco', amount: 7.66, date: '12/6/2022, 10:34:22', type: 'p', key: uuid.v4(), category: "Rent" },
+  { title: '', amount: 50, date: '12/6/2022, 10:34:22', type: 'd', key: uuid.v4(), category: "Groceries" },
 ]);
 
 const remove = async() => {
