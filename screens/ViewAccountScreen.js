@@ -7,239 +7,271 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import uuid from 'react-native-uuid';
 import TopBarStats from '../components/TopBarStats';
 import Categories from '../components/Categories';
+import PocketBase from 'pocketbase'
+// const PocketBase = require('pocketbase/cjs');
+
 
 export default function ViewAccountScreen() {
+  const pb = new PocketBase('http://10.0.2.2:8090/');
 
-const [transactionInput, setTransactionInput] = useState(["", ""]); 
+  const [testInfo, setTest] = useState();
 
-const [totalSpent, setTotalSpent] = useState(2234.56);
+  const test = async () => {
+    console.log("this does not work");
+    try{
+    //   const authData = await pb.collection('users').authWithPassword(
+    //     'edenrosales',
+    //     '12345678',
+    // );
 
-const [depositInput, setDepositInput] = useState("");
-
-const [categories,setCategories] = useState(["Groceries","Rent","Gas"]);
-
-const [myBudgetInput, setMyBudgetInput] = useState("");
-
-const [curKeyValue, setCurKeyValue] = useState();
-
-const [myBudget, setMyBudget] = useState(5000);
-
-const [expenses, setExpenses] = useState([
-  { title: 'E-bike Jetson', amount: 276.13, date: '12/6/2022, 10:34:22', type: 'p', key: uuid.v4(), category: "Groceries" },
-  { title: 'iPhone 14', amount: 1311.98, date: '12/6/2022, 10:34:22', type: 'p', key: uuid.v4(), category: "Groceries" },
-  { title: '', amount: 40, date: '12/6/2022, 10:34:22', type: 'd', key: uuid.v4(), category: "Groceries" },
-  { title: '', amount: 50, date: '12/6/2022, 10:34:22', type: 'd', key: uuid.v4(), category: "Groceries" },
-  { title: 'Macbook Air', amount: 881.21, date: '12/6/2022, 10:34:22', type: 'p', key: uuid.v4(), category: "Groceries" },
-  { title: '', amount: 120, date: '12/6/2022, 10:34:22', type: 'd', key: uuid.v4(), category: "Groceries" },
-  { title: 'Subway', amount: 11.13, date: '12/6/2022, 10:34:22', type: 'p', key: uuid.v4(), category: "Groceries" },
-  { title: 'El Pollo Loco', amount: 7.66, date: '12/6/2022, 10:34:22', type: 'p', key: uuid.v4(), category: "Rent" },
-  { title: '', amount: 50, date: '12/6/2022, 10:34:22', type: 'd', key: uuid.v4(), category: "Groceries" },
-]);
-
-const remove = async() => {
-  try{
-    await AsyncStorage.removeItem("MyList");
-    await AsyncStorage.removeItem("TotalSpent");
-    await AsyncStorage.removeItem("MyBudget");
-  } catch(error){
-    alert(error);
-  } finally {
-    setExpenses(expenses);
-    setTotalSpent(totalSpent);
-    setMyBudget(myBudget);
-  }
-}
-
-const save = async() => {
-  try{
-    await AsyncStorage.setItem("MyList", JSON.stringify(expenses));
-    await AsyncStorage.setItem("TotalSpent", totalSpent.toString());
-    await AsyncStorage.setItem("MyBudget", myBudget.toString());
-  } catch(error){
-    alert(error);
-  }
-}
-
-const load = async() => {
-  try{
-    let expenses = await AsyncStorage.getItem("MyList");
-    let totalSpent = await AsyncStorage.getItem("TotalSpent");
-    let fTotalSpent = parseFloat(totalSpent);
-    let myBudget = await AsyncStorage.getItem("MyBudget");
-    let intMyBudget = parseInt(myBudget);
-
-    if(expenses !== null){
-      setExpenses(JSON.parse(expenses));
+      // setTest(authData);
+      const data = await pb.collection('transactions').getOne('gfsgg9tu2bmsk2k')
+      setTest(data)
     }
-    if(totalSpent !== null){
-      setTotalSpent(fTotalSpent);
+    catch(err){
+      console.log("Error: " + err)
     }
-    if(myBudget !== null){
-      setMyBudget(intMyBudget);
-    }
-  } catch(error){
-    alert(error);
+    
+    
+    
+      
   }
-}
+  const [transactionInput, setTransactionInput] = useState(["", ""]); 
 
-useEffect(() =>{
-  load();
-}, []);
+  const [totalSpent, setTotalSpent] = useState(2234.56);
 
-const addTransaction = () => {
-  expenses.unshift({
-    title: transactionInput[0],
-    amount: transactionInput[1],
-    date: new Date().toLocaleString(),
-    type: 'p',
-    key: curKeyValue
-  });
-  setTotalSpent(totalSpent + parseFloat(transactionInput[1]));
-  setCurKeyValue(uuid.v4());
-  transactionInput[0] = "";
-  transactionInput[1] = "";
-}
+  const [depositInput, setDepositInput] = useState("");
 
-const addDeposit = () => {
-  expenses.unshift({
-    title: '',
-    amount: depositInput,
-    date: new Date().toLocaleString(),
-    type: 'd',
-    key: curKeyValue
-  });
-  setTotalSpent(totalSpent - parseFloat(depositInput));
-  setCurKeyValue(uuid.v4());
-  setDepositInput("");
-}
+  const [categories,setCategories] = useState(["Groceries","Rent","Gas"]);
 
-const addBudget = () => {
-  setMyBudget(myBudgetInput);
-  setMyBudgetInput(myBudget);
-}
+  const [myBudgetInput, setMyBudgetInput] = useState("");
 
-const [isTraModalVisible, setIsTraModalVisible] = useState(false);
+  const [curKeyValue, setCurKeyValue] = useState();
 
-const handleTraModal = () => setIsTraModalVisible(() => !isTraModalVisible);
+  const [myBudget, setMyBudget] = useState(5000);
 
-const [isDepModalVisible, setIsDepModalVisible] = useState(false);
+  const [expenses, setExpenses] = useState([
+    { title: 'E-bike Jetson', amount: 276.13, date: '12/6/2022, 10:34:22', type: 'p', key: uuid.v4(), category: "Groceries" },
+    { title: 'iPhone 14', amount: 1311.98, date: '12/6/2022, 10:34:22', type: 'p', key: uuid.v4(), category: "Groceries" },
+    { title: '', amount: 40, date: '12/6/2022, 10:34:22', type: 'd', key: uuid.v4(), category: "Groceries" },
+    { title: '', amount: 50, date: '12/6/2022, 10:34:22', type: 'd', key: uuid.v4(), category: "Groceries" },
+    { title: 'Macbook Air', amount: 881.21, date: '12/6/2022, 10:34:22', type: 'p', key: uuid.v4(), category: "Groceries" },
+    { title: '', amount: 120, date: '12/6/2022, 10:34:22', type: 'd', key: uuid.v4(), category: "Groceries" },
+    { title: 'Subway', amount: 11.13, date: '12/6/2022, 10:34:22', type: 'p', key: uuid.v4(), category: "Groceries" },
+    { title: 'El Pollo Loco', amount: 7.66, date: '12/6/2022, 10:34:22', type: 'p', key: uuid.v4(), category: "Rent" },
+    { title: '', amount: 50, date: '12/6/2022, 10:34:22', type: 'd', key: uuid.v4(), category: "Groceries" },
+  ]);
 
-const handleDepModal = () => setIsDepModalVisible(() => !isDepModalVisible);
+  const remove = async() => {
+    try{
+      await AsyncStorage.removeItem("MyList");
+      await AsyncStorage.removeItem("TotalSpent");
+      await AsyncStorage.removeItem("MyBudget");
+    } catch(error){
+      alert(error);
+    } finally {
+      setExpenses(expenses);
+      setTotalSpent(totalSpent);
+      setMyBudget(myBudget);
+    }
+  }
 
-const [isBudgetModalVisible, setIsBudgetModalVisible] = useState(false);
+  const save = async() => {
+    try{
+      await AsyncStorage.setItem("MyList", JSON.stringify(expenses));
+      await AsyncStorage.setItem("TotalSpent", totalSpent.toString());
+      await AsyncStorage.setItem("MyBudget", myBudget.toString());
+    } catch(error){
+      alert(error);
+    }
+  }
 
-const handleBudgetModal = () => setIsBudgetModalVisible(() => !isBudgetModalVisible);
+  const load = async() => {
+    try{
+      let expenses = await AsyncStorage.getItem("MyList");
+      let totalSpent = await AsyncStorage.getItem("TotalSpent");
+      let fTotalSpent = parseFloat(totalSpent);
+      let myBudget = await AsyncStorage.getItem("MyBudget");
+      let intMyBudget = parseInt(myBudget);
 
-const screenWidth = Dimensions.get('window').width; 
-// console.log(screenWidth)
-const pixel80percent = (screenWidth/100) * 90;
-  return (
-    //going to try to get state to work here and get it into components
-    <View style={styles.container}>
-      <StatusBar barStyle='light-content'/>
-      <Modal isVisible={isTraModalVisible}>
-                <View style={styles.modalView}>
-                  <View style={styles.modalViewable}>
-                    <Text style={styles.modalTitle}>Add a Transaction</Text>
-                    <View>
-                      <Text style={styles.modalText}>Transaction Title</Text>
-                      <TextInput value = {transactionInput[0]}
-                      onChangeText = {(text) => setTransactionInput([text, transactionInput[1]])}
-                      placeholderTextColor={'gray'}
-                      style={styles.input}
-                      placeholder='e.g Turkey Sandwich'/>
-                      <Text style={styles.modalText}>Transaction Amount</Text>
-                      <TextInput value = {transactionInput[1]}
-                      onChangeText = {(text) => setTransactionInput([transactionInput[0], text])}
-                      placeholderTextColor={'gray'}
-                      style={styles.input}
-                      placeholder='e.g $13.45'/>
-                    </View>
-                    <View style={{flexDirection: 'row'}}>
-                      <Button title="Add" onPress={() => {
-                        handleTraModal();
-                        addTransaction();
-                        save();
-                      }} />
-                      <Button title="Cancel" onPress={handleTraModal} />
+      if(expenses !== null){
+        setExpenses(JSON.parse(expenses));
+      }
+      if(totalSpent !== null){
+        setTotalSpent(fTotalSpent);
+      }
+      if(myBudget !== null){
+        setMyBudget(intMyBudget);
+      }
+    } catch(error){
+      alert(error);
+    }
+  }
+
+  useEffect(() =>{
+    // load();
+  }, []);
+
+  const addTransaction = () => {
+    expenses.unshift({
+      title: transactionInput[0],
+      amount: transactionInput[1],
+      date: new Date().toLocaleString(),
+      type: 'p',
+      key: curKeyValue
+    });
+    setTotalSpent(totalSpent + parseFloat(transactionInput[1]));
+    setCurKeyValue(uuid.v4());
+    transactionInput[0] = "";
+    transactionInput[1] = "";
+  }
+
+  const addDeposit = () => {
+    expenses.unshift({
+      title: '',
+      amount: depositInput,
+      date: new Date().toLocaleString(),
+      type: 'd',
+      key: curKeyValue
+    });
+    setTotalSpent(totalSpent - parseFloat(depositInput));
+    setCurKeyValue(uuid.v4());
+    setDepositInput("");
+  }
+
+  const addBudget = () => {
+    setMyBudget(myBudgetInput);
+    setMyBudgetInput(myBudget);
+  }
+
+  const [isTraModalVisible, setIsTraModalVisible] = useState(false);
+
+  const handleTraModal = () => setIsTraModalVisible(() => !isTraModalVisible);
+
+  const [isDepModalVisible, setIsDepModalVisible] = useState(false);
+
+  const handleDepModal = () => setIsDepModalVisible(() => !isDepModalVisible);
+
+  const [isBudgetModalVisible, setIsBudgetModalVisible] = useState(false);
+
+  const handleBudgetModal = () => setIsBudgetModalVisible(() => !isBudgetModalVisible);
+
+
+
+  const screenWidth = Dimensions.get('window').width; 
+  // console.log(screenWidth)
+  const pixel80percent = (screenWidth/100) * 90;
+    return (
+      //going to try to get state to work here and get it into components
+      <View style={styles.container}>
+        <StatusBar barStyle='light-content'/>
+        <Modal isVisible={isTraModalVisible}>
+                  <View style={styles.modalView}>
+                    <View style={styles.modalViewable}>
+                      <Text style={styles.modalTitle}>Add a Transaction</Text>
+                      <View>
+                        <Text style={styles.modalText}>Transaction Title</Text>
+                        <TextInput value = {transactionInput[0]}
+                        onChangeText = {(text) => setTransactionInput([text, transactionInput[1]])}
+                        placeholderTextColor={'gray'}
+                        style={styles.input}
+                        placeholder='e.g Turkey Sandwich'/>
+                        <Text style={styles.modalText}>Transaction Amount</Text>
+                        <TextInput value = {transactionInput[1]}
+                        onChangeText = {(text) => setTransactionInput([transactionInput[0], text])}
+                        placeholderTextColor={'gray'}
+                        style={styles.input}
+                        placeholder='e.g $13.45'/>
+                      </View>
+                      <View style={{flexDirection: 'row'}}>
+                        <Button title="Add" onPress={() => {
+                          handleTraModal();
+                          addTransaction();
+                          save();
+                        }} />
+                        <Button title="Cancel" onPress={handleTraModal} />
+                      </View>
                     </View>
                   </View>
-                </View>
-      </Modal>
+        </Modal>
 
-      <Modal isVisible={isDepModalVisible}>
-        <View style={styles.modalView}>
-          <View style={styles.modalViewable}>
-          <Text style={styles.modalTitle}>Make a Deposit</Text>
-            <View>
-              <Text style={styles.modalText}>Deposit Amount</Text>
-              <TextInput value = {depositInput}
-              onChangeText = {(text) => setDepositInput(text)}
-              placeholderTextColor={'gray'}
-              placeholder={'e.g $100'} style={styles.input}/>
-            </View>
-            <View style={{flexDirection: 'row'}}>
-              <Button title="Deposit" onPress={()=>{
-                handleDepModal();
-                addDeposit();
-                save();
-              }} />
-              <Button title="Cancel" onPress={handleDepModal} />
+        <Modal isVisible={isDepModalVisible}>
+          <View style={styles.modalView}>
+            <View style={styles.modalViewable}>
+            <Text style={styles.modalTitle}>Make a Deposit</Text>
+              <View>
+                <Text style={styles.modalText}>Deposit Amount</Text>
+                <TextInput value = {depositInput}
+                onChangeText = {(text) => setDepositInput(text)}
+                placeholderTextColor={'gray'}
+                placeholder={'e.g $100'} style={styles.input}/>
+              </View>
+              <View style={{flexDirection: 'row'}}>
+                <Button title="Deposit" onPress={()=>{
+                  handleDepModal();
+                  addDeposit();
+                  save();
+                }} />
+                <Button title="Cancel" onPress={handleDepModal} />
+              </View>
             </View>
           </View>
-        </View>
-      </Modal>
+        </Modal>
 
-      <Modal isVisible={isBudgetModalVisible}>
-        <View style={styles.modalView}>
-          <View style={styles.modalViewable}>
-          <Text style={styles.modalTitle}>Set a Budget</Text>
-            <View>
-              <Text style={styles.modalText}>Budget Amount</Text>
-              <TextInput value = {myBudgetInput}
-              onChangeText = {(text) => setMyBudgetInput(text)}
-              placeholderTextColor={'gray'}
-              placeholder={'e.g $100'} style={styles.input}/>
-            </View>
-            <View style={{flexDirection: 'row'}}>
-              <Button title="Set Budget" onPress={()=>{
-                handleBudgetModal();
-                addBudget();
-                save();
-              }} />
-              <Button title="Cancel" onPress={handleBudgetModal} />
+        <Modal isVisible={isBudgetModalVisible}>
+          <View style={styles.modalView}>
+            <View style={styles.modalViewable}>
+            <Text style={styles.modalTitle}>Set a Budget</Text>
+              <View>
+                <Text style={styles.modalText}>Budget Amount</Text>
+                <TextInput value = {myBudgetInput}
+                onChangeText = {(text) => setMyBudgetInput(text)}
+                placeholderTextColor={'gray'}
+                placeholder={'e.g $100'} style={styles.input}/>
+              </View>
+              <View style={{flexDirection: 'row'}}>
+                <Button title="Set Budget" onPress={()=>{
+                  handleBudgetModal();
+                  addBudget();
+                  save();
+                }} />
+                <Button title="Cancel" onPress={handleBudgetModal} />
+              </View>
             </View>
           </View>
-        </View>
-      </Modal>
+        </Modal>
 
-      <FlatList
-        ListHeaderComponent={() => {
-          return(
-            <View>
-              <TopBarStats myBudget = {myBudget} totalSpent = {totalSpent} pixel80percent = {pixel80percent} handleTraModal = {handleTraModal} handleDepModal = {handleDepModal} handleBudgetModal = {handleBudgetModal}></TopBarStats>
-              <Categories remove={remove} pixel80percent = {pixel80percent}></Categories>
-            </View>
-          )
-        }}
-        style={styles.fStyle}
-        data={expenses}
-        renderItem={({item}) => (
-          <View style={styles.topGroup}>
-            <View style={styles.tranGroup}>
-              <Text style={styles.item}>
-                {item.title == '' ? 'Deposit' : item.title}
+        <FlatList
+          ListHeaderComponent={() => {
+            return(
+              <View>
+                <TopBarStats myBudget = {myBudget} totalSpent = {totalSpent} pixel80percent = {pixel80percent} handleTraModal = {handleTraModal} handleDepModal = {handleDepModal} handleBudgetModal = {handleBudgetModal}></TopBarStats>
+                <Categories remove={remove} pixel80percent = {pixel80percent}></Categories>
+                <Button title = "test" onPress={()=>{ 
+                  test();
+                  console.log(testInfo);
+                  }} />
+              </View>
+            )
+          }}
+          style={styles.fStyle}
+          data={expenses}
+          renderItem={({item}) => (
+            <View style={styles.topGroup}>
+              <View style={styles.tranGroup}>
+                <Text style={styles.item}>
+                  {item.title == '' ? 'Deposit' : item.title}
+                </Text>
+                <Text style={[styles.item, {color:(item.type == 'p') ? 'tomato' : 'greenyellow'}]}>${item.amount}</Text>
+              </View>
+              <Text style={{color: '#999', fontSize: 20, paddingLeft: 10}}>
+                {item.date}
               </Text>
-              <Text style={[styles.item, {color:(item.type == 'p') ? 'tomato' : 'greenyellow'}]}>${item.amount}</Text>
             </View>
-            <Text style={{color: '#999', fontSize: 20, paddingLeft: 10}}>
-              {item.date}
-            </Text>
-          </View>
-        )}
-      />
-    </View>
-  );
+          )}
+        />
+      </View>
+    );
 }
 
 const styles = StyleSheet.create({
