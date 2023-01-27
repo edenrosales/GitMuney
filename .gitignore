@@ -9,6 +9,6 @@ npm-debug.*
 *.mobileprovision
 *.orig.*
 web-build/
-
+pocketbase/pocketbase*
 # macOS
 .DS_Store
