@@ -1,22 +1,57 @@
-import React from 'react';
+import React, { useEffect,useState } from 'react';
+
+import {Button, TextInput} from 'react-native';
 import { StyleSheet, Text, View, Image, TouchableOpacity, ImageBackground } from 'react-native';
-
+import PocketBase from 'pocketbase';
+import {usePB, usePBUpdate} from './../components/ContextProvider'
 function WelcomeScreen({ navigation }) {
+    const pb = usePB() 
+    const updatePB = usePBUpdate() 
+    const pressHandler = async () => {
+        try{
 
-    const pressHandler = () => {
-        navigation.navigate('ViewAccount');
+            updatePB(pb)
+            navigation.push('ViewAccount');
+        }
+        catch(err){
+            console.log(err)
+        }
     }
+    const [logininfo, setLogininfo] = useState(["",""])
 
+    const loginAttempt = async () => {
+        try{
+            const authData = await pb.collection('users').authWithPassword(
+                logininfo[0],
+                logininfo[1],
+            )
+            updatePB(pb)
+            navigation.push('ViewAccount')
+            
+        }
+        catch(err){
+            console.log(err)
+            setLogininfo(()=>{
+                return ["",""]
+            })
+        }
+    }
     return (
-        <ImageBackground style={styles.buttonGroup}
-        source={require('../assets/Simple.png')} resizeMode='cover'>
+        <>
             <Image style={styles.image} source={require('../assets/gitMunnyLogo.png')}/>
-            <TouchableOpacity
+            <Text>Username:</Text>
+            <TextInput value = {logininfo[0]} onChangeText = {(text) => setLogininfo([text,logininfo[1]])} placeholderTextColor={'gray'}/>
+            <Text>Password:</Text>
+            <TextInput value = {logininfo[1]} onChangeText = {(text) => setLogininfo([logininfo[0],text])} placeholderTextColor={'gray'}/>
+            <Button title = "Submit" onPress = {()=>{
+                loginAttempt();
+            }}/>
+            {/* <TouchableOpacity
             style={styles.buttonView}
             onPress={pressHandler}>
                 <Text style={styles.accountText}>Go To My Account</Text>
-            </TouchableOpacity>
-        </ImageBackground>
+            </TouchableOpacity> */}
+        </>
     );
 }
 
@@ -39,6 +74,7 @@ const styles = StyleSheet.create({
     image:{
         width: '60%',
         resizeMode: 'contain',
+
     }
 })
 

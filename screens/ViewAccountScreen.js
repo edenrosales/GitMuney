@@ -8,34 +8,30 @@ import uuid from 'react-native-uuid';
 import TopBarStats from '../components/TopBarStats';
 import Categories from '../components/Categories';
 import PocketBase from 'pocketbase'
+import {usePB} from './../components/ContextProvider'
+import { HeaderBackButton } from 'react-navigation-stack';
 // const PocketBase = require('pocketbase/cjs');
 
 
-export default function ViewAccountScreen() {
-  const pb = new PocketBase('http://10.0.2.2:8090/');
-
-  const [testInfo, setTest] = useState();
-
-  const test = async () => {
-    console.log("this does not work");
-    try{
-    //   const authData = await pb.collection('users').authWithPassword(
-    //     'edenrosales',
-    //     '12345678',
-    // );
-
-      // setTest(authData);
-      const data = await pb.collection('transactions').getOne('gfsgg9tu2bmsk2k')
-      setTest(data)
-    }
-    catch(err){
-      console.log("Error: " + err)
-    }
-    
-    
-    
-      
+export default function ViewAccountScreen({route,navigation}) {
+  // console.log(route.params);
+  const pb = usePB()
+  
+  // const authData = route.params.authData
+  const testLogin = async () =>{
+    const authData = await pb.collection('users').authWithPassword(
+      'edenrosales',
+      '12345678',
+    )
+    console.log(pb.authStore.isValid)
   }
+
+  const testLogout = async () => {
+    pb.authStore.clear()
+    console.log(pb.authStore.isValid)
+  }
+  // const [testInfo, setTest] = useState();
+
   const [transactionInput, setTransactionInput] = useState(["", ""]); 
 
   const [totalSpent, setTotalSpent] = useState(2234.56);
@@ -111,6 +107,13 @@ export default function ViewAccountScreen() {
   useEffect(() =>{
     // load();
   }, []);
+    useEffect( () => {
+      navigation.setOptions({
+            headerLeft: ()=>{
+              return <HeaderBackButton style = {{tontColor: '#746961', marginLeft: 0}} onPress = {()=>(handleBack())}/>
+            }
+        });
+  },[navigation])
 
   const addTransaction = () => {
     expenses.unshift({
@@ -247,10 +250,14 @@ export default function ViewAccountScreen() {
               <View>
                 <TopBarStats myBudget = {myBudget} totalSpent = {totalSpent} pixel80percent = {pixel80percent} handleTraModal = {handleTraModal} handleDepModal = {handleDepModal} handleBudgetModal = {handleBudgetModal}></TopBarStats>
                 <Categories remove={remove} pixel80percent = {pixel80percent}></Categories>
-                <Button title = "test" onPress={()=>{ 
-                  test();
-                  console.log(testInfo);
-                  }} />
+                <Button title = "login test" onPress={()=>{ 
+                  testLogin();
+                  // console.log(testInfo);
+                  }}/>
+                <Button title ="logout test" onPress={()=>{
+                  testLogout();
+                  // console.log.log(pb.authStore.isValid);
+                }}/>
               </View>
             )
           }}
