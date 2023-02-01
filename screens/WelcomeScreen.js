@@ -1,10 +1,12 @@
 import React, { useEffect,useState } from 'react';
-
 import {Button, TextInput} from 'react-native';
 import { StyleSheet, Text, View, Image, TouchableOpacity, ImageBackground } from 'react-native';
-import {useFB} from './../components/ContextProvider'
+import {useFB, useDB} from './../components/ContextProvider'
+import { collection, getDocs } from "firebase/firestore";
+
 function WelcomeScreen({ navigation }) {
     const fb = useFB() 
+    const db = useDB()
     const pressHandler = async () => {
         navigation.navigate("ViewAccount")
     }
@@ -13,8 +15,17 @@ function WelcomeScreen({ navigation }) {
     const loginAttempt = async () => {
         navigation.navigate("ViewAccount")
     }
-    const log = ()=>{
-        console.log(fb)
+    const log = async ()=>{
+        console.log(db)
+        try{
+            const querySnapshot = await getDocs(collection(db, "users"));
+            querySnapshot.forEach((doc) => {
+                console.log(`${doc.id} => ${doc.data()}`);
+            });
+        }
+        catch(error){
+            console.log(error)
+        }
     }
     return (
         <>
