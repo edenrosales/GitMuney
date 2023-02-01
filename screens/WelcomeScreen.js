@@ -2,45 +2,19 @@ import React, { useEffect,useState } from 'react';
 
 import {Button, TextInput} from 'react-native';
 import { StyleSheet, Text, View, Image, TouchableOpacity, ImageBackground } from 'react-native';
-import PocketBase from 'pocketbase';
-import {usePB} from './../components/ContextProvider'
+import {useFB} from './../components/ContextProvider'
 function WelcomeScreen({ navigation }) {
-    const pb = usePB() 
+    const fb = useFB() 
     const pressHandler = async () => {
-        try{
-
-            // updatePB(pb)
-            navigation.push('ViewAccount');
-        }
-        catch(err){
-            console.log(err)
-        }
+        navigation.navigate("ViewAccount")
     }
     const [logininfo, setLogininfo] = useState(["",""])
 
     const loginAttempt = async () => {
-        try{
-            console.log("trying")
-            const authData = await pb.collection('users').authWithPassword(
-                'edenrosales',
-                '12345678',
-            )
-            console.log(pb.authStore.isValid)
-            console.log("im here")
-            navigation.push('ViewAccount')
-            
-        }
-        catch(err){
-            console.log(err)
-            setLogininfo(()=>{
-                return ["",""]
-            })
-        }
+        navigation.navigate("ViewAccount")
     }
     const log = ()=>{
-        console.log(pb)
-        console.log(pb.authStore.isValid)
-        // console.log(pb.authStore.isValid)
+        console.log(fb)
     }
     return (
         <>

@@ -7,7 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import uuid from 'react-native-uuid';
 import TopBarStats from '../components/TopBarStats';
 import Categories from '../components/Categories';
-import {usePB} from './../components/ContextProvider'
+import {useFB} from './../components/ContextProvider'
 import { HeaderBackButton } from 'react-navigation-stack';
 // const PocketBase = require('pocketbase/cjs');
 
@@ -17,7 +17,6 @@ export default function ViewAccountScreen({route,navigation}) {
   const FB = useFB()
 
   const handleBack = () =>{ 
-    FB.authStore.clear()
     navigation.navigate('Home')
   }
   // const [testInfo, setTest] = useState();
@@ -97,12 +96,12 @@ export default function ViewAccountScreen({route,navigation}) {
   useEffect(() =>{
     console.log("use effect works")
   }, []);
-    useEffect( () => {
-      navigation.setOptions({
-            headerLeft: ()=>{
-              return <HeaderBackButton style = {{tontColor: '#746961', marginLeft: 0}} onPress = {()=>(handleBack())}/>
-            }
-        });
+  useEffect( () => {
+    navigation.setOptions({
+          headerLeft: ()=>{
+            return <HeaderBackButton style = {{tontColor: '#746961', marginLeft: 0}} onPress = {()=>(handleBack())}/>
+          }
+      });
   },[navigation])
 
   const addTransaction = () => {
@@ -241,8 +240,7 @@ export default function ViewAccountScreen({route,navigation}) {
                 <TopBarStats myBudget = {myBudget} totalSpent = {totalSpent} pixel80percent = {pixel80percent} handleTraModal = {handleTraModal} handleDepModal = {handleDepModal} handleBudgetModal = {handleBudgetModal}></TopBarStats>
                 <Categories remove={remove} pixel80percent = {pixel80percent}></Categories>
                 <Button title = "log info" onPress={()=>{ 
-                  log();
-                  // console.log(testInfo);
+                
                   }}/>
               </View>
             )
