@@ -1,37 +1,37 @@
 import React, {useContext,useState,useEffect} from "react";
-import PocketBase from 'pocketbase';
 import { ThemeContext } from "react-navigation";
 // import PocketBase from 'pocketbasea'
 
-const PBContext = React.createContext() 
-const PBUpdateContext = React.createContext() 
+const FBContext = React.createContext() 
+const FBUpdateContext = React.createContext() 
 
 export function usePB() { 
-    return useContext(PBContext)
+    return useContext(FBContext)
 }
 export function usePBUpdate() { 
-    return useContext(PBUpdateContext)
+    return useContext(FBUpdateContext)
 }
 
 export function ThemeProvider({children}) { 
-    useEffect(()=>{
-        pbUpdate(new PocketBase('https://edenrosales.loca.lt'))
-    },[])
+    // useEffect(()=>{
+    //     pbUpdate('')
+    // },[])
 //http://10.0.2.2:8090/
 //'http://127.0.0.1:8090'
-    const [pb,setPb] = useState()
-    const pbUpdate = (value) => {
-        setPb(()=>{
+    const [fb,setFb] = useState()
+    
+    const fbUpdate = (value) => {
+        setFb(()=>{
             return value
         })
     }
     // pbUpdate("this works")
     // console.log(pb)
     return(
-        <PBContext.Provider value = {pb}>
-            <PBUpdateContext.Provider value = {pbUpdate}>
+        <FBContext.Provider value = {fb}>
+            <FBUpdateContext.Provider value = {fbUpdate}>
                 {children}
-            </PBUpdateContext.Provider>
-        </PBContext.Provider>
+            </FBUpdateContext.Provider>
+        </FBContext.Provider>
     )
 }

@@ -7,7 +7,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import uuid from 'react-native-uuid';
 import TopBarStats from '../components/TopBarStats';
 import Categories from '../components/Categories';
-import PocketBase from 'pocketbase'
 import {usePB} from './../components/ContextProvider'
 import { HeaderBackButton } from 'react-navigation-stack';
 // const PocketBase = require('pocketbase/cjs');
@@ -15,16 +14,10 @@ import { HeaderBackButton } from 'react-navigation-stack';
 
 export default function ViewAccountScreen({route,navigation}) {
   // console.log(route.params);
-  const pb = usePB()
-  
-  // const authData = route.params.authData
-  const log = ()=>{
-    console.log(pb)
-    console.log(pb.authStore.isValid)
-  }
+  const FB = useFB()
 
   const handleBack = () =>{ 
-    pb.authStore.clear()
+    FB.authStore.clear()
     navigation.navigate('Home')
   }
   // const [testInfo, setTest] = useState();
