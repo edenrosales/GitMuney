@@ -9,19 +9,11 @@ import { HeaderBackButton } from 'react-navigation-stack';
 import WelcomeScreen from './screens/WelcomeScreen';
 import ViewAccountScreen from './screens/ViewAccountScreen';
 import { ThemeProvider } from './components/ContextProvider';
-import { usePB, usePBUpdate } from './components/ContextProvider';
 
 
 export default function App() {
-  const pb = usePB()
-  const pbUpdate = usePBUpdate()
   const Stack = createNativeStackNavigator();
-  const handleBack = ()=>{
-    pb.authStore.clear()
-    pbUpdate(pb)
 
-    
-  }
   return (
     // <Navigator/>
 

@@ -3,14 +3,13 @@ import React, { useEffect,useState } from 'react';
 import {Button, TextInput} from 'react-native';
 import { StyleSheet, Text, View, Image, TouchableOpacity, ImageBackground } from 'react-native';
 import PocketBase from 'pocketbase';
-import {usePB, usePBUpdate} from './../components/ContextProvider'
+import {usePB} from './../components/ContextProvider'
 function WelcomeScreen({ navigation }) {
     const pb = usePB() 
-    const updatePB = usePBUpdate() 
     const pressHandler = async () => {
         try{
 
-            updatePB(pb)
+            // updatePB(pb)
             navigation.push('ViewAccount');
         }
         catch(err){
@@ -21,11 +20,13 @@ function WelcomeScreen({ navigation }) {
 
     const loginAttempt = async () => {
         try{
+            console.log("trying")
             const authData = await pb.collection('users').authWithPassword(
-                logininfo[0],
-                logininfo[1],
+                'edenrosales',
+                '12345678',
             )
-            updatePB(pb)
+            console.log(pb.authStore.isValid)
+            console.log("im here")
             navigation.push('ViewAccount')
             
         }
@@ -35,6 +36,11 @@ function WelcomeScreen({ navigation }) {
                 return ["",""]
             })
         }
+    }
+    const log = ()=>{
+        console.log(pb)
+        console.log(pb.authStore.isValid)
+        // console.log(pb.authStore.isValid)
     }
     return (
         <>
@@ -46,6 +52,9 @@ function WelcomeScreen({ navigation }) {
             <Button title = "Submit" onPress = {()=>{
                 loginAttempt();
             }}/>
+            <Button title ="log info" onPress = {()=>{
+                log();
+            }} />
             {/* <TouchableOpacity
             style={styles.buttonView}
             onPress={pressHandler}>

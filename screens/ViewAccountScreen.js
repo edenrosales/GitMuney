@@ -18,17 +18,14 @@ export default function ViewAccountScreen({route,navigation}) {
   const pb = usePB()
   
   // const authData = route.params.authData
-  const testLogin = async () =>{
-    const authData = await pb.collection('users').authWithPassword(
-      'edenrosales',
-      '12345678',
-    )
+  const log = ()=>{
+    console.log(pb)
     console.log(pb.authStore.isValid)
   }
 
-  const testLogout = async () => {
+  const handleBack = () =>{ 
     pb.authStore.clear()
-    console.log(pb.authStore.isValid)
+    navigation.navigate('Home')
   }
   // const [testInfo, setTest] = useState();
 
@@ -105,7 +102,7 @@ export default function ViewAccountScreen({route,navigation}) {
   }
 
   useEffect(() =>{
-    // load();
+    console.log("use effect works")
   }, []);
     useEffect( () => {
       navigation.setOptions({
@@ -250,14 +247,10 @@ export default function ViewAccountScreen({route,navigation}) {
               <View>
                 <TopBarStats myBudget = {myBudget} totalSpent = {totalSpent} pixel80percent = {pixel80percent} handleTraModal = {handleTraModal} handleDepModal = {handleDepModal} handleBudgetModal = {handleBudgetModal}></TopBarStats>
                 <Categories remove={remove} pixel80percent = {pixel80percent}></Categories>
-                <Button title = "login test" onPress={()=>{ 
-                  testLogin();
+                <Button title = "log info" onPress={()=>{ 
+                  log();
                   // console.log(testInfo);
                   }}/>
-                <Button title ="logout test" onPress={()=>{
-                  testLogout();
-                  // console.log.log(pb.authStore.isValid);
-                }}/>
               </View>
             )
           }}

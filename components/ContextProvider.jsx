@@ -14,11 +14,12 @@ export function usePBUpdate() {
 }
 
 export function ThemeProvider({children}) { 
-    // useEffect((value)=>{
-    //     pbUpdate(value)
-    // },[])
-
-    const [pb,setPb] = useState(new PocketBase('http://10.0.2.2:8090/'))
+    useEffect(()=>{
+        pbUpdate(new PocketBase('https://edenrosales.loca.lt'))
+    },[])
+//http://10.0.2.2:8090/
+//'http://127.0.0.1:8090'
+    const [pb,setPb] = useState()
     const pbUpdate = (value) => {
         setPb(()=>{
             return value
