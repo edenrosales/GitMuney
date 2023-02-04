@@ -20,7 +20,7 @@ export default function App() {
     <NavigationContainer>
       <ThemeProvider>
         <Stack.Navigator initialRouteName='Home'>
-          <Stack.Screen name = "Home" component={WelcomeScreen} options ={{ gestureDirection:'horizontal', title: 'Home',headerTintColor: '#746961', headerStyle:{ backgroundColor: '#2d2e30'}}} />
+          <Stack.Screen name = "Home" component={WelcomeScreen} options ={{ headerShown: false,  gestureDirection:'horizontal' , title: 'Home',headerTintColor: '#746961', headerStyle:{ backgroundColor: '#2d2e30'}}} />
           <Stack.Screen name = "ViewAccount" component={ViewAccountScreen} options ={{ 
             gestureDirection:'horizontal', 
             title: 'Logout',

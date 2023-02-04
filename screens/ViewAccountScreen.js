@@ -9,17 +9,24 @@ import TopBarStats from '../components/TopBarStats';
 import Categories from '../components/Categories';
 import {useFB} from './../components/ContextProvider'
 import { HeaderBackButton } from 'react-navigation-stack';
+import { getAuth, signOut} from "firebase/auth"
 // const PocketBase = require('pocketbase/cjs');
 
 
 export default function ViewAccountScreen({route,navigation}) {
   // console.log(route.params);
-  const FB = useFB()
+  const auth = getAuth();
 
   const handleBack = () =>{ 
-    navigation.navigate('Home')
+    signOut(auth).then(()=>{
+      console.log("Signed out")
+      navigation.navigate('Home')
+    })
+    .catch((error) =>{
+      console.log(error)
+    })
   }
-  // const [testInfo, setTest] = useState();
+  const [testInfo, setTest] = useState();
 
   const [transactionInput, setTransactionInput] = useState(["", ""]); 
 
@@ -93,16 +100,13 @@ export default function ViewAccountScreen({route,navigation}) {
     }
   }
 
-  useEffect(() =>{
-    console.log("use effect works")
-  }, []);
   useEffect( () => {
     navigation.setOptions({
           headerLeft: ()=>{
             return <HeaderBackButton style = {{tontColor: '#746961', marginLeft: 0}} onPress = {()=>(handleBack())}/>
           }
       });
-  },[navigation])
+  },[])
 
   const addTransaction = () => {
     expenses.unshift({

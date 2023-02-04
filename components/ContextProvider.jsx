@@ -3,19 +3,31 @@ import { ThemeContext } from "react-navigation";
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
-// import PocketBase from 'pocketbasea'
+import { getAuth } from "firebase/auth";
 
 const FBContext = React.createContext() 
 const FBUpdateContext = React.createContext() 
 const DBContext = React.createContext()
+// const authContext = React.createContext()
+const userContext = React.createContext()
+const userUpdatecontext = React.createContext()
 
 export function useFB() { 
     return useContext(FBContext)
 }
-
 export function useDB() { 
     return useContext(DBContext)
 }
+// export function useAuth(){
+//     return useContext(authContext)
+// }
+export function useUser(){
+    return useContext(userContext);
+}
+export function useUserUpdate(){
+    return useContext(userUpdatecontext)
+}
+
 // export function useFBUpdate() { 
 //     return useContext(FBUpdateContext)
 // }
@@ -29,28 +41,27 @@ export function ThemeProvider({children}) {
         messagingSenderId: "847719830073",
         appId: "1:847719830073:web:66f41e044fb30ea21273e8",
         measurementId: "G-0CT8W111V2"
-      };
+    };
     const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);     
+    // const analytics = getAnalytics(app);     
     const database = getFirestore(app);   
-    // useEffect(()=>{
-    //     pbUpdate('')
-    // },[])
-//http://10.0.2.2:8090/
-//'http://127.0.0.1:8090'
+    const authentication = getAuth(app);
+
     const [fb,setFb] = useState(app)
     const [db,setDb] = useState(database)
+    // const [auth,setAuth] = useState(authentication)
+    const [user,setUser] = useState(null)
     
-    // pbUpdate("this works")
-    // console.log(pb)
     return(
         <FBContext.Provider value = {fb}>
             {/* <FBUpdateContext.Provider value = {setFb}> */}
             <DBContext.Provider value = {db}>
-                {children}
+                    <userContext.Provider value = {user}>
+                        <userUpdatecontext.Provider value = {setUser}>
+                            {children}  
+                        </userUpdatecontext.Provider>
+                    </userContext.Provider>
             </DBContext.Provider>
-            
-                
             {/* </FBUpdateContext.Provider> */}
         </FBContext.Provider>
     )
