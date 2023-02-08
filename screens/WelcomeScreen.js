@@ -9,16 +9,25 @@ function WelcomeScreen({ navigation }) {
     const fb = useFB() 
     const [logininfo, setLogininfo] = useState(["",""])
     const loginAttempt = () => { 
-        auth()
-        .signInWithEmailAndPassword(logininfo[0],logininfo[1])
-        .then(()=>{
-            console.log("logged in")
-            console.log(auth())
-        })
-        .catch(error=>{
+        if(!logininfo[0] || !logininfo[1]){
+            return 
+        }
+        try{
+            auth()
+            .signInWithEmailAndPassword(logininfo[0],logininfo[1])
+            .then(()=>{
+                navigation.navigate("ViewAccount")
+            })
+        }
+        catch(error){
             console.log(error)
+        }
+    }
+    const autosignin = ()=>{
+        auth().signInWithEmailAndPassword("eden@rosales5.com","12345678")
+        .then(()=>{
+            navigation.navigate("ViewAccount")
         })
-
     }
     return (
         <>
@@ -38,7 +47,7 @@ function WelcomeScreen({ navigation }) {
                     </TouchableOpacity>
                     {/*Code below is for auth with google or another service*/}
                     <TouchableOpacity style= {{marginTop: 20, paddingHorizontal: 25, paddingVertical: 10, borderRadius: 1, borderWidth: 1, borderRadius: 8}}>
-                    <Text style= {{marginHorizontal: 'auto', marginVertical: 'auto', fontWeight: '600'}}>Google</Text>
+                    <Text style= {{marginHorizontal: 'auto', marginVertical: 'auto', fontWeight: '600'}} onPress={()=>{autosignin()}}>Google</Text>
                 </TouchableOpacity>
                 </View>
                 <Button onPress={()=>{console.log(auth())}} title= "this works"/>

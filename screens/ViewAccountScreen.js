@@ -13,13 +13,7 @@ import { HeaderBackButton } from '@react-navigation/stack';
 
 export default function ViewAccountScreen({route,navigation}) {
   const handleBack = () =>{ 
-    signOut(auth).then(()=>{
-      console.log("Signed out")
-      navigation.navigate('Home')
-    })
-    .catch((error) =>{
-      console.log(error)
-    })
+    console.log("this works")
   }
   const [testInfo, setTest] = useState();
 
@@ -96,11 +90,19 @@ export default function ViewAccountScreen({route,navigation}) {
   }
 
   useEffect( () => {
-    navigation.setOptions({
-          headerLeft: ()=>{
-            return <HeaderBackButton style = {{tontColor: '#746961', marginLeft: 0}} onPress = {()=>(handleBack())}/>
-          }
-      });
+    try{
+
+      navigation.setOptions({
+            headerLeft: ()=>{
+              return <HeaderBackButton/>
+              // return <HeaderBackButton style = {{tontColor: '#746961', marginLeft: 0}} onPress = {()=>(handleBack())}/>
+              // return <Text>This works</Text>
+            }
+        });
+    }
+    catch(error){
+      console.log(error);
+    }
   },[])
 
   const addTransaction = () => {
