@@ -2,46 +2,24 @@ import React, { useEffect,useState, useRef } from 'react';
 import {Button, Pressable, TextInput, Animated, Dimensions} from 'react-native';
 import { StyleSheet, Text, View, Image, TouchableOpacity, ImageBackground } from 'react-native';
 import {useFB, useDB, useAuth, useUserUpdate, useUser} from './../components/ContextProvider'
+import auth from '@react-native-firebase/auth'
 
-function WelcomeScreen({ navigation }) { 
+function WelcomeScreen({ navigation }) {
+
     const fb = useFB() 
-
-    // const auth = getAuth()
-    
-    // const modalTransition = useRef(new Animated.Value(Dimensions.get('window').height)).current; r
-    // useEffect(()=>{
-    //     Animated.timing(modalTransition,{
-    //         toValue:0,
-    //         duration: 500, 
-    //         useNativeDriver: true,
-    //     }).start()
-    // },[])
     const [logininfo, setLogininfo] = useState(["",""])
+    const loginAttempt = () => { 
+        auth()
+        .signInWithEmailAndPassword(logininfo[0],logininfo[1])
+        .then(()=>{
+            console.log("logged in")
+            console.log(auth())
+        })
+        .catch(error=>{
+            console.log(error)
+        })
 
-    // const unsubscribe = onAuthStateChanged(auth,(user)=>{
-    //     if(user){
-    //         unsubscribe()
-    //         navigation.navigate("ViewAccount")
-    //     }
-    //     else{ 
-
-    //     }
-    // })
-
-    // const loginAttempt = async () => {
-    //     signInWithEmailAndPassword(auth,logininfo[0],logininfo[1])
-    //         .then((userCredential)=>{
-    //             setLogininfo(["",""])
-    //             navigation.navigate("ViewAccount")
-    //         })
-    //         .catch((error)=>{
-    //             const errorCode = error.code;
-    //             const errorMessage = error.message
-    //             console.log(errorCode)
-    //         });
-        
-    //     // navigation.navigate("ViewAccount")
-    // }
+    }
     return (
         <>
             <View style = {{position:'relative',display: 'flex', flexDirection:'column', width: '100%', height: '100%', alignItems:'center',justifyContent:'center'}}>
@@ -63,9 +41,10 @@ function WelcomeScreen({ navigation }) {
                     <Text style= {{marginHorizontal: 'auto', marginVertical: 'auto', fontWeight: '600'}}>Google</Text>
                 </TouchableOpacity>
                 </View>
+                <Button onPress={()=>{console.log(auth())}} title= "this works"/>
                 <View style = {{width: '100%',display: 'flex', flexDirection: 'row', justifyContent:'center',marginTop: 25}}>
                     <Text>Don't have an account?  </Text>
-                    <Text style = {{color: 'blue'}} onPress={()=>{console.log("this works")}}>Sign Up</Text>
+                    <Text style = {{color: 'blue'}} onPress={()=>{console.log(logininfo[0] + " " + logininfo[1])}}>Sign Up</Text>
                 </View>
             </View>
             {/* <Animated.View style = {{position:'absolute',

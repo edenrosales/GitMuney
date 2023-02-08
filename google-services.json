@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:847719830073:android:d76f3e63ff309dc81273e8",
+        "mobilesdk_app_id": "1:847719830073:android:50c50c40a73fd8fc1273e8",
         "android_client_info": {
-          "package_name": "com.financetracker"
+          "package_name": "com.edenrosales.FinanceTracker"
         }
       },
       "oauth_client": [
