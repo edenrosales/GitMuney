@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "847719830073",
+    "project_id": "gitmuney-3222e",
+    "storage_bucket": "gitmuney-3222e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:847719830073:android:d76f3e63ff309dc81273e8",
+        "android_client_info": {
+          "package_name": "com.financetracker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "847719830073-snge66gi4rifitllc9uvpklc6tnlahhc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAiKPUa4YFtiSAUXwTufFYSAGe4SQV0sgc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "847719830073-1ug3egv1ru60trfbmn96gb9e1sgtn004.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "847719830073-2cj4m6uap903cl0vdq7891idh9le6ogk.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.edenrosales.FinanceTracker"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

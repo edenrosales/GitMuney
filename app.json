@@ -19,14 +19,16 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.edenrosales.FinanceTracker"
+      "bundleIdentifier": "com.edenrosales.FinanceTracker",
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "package": "com.edenrosales.FinanceTracker"
+      "package": "com.edenrosales.FinanceTracker",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -35,6 +37,10 @@
       "eas": {
         "projectId": "52ed025e-3dac-42ee-903c-e6a834b0fdf5"
       }
-    }
+    },
+    "plugins": [
+      "@react-native-firebase/app",
+      "@react-native-firebase/auth"
+    ]
   }
 }
