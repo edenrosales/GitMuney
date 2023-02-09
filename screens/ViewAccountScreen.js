@@ -7,14 +7,20 @@ import uuid from 'react-native-uuid';
 import TopBarStats from '../components/TopBarStats';
 import Categories from '../components/Categories';
 import {useFB} from './../components/ContextProvider'
-import { HeaderBackButton } from '@react-navigation/stack';
-
+import  {HeaderBackButton}  from '@react-navigation/elements';
+import auth from '@react-native-firebase/auth'
 
 
 export default function ViewAccountScreen({route,navigation}) {
-  const handleBack = () =>{ 
-    console.log("this works")
+  const handleBack = () =>{ //make this function limited to 5 seconds 
+    navigation.navigate("Home")
+    // auth()
+    //   .signOut()
+    //   .then(()=> {
+    //     navigation.navigate("Home")
+    //   })
   }
+
   const [testInfo, setTest] = useState();
 
   const [transactionInput, setTransactionInput] = useState(["", ""]); 
@@ -90,19 +96,11 @@ export default function ViewAccountScreen({route,navigation}) {
   }
 
   useEffect( () => {
-    try{
-
-      navigation.setOptions({
-            headerLeft: ()=>{
-              return <HeaderBackButton/>
-              // return <HeaderBackButton style = {{tontColor: '#746961', marginLeft: 0}} onPress = {()=>(handleBack())}/>
-              // return <Text>This works</Text>
-            }
-        });
-    }
-    catch(error){
-      console.log(error);
-    }
+    navigation.setOptions({
+          headerLeft: ()=>{
+            return <HeaderBackButton style = {{tontColor: '#746961', marginLeft: 0}} onPress = {()=>(handleBack())}/>
+          }
+      });
   },[])
 
   const addTransaction = () => {
@@ -240,9 +238,6 @@ export default function ViewAccountScreen({route,navigation}) {
               <View>
                 <TopBarStats myBudget = {myBudget} totalSpent = {totalSpent} pixel80percent = {pixel80percent} handleTraModal = {handleTraModal} handleDepModal = {handleDepModal} handleBudgetModal = {handleBudgetModal}></TopBarStats>
                 <Categories remove={remove} pixel80percent = {pixel80percent}></Categories>
-                <Button title = "log info" onPress={()=>{ 
-                
-                  }}/>
               </View>
             )
           }}

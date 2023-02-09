@@ -5,6 +5,7 @@ import { createNativeStackNavigator} from '@react-navigation/native-stack';
 import WelcomeScreen from './screens/WelcomeScreen';
 import ViewAccountScreen from './screens/ViewAccountScreen';
 import { ThemeProvider } from './components/ContextProvider';
+// import { GoogleSignIn } from '@react-native-google-signin/google-signin'
 
 
 export default function App() {
