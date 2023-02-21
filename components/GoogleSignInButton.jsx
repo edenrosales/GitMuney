@@ -3,11 +3,12 @@ import { Button } from 'react-native';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import auth from '@react-native-firebase/auth'
 
-GoogleSignin.configure({
-    webClientId:  '847719830073-snge66gi4rifitllc9uvpklc6tnlahhc.apps.googleusercontent.com',
-  });
-export default function GoogleSignInButton(props){
+
+const GoogleSignInButton = (props) => {
     const onGoogleButtonPress = async () => {
+        GoogleSignin.configure({
+            webClientId:  '847719830073-snge66gi4rifitllc9uvpklc6tnlahhc.apps.googleusercontent.com',
+          });
         // Check if your device supports Google Play
         await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
         // Get the users ID token
@@ -22,7 +23,16 @@ export default function GoogleSignInButton(props){
     return (
         <Button
         title="Google Sign-In"
-        onPress={() => onGoogleButtonPress().then(() => console.log('Signed in with Google!'))}
+        onPress={() => {onGoogleButtonPress()
+        .then(()=>{
+            console.log("this works")
+        })
+        .catch((error)=>{
+            console.log(error)
+        })
+        }}
         />
     );
 }
+
+export default GoogleSignInButton;

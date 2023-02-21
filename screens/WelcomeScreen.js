@@ -2,9 +2,10 @@ import React, { useEffect,useState, useRef } from 'react';
 import {Button, Pressable, TextInput, Animated, Dimensions} from 'react-native';
 import { StyleSheet, Text, View, Image, TouchableOpacity, ImageBackground } from 'react-native';
 import {useFB, useDB, useAuth, useUserUpdate, useUser} from './../components/ContextProvider'
-import { GoogleSignin,statusCodes } from '@react-native-google-signin/google-signin';
+import { GoogleSignin,statusCodes, isSignedIn} from '@react-native-google-signin/google-signin';
 import auth from '@react-native-firebase/auth'
-import GoogleSignInButton  from './../components/GoogleSignInButton'
+import  GoogleSignInButton from './../components/GoogleSignInButton'
+
 // Somewhere in your code
 
 //847719830073-snge66gi4rifitllc9uvpklc6tnlahhc.apps.googleusercontent.com
@@ -17,41 +18,35 @@ function WelcomeScreen({ navigation }) {
         return subscriber; 
       }, []);
     const onAuthStateChanged = () =>{
-        console.log(auth().currentUser)
+        if(auth().currentUser){
+            setLogininfo(["",""])
+            navigation.navigate("ViewAccount")
+        }
+        else{ 
+            console.log("not signed in")
+        }
     }
-    // const signIn = async () => {
-    //     try {
-    //         await GoogleSignin.hasPlayServices();
-    //         const userInfo = await GoogleSignin.signIn();
-    //         this.setState({ userInfo });
-    //     } catch (error) {
-    //         if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-    //         // user cancelled the login flow
-    //         } else if (error.code === statusCodes.IN_PROGRESS) {
-    //         // operation (e.g. sign in) is in progress already
-    //         } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-    //         // play services not available or outdated
-    //         } else {
-    //         // some other error happened
-    //         }
-    //     }
-    // };
     const fb = useFB() 
 
+    const signOut = async () => {
+        auth().signOut().catch((error)=>{console.log(error)})
+        if (GoogleSignin.isSignedIn()){
+            await GoogleSignin.revokeAccess().catch((err)=>console.log(err))
+            await GoogleSignin.signOut().catch((err)=>console.log(err))
+            console.log("signed out")
+        }
+    }
 
     const [logininfo, setLogininfo] = useState(["",""])
     const loginAttempt = () => { 
         if(!logininfo[0] || !logininfo[1]){
             return 
         }
-        try{
-            auth()
-            .signInWithEmailAndPassword(logininfo[0],logininfo[1])
-        }
-        catch(error){
-            console.log(error)
-        }
+        auth()
+        .signInWithEmailAndPassword(logininfo[0],logininfo[1]).catch((err)=>{console.log(err)})
+
     }
+    
     const autosignin = ()=>{
         auth().signInWithEmailAndPassword("eden@rosales5.com","12345678")
         .then(()=>{
@@ -77,7 +72,8 @@ function WelcomeScreen({ navigation }) {
                         </TouchableOpacity>
                         <View style = {{marginTop: 20, paddingVertical: 10}}>
                             {/* <Button title = "Google Sign-Inaaa" onPress={() => signIn()}/> */}
-                            <GoogleSignInButton></GoogleSignInButton>
+                            <GoogleSignInButton/>
+                            {/* <Cus?tomButton/> */}
                         </View>
                 </View>
                 <View style = {{width: '100%',display: 'flex', flexDirection: 'row', justifyContent:'center',marginTop: 25}}>
@@ -85,8 +81,14 @@ function WelcomeScreen({ navigation }) {
                     {/* <Text style = {{color: 'blue'}} onPress={()=>{console.log(logininfo[0] + " " + logininfo[1])}}>Sign Up</Text> */}
                     <Text style = {{color: 'blue'}} onPress={()=>{auth().signInWithEmailAndPassword('eden@rosales5.com','12345678')}}>Sign Up</Text>
                 </View>
-                <Button title = "test this" onPress={()=>{console.log(auth().currentUser)}} />
-                <Button title = "sign out" onPress ={() =>{auth().signOut()}} />
+                {/* <Button title = "test this" onPress={()=>{
+                    
+                }
+                    if(GoogleSignin.isSignedIn()){
+                        console.log("google signed in ")
+                    }
+                } /> */}
+                {/* <Button title = "sign out" onPress ={() =>{signOut()}} /> */}
             </View>
             {/* <Animated.View style = {{position:'absolute',
             transform: [{translateY: modalTransition}]

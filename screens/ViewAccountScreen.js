@@ -9,10 +9,13 @@ import Categories from '../components/Categories';
 import {useFB} from './../components/ContextProvider'
 import  {HeaderBackButton}  from '@react-navigation/elements';
 import auth from '@react-native-firebase/auth'
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 
 export default function ViewAccountScreen({route,navigation}) {
-  const handleBack = () =>{ //make this function limited to 5 seconds 
+  const handleBack = async () =>{ //make this function limited to 5 seconds 
+    // await GoogleSignin.revokeAccess(0)
+    await signOut()
     navigation.navigate("Home")
     // auth()
     //   .signOut()
@@ -20,6 +23,14 @@ export default function ViewAccountScreen({route,navigation}) {
     //     navigation.navigate("Home")
     //   })
   }
+  const signOut = async () => {
+    auth().signOut().catch((error)=>{console.log(error)})
+    if (await GoogleSignin.isSignedIn()){
+        await GoogleSignin.revokeAccess().catch((err)=>console.log(err))
+        await GoogleSignin.signOut().catch((err)=>console.log(err))
+        console.log("signed out")
+    }
+  } 
 
   const [testInfo, setTest] = useState();
 
