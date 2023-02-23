@@ -9,7 +9,7 @@ export default class Categories extends Component {
       
         <View style={styles.categories}>
             {/* <Categories remove = {() => this.remove()}></Categories> */}
-            <TouchableOpacity onPress={() => this.remove()}>
+            <TouchableOpacity>
                 <Text style={[styles.recTran, {marginTop: 10}]}>Groceries</Text>
             </TouchableOpacity>
             <Progress.Bar progress={0.15} width={this.props.pixel80percent}

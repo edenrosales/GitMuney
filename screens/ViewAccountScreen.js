@@ -9,7 +9,9 @@ import Categories from '../components/Categories';
 import {useFB} from './../components/ContextProvider'
 import  {HeaderBackButton}  from '@react-navigation/elements';
 import auth from '@react-native-firebase/auth'
+import firestore from '@react-native-firebase/firestore'
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
+
 
 
 export default function ViewAccountScreen({route,navigation}) {
@@ -23,6 +25,7 @@ export default function ViewAccountScreen({route,navigation}) {
     //     navigation.navigate("Home")
     //   })
   }
+
   const signOut = async () => {
     auth().signOut().catch((error)=>{console.log(error)})
     if (await GoogleSignin.isSignedIn()){
@@ -48,63 +51,64 @@ export default function ViewAccountScreen({route,navigation}) {
 
   const [myBudget, setMyBudget] = useState(5000);
 
-  const [expenses, setExpenses] = useState([
-    { title: 'E-bike Jetson', amount: 276.13, date: '12/6/2022, 10:34:22', type: 'p', key: uuid.v4(), category: "Groceries" },
-    { title: 'iPhone 14', amount: 1311.98, date: '12/6/2022, 10:34:22', type: 'p', key: uuid.v4(), category: "Groceries" },
-    { title: '', amount: 40, date: '12/6/2022, 10:34:22', type: 'd', key: uuid.v4(), category: "Groceries" },
-    { title: '', amount: 50, date: '12/6/2022, 10:34:22', type: 'd', key: uuid.v4(), category: "Groceries" },
-    { title: 'Macbook Air', amount: 881.21, date: '12/6/2022, 10:34:22', type: 'p', key: uuid.v4(), category: "Groceries" },
-    { title: '', amount: 120, date: '12/6/2022, 10:34:22', type: 'd', key: uuid.v4(), category: "Groceries" },
-    { title: 'Subway', amount: 11.13, date: '12/6/2022, 10:34:22', type: 'p', key: uuid.v4(), category: "Groceries" },
-    { title: 'El Pollo Loco', amount: 7.66, date: '12/6/2022, 10:34:22', type: 'p', key: uuid.v4(), category: "Rent" },
-    { title: '', amount: 50, date: '12/6/2022, 10:34:22', type: 'd', key: uuid.v4(), category: "Groceries" },
-  ]);
+  const [expenses, setExpenses] = useState();
 
-  const remove = async() => {
-    try{
-      await AsyncStorage.removeItem("MyList");
-      await AsyncStorage.removeItem("TotalSpent");
-      await AsyncStorage.removeItem("MyBudget");
-    } catch(error){
-      alert(error);
-    } finally {
-      setExpenses(expenses);
-      setTotalSpent(totalSpent);
-      setMyBudget(myBudget);
-    }
-  }
+  useEffect(()=>{
+    let transactions 
+    let expenses = []
+    let totalSpent = 0
+    firestore().collection('users').doc(auth().currentUser.uid).collection('transactions').get()
+    .then(result => result.forEach((entry)=>{
+      expenses.push({id: entry.id, ...entry.data(), date: entry.data().date.toDate()})
+      totalSpent += entry.data().cost
+    }))
+    .catch(err=>console.log(err))
+    .finally(()=>{
+      setExpenses(expenses)
+      setTotalSpent(totalSpent)
+      // console.log(expenses)
+    })
+    firestore().collection('users').doc(auth().currentUser.uid).get()
+    .then((result)=>result.data())
+    .then((result)=>{
+      setMyBudget(result.budget)
+      setCategories(result.categories)
+    })
+    .catch(err=>console.log(err))
+    
+  },[])
 
-  const save = async() => {
-    try{
-      await AsyncStorage.setItem("MyList", JSON.stringify(expenses));
-      await AsyncStorage.setItem("TotalSpent", totalSpent.toString());
-      await AsyncStorage.setItem("MyBudget", myBudget.toString());
-    } catch(error){
-      alert(error);
-    }
-  }
+  // const save = async() => {
+  //   try{
+  //     await AsyncStorage.setItem("MyList", JSON.stringify(expenses));
+  //     await AsyncStorage.setItem("TotalSpent", totalSpent.toString());
+  //     await AsyncStorage.setItem("MyBudget", myBudget.toString());
+  //   } catch(error){
+  //     alert(error);
+  //   }
+  // }
 
-  const load = async() => {
-    try{
-      let expenses = await AsyncStorage.getItem("MyList");
-      let totalSpent = await AsyncStorage.getItem("TotalSpent");
-      let fTotalSpent = parseFloat(totalSpent);
-      let myBudget = await AsyncStorage.getItem("MyBudget");
-      let intMyBudget = parseInt(myBudget);
+  // const load = async() => {
+  //   try{
+  //     let expenses = await AsyncStorage.getItem("MyList");
+  //     let totalSpent = await AsyncStorage.getItem("TotalSpent");
+  //     let fTotalSpent = parseFloat(totalSpent);
+  //     let myBudget = await AsyncStorage.getItem("MyBudget");
+  //     let intMyBudget = parseInt(myBudget);
 
-      if(expenses !== null){
-        setExpenses(JSON.parse(expenses));
-      }
-      if(totalSpent !== null){
-        setTotalSpent(fTotalSpent);
-      }
-      if(myBudget !== null){
-        setMyBudget(intMyBudget);
-      }
-    } catch(error){
-      alert(error);
-    }
-  }
+  //     if(expenses !== null){
+  //       setExpenses(JSON.parse(expenses));
+  //     }
+  //     if(totalSpent !== null){
+  //       setTotalSpent(fTotalSpent);
+  //     }
+  //     if(myBudget !== null){
+  //       setMyBudget(intMyBudget);
+  //     }
+  //   } catch(error){
+  //     alert(error);
+  //   }
+  // }
 
   useEffect( () => {
     navigation.setOptions({
@@ -248,22 +252,23 @@ export default function ViewAccountScreen({route,navigation}) {
             return(
               <View>
                 <TopBarStats myBudget = {myBudget} totalSpent = {totalSpent} pixel80percent = {pixel80percent} handleTraModal = {handleTraModal} handleDepModal = {handleDepModal} handleBudgetModal = {handleBudgetModal}></TopBarStats>
-                <Categories remove={remove} pixel80percent = {pixel80percent}></Categories>
+                <Categories pixel80percent = {pixel80percent}></Categories>
               </View>
             )
           }}
           style={styles.fStyle}
           data={expenses}
           renderItem={({item}) => (
+            // <Text>{item.transactionName}</Text>
             <View style={styles.topGroup}>
               <View style={styles.tranGroup}>
                 <Text style={styles.item}>
-                  {item.title == '' ? 'Deposit' : item.title}
+                  {item.transactionName ? item.transactionName :'Deposit' }
                 </Text>
-                <Text style={[styles.item, {color:(item.type == 'p') ? 'tomato' : 'greenyellow'}]}>${item.amount}</Text>
+                <Text style={[styles.item, {color:(item.isWithdrawl == 'p') ? 'tomato' : 'greenyellow'}]}>${item.cost}</Text>
               </View>
               <Text style={{color: '#999', fontSize: 20, paddingLeft: 10}}>
-                {item.date}
+                {item.date.toDateString()}
               </Text>
             </View>
           )}
