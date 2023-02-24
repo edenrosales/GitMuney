@@ -6,7 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import uuid from 'react-native-uuid';
 import TopBarStats from '../components/TopBarStats';
 import Categories from '../components/Categories';
-import {useFB} from './../components/ContextProvider'
+import {useFB} from '../components/ContextProvider'
 import  {HeaderBackButton}  from '@react-navigation/elements';
 import auth from '@react-native-firebase/auth'
 import firestore from '@react-native-firebase/firestore'
@@ -39,11 +39,11 @@ export default function ViewAccountScreen({route,navigation}) {
 
   const [transactionInput, setTransactionInput] = useState(["", ""]); 
 
-  const [totalSpent, setTotalSpent] = useState(2234.56);
+  const [totalSpent, setTotalSpent] = useState(0);
 
   const [depositInput, setDepositInput] = useState("");
 
-  const [categories,setCategories] = useState(["Groceries","Rent","Gas"]);
+  const [categories,setCategories] = useState();
 
   const [myBudgetInput, setMyBudgetInput] = useState("");
 
@@ -57,24 +57,54 @@ export default function ViewAccountScreen({route,navigation}) {
     let transactions 
     let expenses = []
     let totalSpent = 0
-    firestore().collection('users').doc(auth().currentUser.uid).collection('transactions').get()
-    .then(result => result.forEach((entry)=>{
-      expenses.push({id: entry.id, ...entry.data(), date: entry.data().date.toDate()})
-      totalSpent += entry.data().cost
-    }))
-    .catch(err=>console.log(err))
-    .finally(()=>{
-      setExpenses(expenses)
-      setTotalSpent(totalSpent)
-      // console.log(expenses)
-    })
+    let categories = []
     firestore().collection('users').doc(auth().currentUser.uid).get()
     .then((result)=>result.data())
     .then((result)=>{
       setMyBudget(result.budget)
-      setCategories(result.categories)
+      result.categories.forEach((category)=>{
+        categories.push({name:category, total: 0})
+      })
+      setCategories(categories)
     })
-    .catch(err=>console.log(err))
+    .finally(()=>{
+      // console.log(categories)
+      firestore().collection('users').doc(auth().currentUser.uid).collection('transactions').get()
+      .then(result => result.forEach((entry)=>{
+        expenses.push({id: entry.id, ...entry.data(), date: entry.data().date.toDate()})
+        totalSpent += entry.data().cost
+        setCategories( (previous)=>{
+          return previous.map(item=>{
+            if(item.name === entry.data().category){
+              // console.log(entry.data().cost + item.total)
+              const returning =  {
+                ...item,
+                total: entry.data().cost + item.total
+              };
+              // console.log(returning)
+              return returning
+            }
+            else{
+              return item
+            }
+          });
+        })
+      }))
+      .catch(err=>console.log(err))
+      .finally(()=>{
+        setExpenses(expenses)
+        setTotalSpent(totalSpent)
+        console.log(categories)
+      })
+      
+    })
+    .catch((err)=>console.log(err))
+
+
+
+
+
+
     
   },[])
 

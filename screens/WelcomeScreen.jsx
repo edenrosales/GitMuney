@@ -1,10 +1,10 @@
 import React, { useEffect,useState, useRef } from 'react';
 import {Button, Pressable, TextInput, Animated, Dimensions} from 'react-native';
 import { StyleSheet, Text, View, Image, TouchableOpacity, ImageBackground } from 'react-native';
-import {useFB, useDB, useAuth, useUserUpdate, useUser} from './../components/ContextProvider'
+import {useFB, useDB, useAuth, useUserUpdate, useUser} from '../components/ContextProvider'
 import { GoogleSignin,statusCodes, isSignedIn} from '@react-native-google-signin/google-signin';
 import auth from '@react-native-firebase/auth'
-import  GoogleSignInButton from './../components/GoogleSignInButton'
+import  GoogleSignInButton from '../components/GoogleSignInButton'
 
 // Somewhere in your code
 
