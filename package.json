@@ -21,6 +21,7 @@
     "expo": "~47.0.12",
     "expo-dev-client": "~2.0.1",
     "expo-status-bar": "~1.4.2",
+    "heap-js": "^2.2.0",
     "react": "18.1.0",
     "react-native": "0.70.5",
     "react-native-gesture-handler": "~2.8.0",

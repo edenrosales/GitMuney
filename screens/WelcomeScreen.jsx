@@ -38,7 +38,7 @@ function WelcomeScreen({ navigation }) {
     }
 
     const [logininfo, setLogininfo] = useState(["",""])
-    const loginAttempt = () => { 
+    const loginAttempt = () => {
         if(!logininfo[0] || !logininfo[1]){
             return 
         }

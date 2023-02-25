@@ -1,6 +1,6 @@
 import 'react-native-gesture-handler';
-import React, {useState, useEffect} from 'react';
-import { StyleSheet, Text, View, FlatList, Button, TextInput, Input, StatusBar, Dimensions, TouchableOpacity} from 'react-native';
+import React, {useState, useEffect, Component} from 'react';
+import { StyleSheet, Text, View, FlatList, Button, TextInput, Input, StatusBar, Dimensions, TouchableOpacity, SectionList} from 'react-native';
 import Modal from "react-native-modal";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import uuid from 'react-native-uuid';
@@ -11,7 +11,7 @@ import  {HeaderBackButton}  from '@react-navigation/elements';
 import auth from '@react-native-firebase/auth'
 import firestore from '@react-native-firebase/firestore'
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
-
+import * as Progress from 'react-native-progress';
 
 
 export default function ViewAccountScreen({route,navigation}) {
@@ -43,7 +43,7 @@ export default function ViewAccountScreen({route,navigation}) {
 
   const [depositInput, setDepositInput] = useState("");
 
-  const [categories,setCategories] = useState();
+  const [categories,setCategories] = useState([""]);
 
   const [myBudgetInput, setMyBudgetInput] = useState("");
 
@@ -54,98 +54,79 @@ export default function ViewAccountScreen({route,navigation}) {
   const [expenses, setExpenses] = useState();
 
   useEffect(()=>{
+    navigation.setOptions({
+      headerLeft: ()=>{
+        return <HeaderBackButton style = {{tontColor: '#746961', marginLeft: 0}} onPress = {()=>(handleBack())}/>
+      }
+    });
     let transactions 
     let expenses = []
     let totalSpent = 0
-    let categories = []
+    let categoriesArray = []
     firestore().collection('users').doc(auth().currentUser.uid).get()
     .then((result)=>result.data())
     .then((result)=>{
       setMyBudget(result.budget)
       result.categories.forEach((category)=>{
-        categories.push({name:category, total: 0})
+        categoriesArray.push({name:category, total: 0})
       })
-      setCategories(categories)
+
+
     })
     .finally(()=>{
-      // console.log(categories)
+      
       firestore().collection('users').doc(auth().currentUser.uid).collection('transactions').get()
-      .then(result => result.forEach((entry)=>{
+      .then(result => {
+        result.forEach((entry)=>{
         expenses.push({id: entry.id, ...entry.data(), date: entry.data().date.toDate()})
         totalSpent += entry.data().cost
-        setCategories( (previous)=>{
-          return previous.map(item=>{
-            if(item.name === entry.data().category){
-              // console.log(entry.data().cost + item.total)
-              const returning =  {
-                ...item,
-                total: entry.data().cost + item.total
-              };
-              // console.log(returning)
-              return returning
-            }
-            else{
-              return item
-            }
-          });
+        categoriesArray = categoriesArray.map(item=>{
+          if(item.name === entry.data().category){
+            // console.log(entry.data().cost + item.total)
+            const returning =  {
+              ...item,
+              total: entry.data().cost + item.total
+            };
+            return returning
+          }
+          else{
+            return item
+          }
         })
-      }))
+      })
+      setCategories(categoriesArray.sort(
+        (value1,value2)=>{
+          if(value1.total > value2.total){
+            return -1
+          }
+          else if(value1.total < value2.total){
+            return 1
+          } 
+          else {
+            return 0 
+          }
+        }
+      ))
+
+    })
       .catch(err=>console.log(err))
       .finally(()=>{
         setExpenses(expenses)
         setTotalSpent(totalSpent)
-        console.log(categories)
+        // console.log(categories)
       })
       
     })
-    .catch((err)=>console.log(err))
-
-
-
-
-
-
-    
+    .catch((err)=>console.log(err))  
   },[])
 
-  // const save = async() => {
-  //   try{
-  //     await AsyncStorage.setItem("MyList", JSON.stringify(expenses));
-  //     await AsyncStorage.setItem("TotalSpent", totalSpent.toString());
-  //     await AsyncStorage.setItem("MyBudget", myBudget.toString());
-  //   } catch(error){
-  //     alert(error);
-  //   }
-  // }
-
-  // const load = async() => {
-  //   try{
-  //     let expenses = await AsyncStorage.getItem("MyList");
-  //     let totalSpent = await AsyncStorage.getItem("TotalSpent");
-  //     let fTotalSpent = parseFloat(totalSpent);
-  //     let myBudget = await AsyncStorage.getItem("MyBudget");
-  //     let intMyBudget = parseInt(myBudget);
-
-  //     if(expenses !== null){
-  //       setExpenses(JSON.parse(expenses));
-  //     }
-  //     if(totalSpent !== null){
-  //       setTotalSpent(fTotalSpent);
-  //     }
-  //     if(myBudget !== null){
-  //       setMyBudget(intMyBudget);
-  //     }
-  //   } catch(error){
-  //     alert(error);
-  //   }
-  // }
+  
 
   useEffect( () => {
-    navigation.setOptions({
-          headerLeft: ()=>{
-            return <HeaderBackButton style = {{tontColor: '#746961', marginLeft: 0}} onPress = {()=>(handleBack())}/>
-          }
-      });
+    console.log(categories)
+  },[categories])
+  useEffect( () => {
+    console.log("component mounted")
   },[])
 
   const addTransaction = () => {
@@ -276,33 +257,44 @@ export default function ViewAccountScreen({route,navigation}) {
             </View>
           </View>
         </Modal>
-
-        <FlatList
-          ListHeaderComponent={() => {
-            return(
-              <View>
-                <TopBarStats myBudget = {myBudget} totalSpent = {totalSpent} pixel80percent = {pixel80percent} handleTraModal = {handleTraModal} handleDepModal = {handleDepModal} handleBudgetModal = {handleBudgetModal}></TopBarStats>
-                <Categories pixel80percent = {pixel80percent}></Categories>
-              </View>
-            )
-          }}
-          style={styles.fStyle}
-          data={expenses}
-          renderItem={({item}) => (
-            // <Text>{item.transactionName}</Text>
-            <View style={styles.topGroup}>
-              <View style={styles.tranGroup}>
-                <Text style={styles.item}>
-                  {item.transactionName ? item.transactionName :'Deposit' }
-                </Text>
-                <Text style={[styles.item, {color:(item.isWithdrawl == 'p') ? 'tomato' : 'greenyellow'}]}>${item.cost}</Text>
-              </View>
-              <Text style={{color: '#999', fontSize: 20, paddingLeft: 10}}>
-                {item.date.toDateString()}
-              </Text>
-            </View>
-          )}
-        />
+        <View styles={{flex:1}}>
+          <SectionList
+            sections={[
+              {
+                // title: "categories", 
+                data: categories,
+                renderItem:(({item})=>{
+                  return(
+                    <View>
+                      <Text style = {[styles.recTran, {marginTop:10}]}>{item.name}</Text>
+                      {/* <TouchableOpacity></TouchableOpacity> */}
+                      {/* <Progress.Bar progress={item.total/myBudget} width ={pixel80percent}
+                        borderRadius = {10} height={20} color = {'tomato'} unfilledColor = {'#d9d9d9'} borderWidth = {0}/> */}
+                    </View>
+                  )
+                }),
+                //adding the keyextractors causes issues i guess
+              },
+              {
+                data: expenses,
+                renderItem: (({item}) => (
+                  // <Text>{item.transactionName}</Text>
+                  <View style={styles.topGroup}>
+                    <View style={styles.tranGroup}>
+                      <Text style={styles.item}>
+                        {item.transactionName ? item.transactionName :'Deposit' }
+                      </Text>
+                      <Text style={[styles.item, {color:(item.isWithdrawl == 'p') ? 'tomato' : 'greenyellow'}]}>${item.cost}</Text>
+                    </View>
+                    <Text style={{color: '#999', fontSize: 20, paddingLeft: 10}}>
+                      {item.date.toDateString()}
+                    </Text>
+                  </View>
+                ))
+              }
+            ]}
+          />
+        </View>
       </View>
     );
 }
