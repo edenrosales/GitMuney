@@ -34,7 +34,7 @@ export default function ViewAccountScreen({ route, navigation }) {
     // auth()
     //   .signOut()
     //   .then(()=> {
-    //     navigation.navigate("Home")
+    //     navigation.navigate("Home").
     //   })
   };
 
@@ -69,6 +69,17 @@ export default function ViewAccountScreen({ route, navigation }) {
 
   const [expenses, setExpenses] = useState();
 
+  const [isTraModalVisible, setIsTraModalVisible] = useState(false);
+
+  const handleTraModal = () => setIsTraModalVisible(() => !isTraModalVisible);
+
+  const [isDepModalVisible, setIsDepModalVisible] = useState(false);
+
+  const handleDepModal = () => setIsDepModalVisible(() => !isDepModalVisible);
+
+  const [isBudgetModalVisible, setIsBudgetModalVisible] = useState(false);
+
+  const [more, setMore] = useState(false);
   useEffect(() => {
     navigation.setOptions({
       headerLeft: () => {
@@ -122,17 +133,7 @@ export default function ViewAccountScreen({ route, navigation }) {
                 }
               });
             });
-            setCategories(
-              categoriesArray.sort((value1, value2) => {
-                if (value1.total > value2.total) {
-                  return -1;
-                } else if (value1.total < value2.total) {
-                  return 1;
-                } else {
-                  return 0;
-                }
-              })
-            );
+            setCategories(categoriesArray);
           })
           .catch((err) => console.log(err))
           .finally(() => {
@@ -183,15 +184,9 @@ export default function ViewAccountScreen({ route, navigation }) {
     setMyBudgetInput(myBudget);
   };
 
-  const [isTraModalVisible, setIsTraModalVisible] = useState(false);
-
-  const handleTraModal = () => setIsTraModalVisible(() => !isTraModalVisible);
-
-  const [isDepModalVisible, setIsDepModalVisible] = useState(false);
-
-  const handleDepModal = () => setIsDepModalVisible(() => !isDepModalVisible);
-
-  const [isBudgetModalVisible, setIsBudgetModalVisible] = useState(false);
+  const handleMore = () => {
+    setMore((prev) => !prev);
+  };
 
   const handleBudgetModal = () =>
     setIsBudgetModalVisible(() => !isBudgetModalVisible);
@@ -328,7 +323,7 @@ export default function ViewAccountScreen({ route, navigation }) {
             sections={[
               {
                 title: "categories",
-                data: categories,
+                data: more ? categories.slice(0, 3) : categories,
                 renderItem: ({ item }) => {
                   return (
                     <View style={{}}>
@@ -393,18 +388,40 @@ export default function ViewAccountScreen({ route, navigation }) {
                 ),
               },
             ]}
-            renderSectionHeader={({ section: { title } }) => {
-              if (title == "expenses") {
+            renderSectionFooter={({ section: { title } }) => {
+              if (title == "categories") {
                 return (
-                  <View style={{ paddingTop: 10 }}>
-                    <Text style={{ fontSize: 28, color: "white" }}>
-                      Transactions
-                    </Text>
+                  <View>
+                    <TouchableOpacity onPress={handleMore}>
+                      <Text
+                        style={{
+                          color: "white",
+                          fontSize: 15,
+                          paddingVertical: 10,
+                          paddingLeft: 10,
+                        }}
+                      >
+                        Show more...
+                      </Text>
+                    </TouchableOpacity>
                   </View>
                 );
               } else {
                 return null;
               }
+            }}
+            renderSectionHeader={({ section: { title } }) => {
+              return (
+                <View
+                  style={{
+                    paddingTop: 10,
+                  }}
+                >
+                  <Text style={{ fontSize: 35, color: "white" }}>
+                    {title == "categories" ? "Categories" : "Transactions"}
+                  </Text>
+                </View>
+              );
             }}
           />
         )}
