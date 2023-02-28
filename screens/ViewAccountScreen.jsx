@@ -24,6 +24,7 @@ import auth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import * as Progress from "react-native-progress";
+import { Picker } from "@react-native-picker/picker";
 
 export default function ViewAccountScreen({ route, navigation }) {
   const handleBack = async () => {
@@ -59,7 +60,9 @@ export default function ViewAccountScreen({ route, navigation }) {
 
   const [depositInput, setDepositInput] = useState("");
 
-  const [categories, setCategories] = useState([""]);
+  const [categories, setCategories] = useState();
+
+  const [categoriesSet, setCategoriesSet] = useState(new Set());
 
   const [myBudgetInput, setMyBudgetInput] = useState("");
 
@@ -80,6 +83,10 @@ export default function ViewAccountScreen({ route, navigation }) {
   const [isBudgetModalVisible, setIsBudgetModalVisible] = useState(false);
 
   const [more, setMore] = useState(false);
+
+  // useEffect(() => {
+  //   console.log(categories);
+  // }, [categories]);
   useEffect(() => {
     navigation.setOptions({
       headerLeft: () => {
@@ -91,65 +98,75 @@ export default function ViewAccountScreen({ route, navigation }) {
         );
       },
     });
-    let transactions;
-    let expenses = [];
-    let totalSpent = 0;
-    let categoriesArray = [];
-    firestore()
-      .collection("users")
-      .doc(auth().currentUser.uid)
-      .get()
-      .then((result) => result.data())
-      .then((result) => {
-        setMyBudget(result.budget);
-        result.categories.forEach((category) => {
-          categoriesArray.push({ name: category, total: 0 });
-        });
-      })
-      .finally(() => {
-        firestore()
-          .collection("users")
-          .doc(auth().currentUser.uid)
-          .collection("transactions")
-          .get()
-          .then((result) => {
-            result.forEach((entry) => {
-              expenses.push({
-                id: entry.id,
-                ...entry.data(),
-                date: entry.data().date.toDate(),
-              });
-              totalSpent += entry.data().cost;
-              categoriesArray = categoriesArray.map((item) => {
-                if (item.name === entry.data().category) {
-                  // console.log(entry.data().cost + item.total)
-                  const returning = {
-                    ...item,
-                    total: entry.data().cost + item.total,
-                  };
-                  return returning;
-                } else {
-                  return item;
-                }
-              });
-            });
-            setCategories(categoriesArray);
-          })
-          .catch((err) => console.log(err))
-          .finally(() => {
-            setExpenses(expenses);
-            setTotalSpent(totalSpent);
-            // console.log(categories)
-          });
-      })
-      .catch((err) => console.log(err));
-  }, []);
 
-  useEffect(() => {
-    console.log(categories);
-  }, [categories]);
-  useEffect(() => {
-    console.log("component mounted");
+    let newCategories = new Map();
+    let transactions = [];
+    let totalMoneySpentDuringPeriod = 0;
+    (async () => {
+      await firestore()
+        .collection("users")
+        .doc(auth().currentUser.uid)
+        .get()
+        .then((result) => result.data())
+        .then((result) => {
+          // console.log(result);
+          setMyBudget(result.budget);
+          result.categories.forEach((value) => {
+            if (!newCategories.has(value)) {
+              newCategories.set(value, {
+                name: value,
+                total: 0,
+              });
+            }
+          });
+          // console.log(newCategories);
+          // console.log("=========");
+          // setMyBudget(result.budget);
+          // setCategories(newCategories);
+        })
+        .catch((err) => console.log(err));
+
+      await firestore()
+        .collection("users")
+        .doc(auth().currentUser.uid)
+        .collection("transactions")
+        .get()
+        .then((result) => {
+          // console.log(result)
+          result.forEach((document) => {
+            let data = document.data();
+            let id = document.id;
+            // console.log(data);
+            totalMoneySpentDuringPeriod += data.cost;
+            if (newCategories.has(data.category)) {
+              let currentEntry = newCategories.get(data.category);
+              // console.log(currentEntry);
+              currentEntry = {
+                ...currentEntry,
+                total: currentEntry.total + data.cost,
+              };
+              newCategories.set(data.category, currentEntry);
+            } else {
+              //if the category is not set up yet
+              newCategories.set(data.category, {
+                name: data.category,
+                total: data.cost,
+              });
+            }
+            transactions.push({
+              ...data,
+              id: id,
+              date: data.date.toDate(),
+            });
+            // console.log(transactions);
+          });
+        })
+        .catch((err) => console.log(err));
+
+      setCategories([...newCategories.values()]);
+      setExpenses(transactions);
+      setTotalSpent(totalMoneySpentDuringPeriod);
+    })();
   }, []);
 
   const addTransaction = () => {
@@ -223,6 +240,11 @@ export default function ViewAccountScreen({ route, navigation }) {
                 style={styles.input}
                 placeholder="e.g $13.45"
               />
+              <Text style={styles.modalText}>Category</Text>
+
+              <Picker
+                selectedValue={categories.map((values) => values.name)}
+              ></Picker>
             </View>
             <View style={{ flexDirection: "row" }}>
               <Button
@@ -323,7 +345,7 @@ export default function ViewAccountScreen({ route, navigation }) {
             sections={[
               {
                 title: "categories",
-                data: more ? categories.slice(0, 3) : categories,
+                data: more ? categories : categories.slice(0, 3),
                 renderItem: ({ item }) => {
                   return (
                     <View style={{}}>
@@ -383,6 +405,7 @@ export default function ViewAccountScreen({ route, navigation }) {
                       style={{ color: "#999", fontSize: 20, paddingLeft: 10 }}
                     >
                       {item.date.toDateString()}
+                      {/* {console.log(item.date)} */}
                     </Text>
                   </View>
                 ),

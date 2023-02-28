@@ -14,9 +14,7 @@
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.edenrosales.FinanceTracker",
@@ -28,6 +26,7 @@
         "backgroundColor": "#FFFFFF"
       },
       "package": "com.edenrosales.FinanceTracker",
+      "versionCode": 1,
       "googleServicesFile": "./google-services.json"
     },
     "web": {
