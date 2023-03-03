@@ -84,9 +84,109 @@ export default function ViewAccountScreen({ route, navigation }) {
 
   const [more, setMore] = useState(false);
 
+  const [pickerValue, setPickerValue] = useState("Select a Value");
+
   // useEffect(() => {
   //   console.log(categories);
   // }, [categories]);
+
+  useEffect(() => {
+    let newCategories = categories !== undefined ? categories : [];
+    let transactions = [];
+    let totalMoneySpentDuringPeriod = 0;
+    firestore()
+      .collection("users")
+      .doc(auth().currentUser.uid)
+      .collection("transactions")
+      .get()
+      .then((result) => {
+        // console.log(result)
+        result.forEach((document) => {
+          let data = document.data();
+          let id = document.id;
+          // console.log(data);
+          totalMoneySpentDuringPeriod += data.cost;
+          let found = false;
+          newCategories.forEach(({ item }) => {
+            if (item.name === data.category) {
+              item = {
+                ...item,
+                total: item.total + data.cost,
+              };
+              found = true;
+            }
+          });
+          if (!found) {
+            newCategories.push({
+              name: data.category,
+              total: 0,
+            });
+          }
+          if (newCategories.has(data.category)) {
+            let currentEntry = newCategories.get(data.category);
+            // console.log(currentEntry);
+            currentEntry = {
+              ...currentEntry,
+              total: currentEntry.total + data.cost,
+            };
+            newCategories.set(data.category, currentEntry);
+          } else {
+            //if the category is not set up yet
+            newCategories.set(data.category, {
+              name: data.category,
+              total: data.cost,
+            });
+          }
+          transactions.push({
+            ...data,
+            id: id,
+            date: data.date.toDate(),
+          });
+          // console.log(transactions);
+        });
+      })
+      .finally(() => {
+        setCategories(newCategories);
+        setExpenses(transactions);
+        setTotalSpent(totalMoneySpentDuringPeriod);
+      })
+      .catch((err) => console.log(err));
+  }, []);
+
+  useEffect(() => {
+    let newCategories = categories !== undefined ? categories : [];
+    firestore()
+      .collection("users")
+      .doc(auth().currentUser.uid)
+      .get()
+      .then((result) => result.data())
+      .then((result) => {
+        setMyBudget(result.budget);
+
+        result.categories.forEach((value) => {
+          let found = false;
+          if (newCategories !== undefined) {
+            newCategories.forEach(({ item }) => {
+              if (item.name == value) {
+                found = true;
+                return;
+              }
+            });
+          }
+          if (!found) {
+            newCategories.push({
+              name: value,
+              total: 0,
+            });
+          }
+        });
+      })
+      .finally(() => {
+        setCategories(newCategories);
+      })
+      .catch((err) => console.log(err));
+  }, []);
+
   useEffect(() => {
     navigation.setOptions({
       headerLeft: () => {
@@ -98,75 +198,6 @@ export default function ViewAccountScreen({ route, navigation }) {
         );
       },
     });
-
-    let newCategories = new Map();
-    let transactions = [];
-    let totalMoneySpentDuringPeriod = 0;
-    (async () => {
-      await firestore()
-        .collection("users")
-        .doc(auth().currentUser.uid)
-        .get()
-        .then((result) => result.data())
-        .then((result) => {
-          // console.log(result);
-          setMyBudget(result.budget);
-          result.categories.forEach((value) => {
-            if (!newCategories.has(value)) {
-              newCategories.set(value, {
-                name: value,
-                total: 0,
-              });
-            }
-          });
-          // console.log(newCategories);
-          // console.log("=========");
-          // setMyBudget(result.budget);
-          // setCategories(newCategories);
-        })
-        .catch((err) => console.log(err));
-
-      await firestore()
-        .collection("users")
-        .doc(auth().currentUser.uid)
-        .collection("transactions")
-        .get()
-        .then((result) => {
-          // console.log(result)
-          result.forEach((document) => {
-            let data = document.data();
-            let id = document.id;
-            // console.log(data);
-            totalMoneySpentDuringPeriod += data.cost;
-            if (newCategories.has(data.category)) {
-              let currentEntry = newCategories.get(data.category);
-              // console.log(currentEntry);
-              currentEntry = {
-                ...currentEntry,
-                total: currentEntry.total + data.cost,
-              };
-              newCategories.set(data.category, currentEntry);
-            } else {
-              //if the category is not set up yet
-              newCategories.set(data.category, {
-                name: data.category,
-                total: data.cost,
-              });
-            }
-            transactions.push({
-              ...data,
-              id: id,
-              date: data.date.toDate(),
-            });
-            // console.log(transactions);
-          });
-        })
-        .catch((err) => console.log(err));
-
-      setCategories([...newCategories.values()]);
-      setExpenses(transactions);
-      setTotalSpent(totalMoneySpentDuringPeriod);
-    })();
   }, []);
 
   const addTransaction = () => {
@@ -241,18 +272,49 @@ export default function ViewAccountScreen({ route, navigation }) {
                 placeholder="e.g $13.45"
               />
               <Text style={styles.modalText}>Category</Text>
+              {/* {console.log(categories.map((values) => values.name))} */}
 
-              <Picker
-                selectedValue={categories.map((values) => values.name)}
-              ></Picker>
+              {categories !== undefined ? (
+                <Picker
+                  selectedValue={pickerValue}
+                  onValueChange={(itemValue, itemIndex) =>
+                    setPickerValue(itemValue)
+                  }
+                  style={{ color: "white" }}
+                >
+                  <Picker.Item
+                    style={{ color: "black" }}
+                    label="Select a Value"
+                    value="Select a Value"
+                    key="Select a Value"
+                  ></Picker.Item>
+                  {categories.map((values) => {
+                    return (
+                      <Picker.Item
+                        style={{ color: "black" }}
+                        label={values.name}
+                        value={values.name}
+                        key={values.name}
+                      ></Picker.Item>
+                    );
+                  })}
+                </Picker>
+              ) : null}
             </View>
             <View style={{ flexDirection: "row" }}>
               <Button
                 title="Add"
                 onPress={() => {
+                  if (
+                    transactionInput[0] == "" ||
+                    transactionInput[1] == "" ||
+                    pickerValue == "Select a Value"
+                  ) {
+                    console.log("Fill out the form completely");
+                    return;
+                  }
                   handleTraModal();
                   addTransaction();
-                  save();
                 }}
               />
               <Button title="Cancel" onPress={handleTraModal} />
