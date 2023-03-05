@@ -86,12 +86,10 @@ export default function ViewAccountScreen({ route, navigation }) {
 
   const [pickerValue, setPickerValue] = useState("Select a Value");
 
-  // useEffect(() => {
-  //   console.log(categories);
-  // }, [categories]);
 
   useEffect(() => {
     let newCategories = categories !== undefined ? categories : [];
+    
     let transactions = [];
     let totalMoneySpentDuringPeriod = 0;
     firestore()
@@ -100,14 +98,14 @@ export default function ViewAccountScreen({ route, navigation }) {
       .collection("transactions")
       .get()
       .then((result) => {
-        // console.log(result)
+        // console.log("transactions loaded")
         result.forEach((document) => {
           let data = document.data();
           let id = document.id;
           // console.log(data);
           totalMoneySpentDuringPeriod += data.cost;
           let found = false;
-          newCategories.forEach(({ item }) => {
+          newCategories.forEach(( item ) => {
             if (item.name === data.category) {
               item = {
                 ...item,
@@ -119,21 +117,6 @@ export default function ViewAccountScreen({ route, navigation }) {
           if (!found) {
             newCategories.push({
               name: data.category,
-              total: 0,
-            });
-          }
-          if (newCategories.has(data.category)) {
-            let currentEntry = newCategories.get(data.category);
-            // console.log(currentEntry);
-            currentEntry = {
-              ...currentEntry,
-              total: currentEntry.total + data.cost,
-            };
-            newCategories.set(data.category, currentEntry);
-          } else {
-            //if the category is not set up yet
-            newCategories.set(data.category, {
-              name: data.category,
               total: data.cost,
             });
           }
@@ -142,11 +125,32 @@ export default function ViewAccountScreen({ route, navigation }) {
             id: id,
             date: data.date.toDate(),
           });
-          // console.log(transactions);
         });
       })
       .finally(() => {
-        setCategories(newCategories);
+        console.log("transactions resolved")
+        setCategories((prev)=>{
+          if(prev === undefined) {
+            console.log("transactions is first implementation")
+            return newCategories
+          }
+          console.log("transactions is second implementation")
+          
+          prev.forEach((previous)=>{
+            let found = false; 
+            newCategories.forEach((category)=>{
+              if(category.name === previous.name){
+                found = true; 
+                
+              }
+              
+            })
+            if(found === false){
+              newCategories.push(previous);
+            }
+          })
+          return newCategories;
+        });
         setExpenses(transactions);
         setTotalSpent(totalMoneySpentDuringPeriod);
       })
@@ -156,23 +160,22 @@ export default function ViewAccountScreen({ route, navigation }) {
   useEffect(() => {
     let newCategories = categories !== undefined ? categories : [];
     firestore()
-      .collection("users")
+      .collection("users") 
       .doc(auth().currentUser.uid)
       .get()
       .then((result) => result.data())
       .then((result) => {
-        setMyBudget(result.budget);
-
+        setMyBudget(result.budget)
+        // console.log("users loaded")
         result.categories.forEach((value) => {
           let found = false;
-          if (newCategories !== undefined) {
-            newCategories.forEach(({ item }) => {
-              if (item.name == value) {
-                found = true;
-                return;
-              }
-            });
-          }
+          // console.log(newCategories)
+          newCategories.forEach((item ) => {
+            if (item.name == value) {
+              found = true;
+              return;
+            }
+          });
           if (!found) {
             newCategories.push({
               name: value,
@@ -182,24 +185,49 @@ export default function ViewAccountScreen({ route, navigation }) {
         });
       })
       .finally(() => {
-        setCategories(newCategories);
+        console.log("users resolved")
+        // console.log("inside of set function: " + newCategories)
+        setCategories((prev)=>{
+          if(prev === undefined){
+            console.log("users is first implementation")
+            return newCategories
+          }
+          newCategories.forEach((newItem)=>{
+            
+            prev.forEach((previousValue)=>{
+              if(newItem.name === previousValue.name){
+                console.log(previousValue); 
+                newItem = previousValue;
+              }
+            })
+            console.log(newCategories)
+          })
+          return newCategories
+        })
       })
       .catch((err) => console.log(err));
   }, []);
 
-  useEffect(() => {
-    navigation.setOptions({
-      headerLeft: () => {
-        return (
-          <HeaderBackButton
-            style={{ tontColor: "#746961", marginLeft: 0 }}
-            onPress={() => handleBack()}
-          />
-        );
-      },
-    });
-  }, []);
+  // useEffect(() => {
+  //   navigation.setOptions({
+  //     headerLeft: () => {
+  //       return (
+  //         <HeaderBackButton
+  //           style={{ tontColor: "#746961", marginLeft: 0 }}
+  //           onPress={() => handleBack()}
+  //         />
+  //       );
+  //     },
+  //   });
+  // }, []);
 
+
+  
+  useEffect(() => {
+    console.log("====")
+    console.log(categories);
+  }, [categories]);
+  
   const addTransaction = () => {
     expenses.unshift({
       title: transactionInput[0],
@@ -407,7 +435,8 @@ export default function ViewAccountScreen({ route, navigation }) {
             sections={[
               {
                 title: "categories",
-                data: more ? categories : categories.slice(0, 3),
+                // data: categories,
+                data: more ? categories : categories.length  >3 ? categories.slice(0,3): rcategories,
                 renderItem: ({ item }) => {
                   return (
                     <View style={{}}>
