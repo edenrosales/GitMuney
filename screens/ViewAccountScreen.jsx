@@ -86,10 +86,9 @@ export default function ViewAccountScreen({ route, navigation }) {
 
   const [pickerValue, setPickerValue] = useState("Select a Value");
 
-
   useEffect(() => {
     let newCategories = categories !== undefined ? categories : [];
-    
+
     let transactions = [];
     let totalMoneySpentDuringPeriod = 0;
     firestore()
@@ -105,7 +104,7 @@ export default function ViewAccountScreen({ route, navigation }) {
           // console.log(data);
           totalMoneySpentDuringPeriod += data.cost;
           let found = false;
-          newCategories.forEach(( item ) => {
+          newCategories.forEach((item) => {
             if (item.name === data.category) {
               item = {
                 ...item,
@@ -128,27 +127,25 @@ export default function ViewAccountScreen({ route, navigation }) {
         });
       })
       .finally(() => {
-        console.log("transactions resolved")
-        setCategories((prev)=>{
-          if(prev === undefined) {
-            console.log("transactions is first implementation")
-            return newCategories
+        // console.log("transactions resolved");
+        setCategories((prev) => {
+          if (prev === undefined) {
+            // console.log("transactions is first implementation");
+            return newCategories;
           }
-          console.log("transactions is second implementation")
-          
-          prev.forEach((previous)=>{
-            let found = false; 
-            newCategories.forEach((category)=>{
-              if(category.name === previous.name){
-                found = true; 
-                
+          // console.log("transactions is second implementation");
+
+          prev.forEach((previous) => {
+            let found = false;
+            newCategories.forEach((category) => {
+              if (category.name === previous.name) {
+                found = true;
               }
-              
-            })
-            if(found === false){
+            });
+            if (found === false) {
               newCategories.push(previous);
             }
-          })
+          });
           return newCategories;
         });
         setExpenses(transactions);
@@ -158,54 +155,53 @@ export default function ViewAccountScreen({ route, navigation }) {
   }, []);
 
   useEffect(() => {
-    let newCategories = categories !== undefined ? categories : [];
-    firestore()
-      .collection("users") 
+    const subscriber = firestore()
+      .collection("users")
       .doc(auth().currentUser.uid)
-      .get()
-      .then((result) => result.data())
-      .then((result) => {
-        setMyBudget(result.budget)
-        // console.log("users loaded")
-        result.categories.forEach((value) => {
-          let found = false;
-          // console.log(newCategories)
-          newCategories.forEach((item ) => {
-            if (item.name == value) {
-              found = true;
-              return;
+      .onSnapshot(
+        (documentSnapshot) => {
+          // console.log(documentSnapshot.data());
+          let newCategories = categories !== undefined ? categories : [];
+          const result = documentSnapshot.data();
+          setMyBudget(result.budget);
+
+          console.log(result);
+          result.categories.forEach((value) => {
+            let found = false;
+            // console.log(newCategories)
+            newCategories.forEach((item) => {
+              if (item.name == value) {
+                found = true;
+                return;
+              }
+            });
+            if (!found) {
+              newCategories.push({
+                name: value,
+                total: 0,
+              });
             }
           });
-          if (!found) {
-            newCategories.push({
-              name: value,
-              total: 0,
+          setCategories((prev) => {
+            if (prev === undefined) {
+              // console.log("users is first implementation");
+              return newCategories;
+            }
+            newCategories.forEach((newItem) => {
+              prev.forEach((previousValue) => {
+                if (newItem.name === previousValue.name) {
+                  // console.log(previousValue);
+                  newItem = previousValue;
+                }
+              });
+              // console.log(newCategories);
             });
-          }
-        });
-      })
-      .finally(() => {
-        console.log("users resolved")
-        // console.log("inside of set function: " + newCategories)
-        setCategories((prev)=>{
-          if(prev === undefined){
-            console.log("users is first implementation")
-            return newCategories
-          }
-          newCategories.forEach((newItem)=>{
-            
-            prev.forEach((previousValue)=>{
-              if(newItem.name === previousValue.name){
-                console.log(previousValue); 
-                newItem = previousValue;
-              }
-            })
-            console.log(newCategories)
-          })
-          return newCategories
-        })
-      })
-      .catch((err) => console.log(err));
+            return newCategories;
+          });
+        },
+        (err) => console.log(err)
+      );
+    return () => subscriber();
   }, []);
 
   // useEffect(() => {
@@ -221,13 +217,11 @@ export default function ViewAccountScreen({ route, navigation }) {
   //   });
   // }, []);
 
-
-  
   useEffect(() => {
-    console.log("====")
+    console.log("====");
     console.log(categories);
   }, [categories]);
-  
+
   const addTransaction = () => {
     expenses.unshift({
       title: transactionInput[0],
@@ -436,7 +430,11 @@ export default function ViewAccountScreen({ route, navigation }) {
               {
                 title: "categories",
                 // data: categories,
-                data: more ? categories : categories.length  >3 ? categories.slice(0,3): rcategories,
+                data: more
+                  ? categories
+                  : categories.length > 3
+                  ? categories.slice(0, 3)
+                  : rcategories,
                 renderItem: ({ item }) => {
                   return (
                     <View style={{}}>
