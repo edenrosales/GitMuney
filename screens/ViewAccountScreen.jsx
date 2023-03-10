@@ -21,7 +21,7 @@ import Categories from "../components/Categories";
 import { useFB } from "../components/ContextProvider";
 import { HeaderBackButton } from "@react-navigation/elements";
 import auth from "@react-native-firebase/auth";
-import firestore from "@react-native-firebase/firestore";
+import firestore, { Timestamp } from "@react-native-firebase/firestore";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import * as Progress from "react-native-progress";
 import { Picker } from "@react-native-picker/picker";
@@ -52,7 +52,7 @@ export default function ViewAccountScreen({ route, navigation }) {
     }
   };
 
-  const [testInfo, setTest] = useState();
+  const [testInfo, setTest] = useState(0);
 
   const [transactionInput, setTransactionInput] = useState(["", ""]);
 
@@ -87,85 +87,93 @@ export default function ViewAccountScreen({ route, navigation }) {
   const [pickerValue, setPickerValue] = useState("Select a Value");
 
   useEffect(() => {
+    console.log("transactoins");
     let newCategories = categories !== undefined ? categories : [];
 
-    let transactions = [];
-    let totalMoneySpentDuringPeriod = 0;
-    firestore()
+    const subscriber = firestore()
       .collection("users")
       .doc(auth().currentUser.uid)
       .collection("transactions")
-      .get()
-      .then((result) => {
-        // console.log("transactions loaded")
-        result.forEach((document) => {
-          let data = document.data();
-          let id = document.id;
-          // console.log(data);
-          totalMoneySpentDuringPeriod += data.cost;
-          let found = false;
-          newCategories.forEach((item) => {
-            if (item.name === data.category) {
-              item = {
-                ...item,
-                total: item.total + data.cost,
-              };
-              found = true;
-            }
-          });
-          if (!found) {
-            newCategories.push({
-              name: data.category,
-              total: data.cost,
-            });
-          }
-          transactions.push({
-            ...data,
-            id: id,
-            date: data.date.toDate(),
-          });
-        });
-      })
-      .finally(() => {
-        // console.log("transactions resolved");
-        setCategories((prev) => {
-          if (prev === undefined) {
-            // console.log("transactions is first implementation");
-            return newCategories;
-          }
-          // console.log("transactions is second implementation");
-
-          prev.forEach((previous) => {
+      .orderBy("date", "desc")
+      .onSnapshot(
+        (result) => {
+          console.log("transactions");
+          let transactions = [];
+          let totalMoneySpentDuringPeriod = 0;
+          result.forEach((document) => {
+            let data = document.data();
+            let id = document.id;
+            // console.log(data);
+            totalMoneySpentDuringPeriod += data.isWithdrawl
+              ? data.cost
+              : -data.cost;
             let found = false;
-            newCategories.forEach((category) => {
-              if (category.name === previous.name) {
+            newCategories.forEach((item) => {
+              if (item.name === data.category) {
+                item = {
+                  ...item,
+                  total: item.total + data.cost,
+                };
                 found = true;
               }
             });
-            if (found === false) {
-              newCategories.push(previous);
+            if (!found) {
+              newCategories.push({
+                name: data.category,
+                total: data.cost,
+              });
             }
+            transactions.push({
+              ...data,
+              id: id,
+              date: data.date.toDate(),
+            });
           });
-          return newCategories;
-        });
-        setExpenses(transactions);
-        setTotalSpent(totalMoneySpentDuringPeriod);
-      })
-      .catch((err) => console.log(err));
-  }, []);
+          // console.log("transactions resolved");
+          setCategories((prev) => {
+            if (prev === undefined) {
+              // console.log("transactions is first implementation");
+              return newCategories;
+            }
+            // console.log("transactions is second implementation");
+
+            prev.forEach((previous) => {
+              let found = false;
+              newCategories.forEach((category) => {
+                if (category.name === previous.name) {
+                  found = true;
+                }
+              });
+              if (found === false) {
+                newCategories.push(previous);
+              }
+            });
+            return newCategories;
+          });
+          setExpenses(transactions);
+          setTotalSpent(totalMoneySpentDuringPeriod);
+        },
+        (err) => {
+          console.log(err);
+        }
+      );
+    return () => subscriber();
+  }, [testInfo]);
 
   useEffect(() => {
+    // console.log("this is running");
     const subscriber = firestore()
       .collection("users")
       .doc(auth().currentUser.uid)
       .onSnapshot(
         (documentSnapshot) => {
+          console.log("user");
           // console.log(documentSnapshot.data());
           let newCategories = categories !== undefined ? categories : [];
           const result = documentSnapshot.data();
           setMyBudget(result.budget);
 
-          console.log(result);
+          // console.log(result);
           result.categories.forEach((value) => {
             let found = false;
             // console.log(newCategories)
@@ -191,7 +199,10 @@ export default function ViewAccountScreen({ route, navigation }) {
               prev.forEach((previousValue) => {
                 if (newItem.name === previousValue.name) {
                   // console.log(previousValue);
+                  // console.log("this is running");
+                  // console.log(previousValue);
                   newItem = previousValue;
+                  // console.log(newItem);
                 }
               });
               // console.log(newCategories);
@@ -223,35 +234,61 @@ export default function ViewAccountScreen({ route, navigation }) {
   }, [categories]);
 
   const addTransaction = () => {
-    expenses.unshift({
-      title: transactionInput[0],
-      amount: transactionInput[1],
-      date: new Date().toLocaleString(),
-      type: "p",
-      key: curKeyValue,
-    });
-    setTotalSpent(totalSpent + parseFloat(transactionInput[1]));
-    setCurKeyValue(uuid.v4());
-    transactionInput[0] = "";
-    transactionInput[1] = "";
+    firestore()
+      .collection("users")
+      .doc(auth().currentUser.uid)
+      .collection("transactions")
+      .add({
+        category: pickerValue,
+        cost: parseFloat(transactionInput[1]),
+        isWithdrawl: true,
+        transactionName: transactionInput[0],
+        date: firestore.Timestamp.now(),
+      })
+      .then(() => console.log("this owrked"));
+    firestore()
+      .collection("users")
+      .add({
+        name: "test",
+      })
+      .then(() => console.log("this works"));
+    setTransactionInput(["", ""]);
+    setPickerValue("Select a Value");
   };
 
   const addDeposit = () => {
-    expenses.unshift({
-      title: "",
-      amount: depositInput,
-      date: new Date().toLocaleString(),
-      type: "d",
-      key: curKeyValue,
-    });
-    setTotalSpent(totalSpent - parseFloat(depositInput));
-    setCurKeyValue(uuid.v4());
+    firestore()
+      .collection("users")
+      .doc(auth().currentUser.uid)
+      .collection("transactions")
+      .add({
+        transactionName: "Deposit",
+        isWithdrawl: false,
+        category: "Misc",
+        cost: parseFloat(depositInput),
+        date: firestore.Timestamp.now(),
+      });
+    // expenses.unshift({
+    //   title: "",
+    //   amount: depositInput,
+    //   date: new Date().toLocaleString(),
+    //   type: "d",
+    //   key: curKeyValue,
+    // });
+    // setCurKeyValue(uuid.v4());
     setDepositInput("");
   };
 
   const addBudget = () => {
-    setMyBudget(myBudgetInput);
-    setMyBudgetInput(myBudget);
+    firestore()
+      .collection("users")
+      .doc(auth().currentUser.uid)
+      .update({
+        budget: parseFloat(myBudgetInput),
+      })
+      .then(() => {
+        setMyBudgetInput("");
+      });
   };
 
   const handleMore = () => {
@@ -365,7 +402,6 @@ export default function ViewAccountScreen({ route, navigation }) {
                 onPress={() => {
                   handleDepModal();
                   addDeposit();
-                  save();
                 }}
               />
               <Button title="Cancel" onPress={handleDepModal} />
@@ -394,7 +430,6 @@ export default function ViewAccountScreen({ route, navigation }) {
                 onPress={() => {
                   handleBudgetModal();
                   addBudget();
-                  save();
                 }}
               />
               <Button title="Cancel" onPress={handleBudgetModal} />
@@ -434,7 +469,7 @@ export default function ViewAccountScreen({ route, navigation }) {
                   ? categories
                   : categories.length > 3
                   ? categories.slice(0, 3)
-                  : rcategories,
+                  : categories,
                 renderItem: ({ item }) => {
                   return (
                     <View style={{}}>
@@ -481,7 +516,7 @@ export default function ViewAccountScreen({ route, navigation }) {
                           styles.item,
                           {
                             color:
-                              item.isWithdrawl == "p"
+                              item.isWithdrawl == true
                                 ? "tomato"
                                 : "greenyellow",
                           },
@@ -493,7 +528,7 @@ export default function ViewAccountScreen({ route, navigation }) {
                     <Text
                       style={{ color: "#999", fontSize: 20, paddingLeft: 10 }}
                     >
-                      {item.date.toDateString()}
+                      {item.hasOwnProperty("date") && item.date.toDateString()}
                       {/* {console.log(item.date)} */}
                     </Text>
                   </View>
