@@ -25,6 +25,8 @@ import firestore, { Timestamp } from "@react-native-firebase/firestore";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import * as Progress from "react-native-progress";
 import { Picker } from "@react-native-picker/picker";
+import _ from "lodash";
+import ShowMore from "../components/ShowMore";
 
 export default function ViewAccountScreen({ route, navigation }) {
   const handleBack = async () => {
@@ -60,7 +62,7 @@ export default function ViewAccountScreen({ route, navigation }) {
 
   const [depositInput, setDepositInput] = useState("");
 
-  const [categories, setCategories] = useState();
+  const [categories, setCategories] = useState({});
 
   const [categoriesSet, setCategoriesSet] = useState(new Set());
 
@@ -70,7 +72,7 @@ export default function ViewAccountScreen({ route, navigation }) {
 
   const [myBudget, setMyBudget] = useState(5000);
 
-  const [expenses, setExpenses] = useState();
+  const [expenses, setExpenses] = useState({});
 
   const [isTraModalVisible, setIsTraModalVisible] = useState(false);
 
@@ -87,9 +89,19 @@ export default function ViewAccountScreen({ route, navigation }) {
   const [pickerValue, setPickerValue] = useState("Select a Value");
 
   useEffect(() => {
-    console.log("transactoins");
-    let newCategories = categories !== undefined ? categories : [];
+    navigation.setOptions({
+      headerLeft: () => {
+        return (
+          <HeaderBackButton
+            style={{ tontColor: "#746961", marginLeft: 0 }}
+            onPress={() => handleBack()}
+          />
+        );
+      },
+    });
+  }, []);
 
+  useEffect(() => {
     const subscriber = firestore()
       .collection("users")
       .doc(auth().currentUser.uid)
@@ -97,141 +109,77 @@ export default function ViewAccountScreen({ route, navigation }) {
       .orderBy("date", "desc")
       .onSnapshot(
         (result) => {
-          console.log("transactions");
-          let transactions = [];
-          let totalMoneySpentDuringPeriod = 0;
-          result.forEach((document) => {
-            let data = document.data();
-            let id = document.id;
-            // console.log(data);
-            totalMoneySpentDuringPeriod += data.isWithdrawl
-              ? data.cost
-              : -data.cost;
-            let found = false;
-            newCategories.forEach((item) => {
-              if (item.name === data.category) {
-                item = {
-                  ...item,
-                  total: item.total + data.cost,
-                };
-                found = true;
-              }
-            });
-            if (!found) {
-              newCategories.push({
-                name: data.category,
-                total: data.cost,
-              });
-            }
-            transactions.push({
+          let currentSpent = 0;
+          const transactions = {};
+          const newCategories = {};
+          result.forEach((transaction) => {
+            const data = transaction.data();
+            currentSpent += data.cost;
+            transactions[transaction.id] = {
               ...data,
-              id: id,
-              date: data.date.toDate(),
-            });
-          });
-          // console.log("transactions resolved");
-          setCategories((prev) => {
-            if (prev === undefined) {
-              // console.log("transactions is first implementation");
-              return newCategories;
+              key: transaction.id,
+            };
+            if (!(data.category in newCategories)) {
+              newCategories[data.category] = {
+                key: data.category,
+                total: data.cost,
+              };
+            } else {
+              newCategories[data.category].total += data.cost;
             }
-            // console.log("transactions is second implementation");
-
-            prev.forEach((previous) => {
-              let found = false;
-              newCategories.forEach((category) => {
-                if (category.name === previous.name) {
-                  found = true;
-                }
-              });
-              if (found === false) {
-                newCategories.push(previous);
-              }
-            });
-            return newCategories;
           });
-          setExpenses(transactions);
-          setTotalSpent(totalMoneySpentDuringPeriod);
+          setExpenses(() => {
+            console.log("expenses updated");
+            return { ...transactions };
+          });
+          setCategories((previousCategories) => {
+            //i didnt know you could do this in js
+            //makes a new object and replaces all the keys that are identical in the first and second with the latter most object
+            return { ...previousCategories, ...newCategories };
+          });
+          setTotalSpent(currentSpent);
         },
         (err) => {
           console.log(err);
         }
       );
     return () => subscriber();
-  }, [testInfo]);
+  }, []);
 
   useEffect(() => {
-    // console.log("this is running");
     const subscriber = firestore()
       .collection("users")
       .doc(auth().currentUser.uid)
       .onSnapshot(
         (documentSnapshot) => {
-          console.log("user");
-          // console.log(documentSnapshot.data());
-          let newCategories = categories !== undefined ? categories : [];
-          const result = documentSnapshot.data();
-          setMyBudget(result.budget);
+          const data = documentSnapshot.data();
+          const categories = {};
+          data.categories.forEach((category) => {
+            categories[category] = {
+              key: category,
+              total: 0,
+            };
+          });
 
-          // console.log(result);
-          result.categories.forEach((value) => {
-            let found = false;
-            // console.log(newCategories)
-            newCategories.forEach((item) => {
-              if (item.name == value) {
-                found = true;
-                return;
-              }
-            });
-            if (!found) {
-              newCategories.push({
-                name: value,
-                total: 0,
-              });
-            }
-          });
           setCategories((prev) => {
-            if (prev === undefined) {
-              // console.log("users is first implementation");
-              return newCategories;
-            }
-            newCategories.forEach((newItem) => {
-              prev.forEach((previousValue) => {
-                if (newItem.name === previousValue.name) {
-                  // console.log(previousValue);
-                  // console.log("this is running");
-                  // console.log(previousValue);
-                  newItem = previousValue;
-                  // console.log(newItem);
-                }
-              });
-              // console.log(newCategories);
-            });
-            return newCategories;
+            return { ...categories, ...prev };
           });
+          setMyBudget(data.budget);
         },
         (err) => console.log(err)
       );
     return () => subscriber();
   }, []);
 
-  // useEffect(() => {
-  //   navigation.setOptions({
-  //     headerLeft: () => {
-  //       return (
-  //         <HeaderBackButton
-  //           style={{ tontColor: "#746961", marginLeft: 0 }}
-  //           onPress={() => handleBack()}
-  //         />
-  //       );
-  //     },
-  //   });
-  // }, []);
-
   useEffect(() => {
-    console.log("====");
+    console.log("categories!!!");
     console.log(categories);
   }, [categories]);
+
+  useEffect(() => {
+    console.log("EXPENSES");
+    console.log(expenses);
+  }, [expenses]);
 
   const addTransaction = () => {
     firestore()
@@ -268,14 +216,6 @@ export default function ViewAccountScreen({ route, navigation }) {
         cost: parseFloat(depositInput),
         date: firestore.Timestamp.now(),
       });
-    // expenses.unshift({
-    //   title: "",
-    //   amount: depositInput,
-    //   date: new Date().toLocaleString(),
-    //   type: "d",
-    //   key: curKeyValue,
-    // });
-    // setCurKeyValue(uuid.v4());
     setDepositInput("");
   };
 
@@ -347,13 +287,13 @@ export default function ViewAccountScreen({ route, navigation }) {
                     value="Select a Value"
                     key="Select a Value"
                   ></Picker.Item>
-                  {categories.map((values) => {
+                  {Object.values(categories).map((values) => {
                     return (
                       <Picker.Item
                         style={{ color: "black" }}
-                        label={values.name}
-                        value={values.name}
-                        key={values.name}
+                        label={values.key}
+                        value={values.key}
+                        key={values.key}
                       ></Picker.Item>
                     );
                   })}
@@ -447,131 +387,117 @@ export default function ViewAccountScreen({ route, navigation }) {
           handleDepModal={handleDepModal}
           handleBudgetModal={handleBudgetModal}
         ></TopBarStats>
-        {categories && expenses && (
-          <SectionList
-            ListHeaderComponent={() => {
-              return (
-                <TopBarStats
-                  myBudget={myBudget}
-                  totalSpent={totalSpent}
-                  pixel80percent={pixel80percent}
-                  handleTraModal={handleTraModal}
-                  handleDepModal={handleDepModal}
-                  handleBudgetModal={handleBudgetModal}
-                ></TopBarStats>
-              );
-            }}
-            sections={[
-              {
-                title: "categories",
-                // data: categories,
-                data: more
-                  ? categories
-                  : categories.length > 3
-                  ? categories.slice(0, 3)
-                  : categories,
-                renderItem: ({ item }) => {
-                  return (
-                    <View style={{}}>
-                      <Text style={[styles.recTran, { marginTop: 10 }]}>
-                        {item.name}
-                      </Text>
-                      {/* <TouchableOpacity></TouchableOpacity> */}
-                      <View
-                        style={{
-                          width: "100%",
-                          display: "flex",
-                          alignItems: "center",
-                        }}
-                      >
-                        <Progress.Bar
-                          progress={item.total / myBudget}
-                          width={pixel80percent}
-                          borderRadius={10}
-                          height={20}
-                          color={"tomato"}
-                          unfilledColor={"#d9d9d9"}
-                          borderWidth={0}
-                        />
-                      </View>
-                    </View>
-                  );
-                },
-                //adding the keyextractors causes issues i guess
-              },
-              {
-                title: "expenses",
-                data: expenses,
-                renderItem: ({ item }) => (
-                  // <Text>{item.transactionName}</Text>
-                  <View style={styles.topGroup}>
-                    <View style={styles.tranGroup}>
-                      <Text style={styles.item}>
-                        {item.transactionName
-                          ? item.transactionName
-                          : "Deposit"}
-                      </Text>
-                      <Text
-                        style={[
-                          styles.item,
-                          {
-                            color:
-                              item.isWithdrawl == true
-                                ? "tomato"
-                                : "greenyellow",
-                          },
-                        ]}
-                      >
-                        ${item.cost}
-                      </Text>
-                    </View>
-                    <Text
-                      style={{ color: "#999", fontSize: 20, paddingLeft: 10 }}
-                    >
-                      {item.hasOwnProperty("date") && item.date.toDateString()}
-                      {/* {console.log(item.date)} */}
-                    </Text>
-                  </View>
-                ),
-              },
-            ]}
-            renderSectionFooter={({ section: { title } }) => {
-              if (title == "categories") {
+        <SectionList
+          ListHeaderComponent={() => {
+            return (
+              <TopBarStats
+                myBudget={myBudget}
+                totalSpent={totalSpent}
+                pixel80percent={pixel80percent}
+                handleTraModal={handleTraModal}
+                handleDepModal={handleDepModal}
+                handleBudgetModal={handleBudgetModal}
+              ></TopBarStats>
+            );
+          }}
+          keyExtractor={(item, itemIndex) => item.key}
+          sections={[
+            {
+              title: "categories",
+              data: more
+                ? Object.values(categories)
+                : Object.values(categories).length > 3
+                ? Object.values(categories).slice(0, 3)
+                : Object.values(categories),
+              renderItem: ({ item }) => {
                 return (
-                  <View>
-                    <TouchableOpacity onPress={handleMore}>
-                      <Text
-                        style={{
-                          color: "white",
-                          fontSize: 15,
-                          paddingVertical: 10,
-                          paddingLeft: 10,
-                        }}
-                      >
-                        Show more...
-                      </Text>
-                    </TouchableOpacity>
+                  <View style={{}}>
+                    <Text style={[styles.recTran, { marginTop: 10 }]}>
+                      {item.key}
+                    </Text>
+                    {/* <TouchableOpacity></TouchableOpacity> */}
+                    <View
+                      style={{
+                        width: "100%",
+                        display: "flex",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Progress.Bar
+                        progress={item.total / myBudget}
+                        width={pixel80percent}
+                        borderRadius={10}
+                        height={20}
+                        color={"tomato"}
+                        unfilledColor={"#d9d9d9"}
+                        borderWidth={0}
+                      />
+                    </View>
                   </View>
                 );
-              } else {
-                return null;
-              }
-            }}
-            renderSectionHeader={({ section: { title } }) => {
-              return (
-                <View
-                  style={{
-                    paddingTop: 10,
-                  }}
-                >
-                  <Text style={{ fontSize: 35, color: "white" }}>
-                    {title == "categories" ? "Categories" : "Transactions"}
+              },
+              //adding the keyextractors causes issues i guess
+            },
+            {
+              title: "expenses",
+              data: Object.values(expenses),
+              renderItem: ({ item }) => (
+                <View style={styles.topGroup}>
+                  {/* {console.log("HELP ME IM GOING TO KMS ")}
+                  {console.log(item)} */}
+                  <View style={styles.tranGroup}>
+                    <Text style={styles.item}>
+                      {item.transactionName ? item.transactionName : "Deposit"}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.item,
+                        {
+                          color:
+                            item.isWithdrawl == true ? "tomato" : "greenyellow",
+                        },
+                      ]}
+                    >
+                      ${item.cost}
+                    </Text>
+                  </View>
+                  <Text
+                    style={{ color: "#999", fontSize: 20, paddingLeft: 10 }}
+                  >
+                    {item.hasOwnProperty("date") &&
+                      item.date.toDate().toDateString()}
                   </Text>
                 </View>
+              ),
+            },
+          ]}
+          renderSectionFooter={({ section: { title } }) => {
+            if (title == "categories") {
+              return (
+                <View>
+                  <TouchableOpacity onPress={handleMore}>
+                    <ShowMore more={more}></ShowMore>
+                  </TouchableOpacity>
+                </View>
               );
-            }}
-          />
-        )}
+            } else {
+              return null;
+            }
+          }}
+          renderSectionHeader={({ section: { title } }) => {
+            return (
+              <View
+                style={{
+                  paddingTop: 10,
+                }}
+              >
+                <Text style={{ fontSize: 35, color: "white" }}>
+                  {title == "categories" ? "Categories" : "Transactions"}
+                </Text>
+              </View>
+            );
+          }}
+        />
       </View>
     </View>
   );
