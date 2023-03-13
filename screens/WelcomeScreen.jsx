@@ -5,6 +5,7 @@ import {
   TextInput,
   Animated,
   Dimensions,
+  Keyboard,
 } from "react-native";
 import {
   StyleSheet,
@@ -28,22 +29,30 @@ import {
 } from "@react-native-google-signin/google-signin";
 import auth from "@react-native-firebase/auth";
 import GoogleSignInButton from "../components/GoogleSignInButton";
+import firestore from "@react-native-firebase/firestore";
+import FirstLoginConfig from "../components/FirstLoginConfig";
 
-// Somewhere in your code
-
-//847719830073-snge66gi4rifitllc9uvpklc6tnlahhc.apps.googleusercontent.com
-// GoogleSignin.configure({
-//     webClientId:  '847719830073-snge66gi4rifitllc9uvpklc6tnlahhc.apps.googleusercontent.com',
-//   });
 function WelcomeScreen({ navigation }) {
+  const [firstLogin, setFirstLogin] = useState(false);
+
   useEffect(() => {
     const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
     return subscriber;
-  }, []);
-  const onAuthStateChanged = () => {
+  }, [firstLogin]);
+
+  const onAuthStateChanged = async () => {
     if (auth().currentUser) {
       setLogininfo(["", ""]);
-      navigation.navigate("ViewAccount");
+      const firstLogin = await (
+        await firestore().collection("users").doc(auth().currentUser.uid).get()
+      ).data().firstLogin;
+      if (firstLogin === true) {
+        setFirstLogin(true);
+        Keyboard.dismiss();
+        //this will show the first time setup for the user
+      } else {
+        navigation.navigate("ViewAccount");
+      }
     } else {
       console.log("not signed in");
     }
@@ -82,8 +91,27 @@ function WelcomeScreen({ navigation }) {
         navigation.navigate("ViewAccount");
       });
   };
+
+  const toggleFirstLogin = () => {
+    setFirstLogin((prev) => !prev);
+  };
+
   return (
     <>
+      {/* <View
+        style={{
+          position: "absolute",
+          height: "100%",
+          width: "100%",
+          zIndex: 1,
+        }}
+      > */}
+
+      <FirstLoginConfig
+        visible={firstLogin}
+        toggleFirstLogin={toggleFirstLogin}
+      ></FirstLoginConfig>
+      {/* </View> */}
       <View
         style={{
           position: "relative",
