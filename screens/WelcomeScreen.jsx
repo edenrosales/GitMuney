@@ -31,11 +31,17 @@ import auth from "@react-native-firebase/auth";
 import GoogleSignInButton from "../components/GoogleSignInButton";
 import firestore from "@react-native-firebase/firestore";
 import FirstLoginConfig from "../components/FirstLoginConfig";
+import SignUp from "../components/SignUp";
 
 function WelcomeScreen({ navigation }) {
   const [firstLogin, setFirstLogin] = useState(false);
+  const [signUp, setSignUp] = useState(false);
+  const [logininfo, setLogininfo] = useState(["", ""]);
+  const [reEnterPassword, setReEnterPassword] = useState("");
+  const [reEnterPasswordValid, setReEnterPasswordValid] = useState(true);
 
   useEffect(() => {
+    // auth().signOut();
     const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
     return subscriber;
   }, [firstLogin]);
@@ -54,6 +60,7 @@ function WelcomeScreen({ navigation }) {
         navigation.navigate("ViewAccount");
       }
     } else {
+      setFirstLogin(false);
       console.log("not signed in");
     }
   };
@@ -72,7 +79,36 @@ function WelcomeScreen({ navigation }) {
     }
   };
 
-  const [logininfo, setLogininfo] = useState(["", ""]);
+  const signUpHandler = () => {
+    if (logininfo[1] !== reEnterPassword) {
+      setReEnterPasswordValid(false);
+      return;
+    }
+    auth()
+      .createUserWithEmailAndPassword(logininfo[0], logininfo[1])
+      .then(() => {
+        firestore()
+          .collection("users")
+          .doc(auth().currentUser.uid)
+          .set({
+            categories: [
+              "Groceries",
+              "Rent",
+              "Entertainment",
+              "Bills",
+              "Taxes",
+              "Misc",
+              "Investing",
+            ],
+            firstLogin: true,
+          });
+
+        setLogininfo(["", ""]);
+        setReEnterPassword("");
+        setSignUp(false);
+      })
+      .catch((err) => console.log(err));
+  };
   const loginAttempt = () => {
     if (!logininfo[0] || !logininfo[1]) {
       return;
@@ -95,21 +131,18 @@ function WelcomeScreen({ navigation }) {
   const toggleFirstLogin = () => {
     setFirstLogin((prev) => !prev);
   };
+  const toggleSignUp = () => {
+    setSignUp((prev) => !prev);
+  };
 
   return (
     <>
-      {/* <View
-        style={{
-          position: "absolute",
-          height: "100%",
-          width: "100%",
-          zIndex: 1,
-        }}
-      > */}
+      {/* <SignUp visible={signUp} toggleSignUp={toggleSignUp}></SignUp> */}
 
       <FirstLoginConfig
         visible={firstLogin}
         toggleFirstLogin={toggleFirstLogin}
+        signOut={signOut}
       ></FirstLoginConfig>
       {/* </View> */}
       <View
@@ -121,6 +154,7 @@ function WelcomeScreen({ navigation }) {
           height: "100%",
           alignItems: "center",
           justifyContent: "center",
+          backgroundColor: "white",
         }}
       >
         <Image
@@ -136,7 +170,7 @@ function WelcomeScreen({ navigation }) {
             marginTop: 20,
           }}
         >
-          <Text style={{}}>Email:</Text>
+          {/* <Text style={{}}>Email:</Text> */}
           <TextInput
             placeholder="example@email.com"
             style={{
@@ -160,7 +194,7 @@ function WelcomeScreen({ navigation }) {
             marginTop: 15,
           }}
         >
-          <Text>Password:</Text>
+          {/* <Text>Password:</Text> */}
           <TextInput
             placeholder="Password"
             style={{
@@ -175,6 +209,32 @@ function WelcomeScreen({ navigation }) {
             placeholderTextColor={"gray"}
           />
         </View>
+        {signUp && (
+          <View
+            style={{
+              position: "relative",
+              width: "70%",
+              display: "flex",
+              flexDirection: "column",
+              marginTop: 15,
+            }}
+          >
+            {/* <Text>Re-Enter Password:</Text> */}
+            <TextInput
+              placeholder="Re-Enter Password"
+              style={{
+                position: "relative",
+                borderBottomWidth: 1,
+                width: "100%",
+                marginLeft: "auto",
+                marginRight: "auto",
+              }}
+              value={reEnterPassword}
+              onChangeText={(text) => setReEnterPassword(text)}
+              placeholderTextColor={"gray"}
+            />
+          </View>
+        )}
         <View
           style={{
             width: "65%",
@@ -185,34 +245,65 @@ function WelcomeScreen({ navigation }) {
             marginTop: 10,
           }}
         >
-          <TouchableOpacity
-            onPress={() => {
-              loginAttempt();
-            }}
-            style={{
-              marginTop: 20,
-              paddingHorizontal: 25,
-              paddingVertical: 10,
-              borderRadius: 1,
-              borderWidth: 1,
-              borderRadius: 8,
-            }}
-          >
-            <Text
-              style={{
-                marginHorizontal: "auto",
-                marginVertical: "auto",
-                fontWeight: "600",
-              }}
-            >
-              Sign In
-            </Text>
-          </TouchableOpacity>
-          <View style={{ marginTop: 20, paddingVertical: 10 }}>
-            {/* <Button title = "Google Sign-Inaaa" onPress={() => signIn()}/> */}
-            <GoogleSignInButton />
-            {/* <Cus?tomButton/> */}
-          </View>
+          {signUp ? (
+            <>
+              <TouchableOpacity
+                onPress={() => {
+                  signUpHandler();
+                }}
+                style={{
+                  marginTop: 20,
+                  paddingHorizontal: 25,
+                  paddingVertical: 10,
+                  borderRadius: 1,
+                  borderWidth: 1,
+                  borderRadius: 8,
+                  // height: "50%",
+                  width: "60%",
+                }}
+              >
+                <Text
+                  style={{
+                    marginHorizontal: "auto",
+                    marginVertical: "auto",
+                    fontWeight: "600",
+                    textAlign: "center",
+                  }}
+                >
+                  Sign Up
+                </Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <TouchableOpacity
+                onPress={() => {
+                  loginAttempt();
+                }}
+                style={{
+                  marginTop: 20,
+                  paddingHorizontal: 25,
+                  paddingVertical: 10,
+                  borderRadius: 1,
+                  borderWidth: 1,
+                  borderRadius: 8,
+                }}
+              >
+                <Text
+                  style={{
+                    marginHorizontal: "auto",
+                    marginVertical: "auto",
+                    fontWeight: "600",
+                  }}
+                >
+                  Sign In
+                </Text>
+              </TouchableOpacity>
+              <View style={{ marginTop: 20, paddingVertical: 10 }}>
+                <GoogleSignInButton />
+              </View>
+            </>
+          )}
         </View>
         <View
           style={{
@@ -223,19 +314,31 @@ function WelcomeScreen({ navigation }) {
             marginTop: 25,
           }}
         >
-          <Text>Don't have an account? </Text>
+          {!signUp ? (
+            <Text>Don't have an account? </Text>
+          ) : (
+            <Text>Go back to </Text>
+          )}
           {/* <Text style = {{color: 'blue'}} onPress={()=>{console.log(logininfo[0] + " " + logininfo[1])}}>Sign Up</Text> */}
-          <Text
-            style={{ color: "blue" }}
-            onPress={() => {
-              auth().signInWithEmailAndPassword(
-                "eden@rosales5.com",
-                "12345678"
-              );
-            }}
-          >
-            Sign Up
-          </Text>
+          {!signUp ? (
+            <Text
+              style={{ color: "blue" }}
+              onPress={() => {
+                toggleSignUp();
+              }}
+            >
+              Sign Up
+            </Text>
+          ) : (
+            <Text
+              style={{ color: "blue" }}
+              onPress={() => {
+                toggleSignUp();
+              }}
+            >
+              Sign In
+            </Text>
+          )}
         </View>
         {/* <Button title = "test this" onPress={()=>{
                     

@@ -88,7 +88,7 @@ const FirstLoginConfig = (props) => {
         width: screenWidth,
         height: screenHeight,
         zIndex: props.visible ? 1 : -1,
-        opacity: props.visible ? 1 : 0,
+        // opacity: props.visible ? 1 : 0,
       }}
     >
       <KeyboardAvoidingView
@@ -113,7 +113,7 @@ const FirstLoginConfig = (props) => {
             >
               First time?...
             </Text>
-            <Text
+            {/* <Text
               style={{
                 // position: "absolute",
                 fontFamily: "SSP-SemiBold",
@@ -122,7 +122,7 @@ const FirstLoginConfig = (props) => {
               }}
             >
               x
-            </Text>
+            </Text> */}
           </View>
 
           <Text
@@ -378,12 +378,30 @@ const FirstLoginConfig = (props) => {
       <View
         style={{
           position: "absolute",
-          // backgroundColor: "b/lack",
           width: "100%",
           height: 100,
-          bottom: 10,
+          bottom: 50,
+          // display: "flex",
+          // flexDirection: "column",
         }}
       >
+        <TouchableOpacity
+          onPress={() => {
+            props.signOut();
+          }}
+          style={[
+            styles.button,
+            {
+              marginLeft: "auto",
+              marginRight: "auto",
+              width: screenWidth * 0.8,
+              backgroundColor: "black",
+              marginBottom: 5,
+            },
+          ]}
+        >
+          <Text style={[styles.buttonText, { color: "white" }]}>Log Out</Text>
+        </TouchableOpacity>
         <TouchableOpacity
           onPress={() => {
             submitFirstLoginConfigForm();
@@ -394,6 +412,7 @@ const FirstLoginConfig = (props) => {
               marginLeft: "auto",
               marginRight: "auto",
               width: screenWidth * 0.8,
+              marginTop: 5,
               backgroundColor: !(inputStatus === false) ? "#0000f5" : "white",
             },
           ]}

@@ -27,6 +27,7 @@ import * as Progress from "react-native-progress";
 import { Picker } from "@react-native-picker/picker";
 import _ from "lodash";
 import ShowMore from "../components/ShowMore";
+import TransactionModalComponent from "../components/TransactionModalComponent";
 
 export default function ViewAccountScreen({ route, navigation }) {
   const handleBack = async () => {
@@ -88,6 +89,8 @@ export default function ViewAccountScreen({ route, navigation }) {
 
   const [pickerValue, setPickerValue] = useState("Select a Value");
 
+  const [transactionModalVisible, setTransactionModalVisible] = useState(false);
+
   useEffect(() => {
     navigation.setOptions({
       headerLeft: () => {
@@ -140,6 +143,7 @@ export default function ViewAccountScreen({ route, navigation }) {
           setTotalSpent(currentSpent);
         },
         (err) => {
+          console.log("error here1");
           console.log(err);
         }
       );
@@ -166,7 +170,10 @@ export default function ViewAccountScreen({ route, navigation }) {
           });
           setMyBudget(data.budget);
         },
-        (err) => console.log(err)
+        (err) => {
+          console.log("error here2");
+          console.log(err);
+        }
       );
     return () => subscriber();
   }, []);
@@ -244,6 +251,10 @@ export default function ViewAccountScreen({ route, navigation }) {
   return (
     //going to try to get state to work here and get it into components
     <View style={styles.container}>
+      <TransactionModalComponent
+        visible={transactionModalVisible}
+        toggleVisible={setTransactionModalVisible}
+      ></TransactionModalComponent>
       <StatusBar barStyle="light-content" />
       <Modal isVisible={isTraModalVisible}>
         <View style={styles.modalView}>
@@ -442,32 +453,42 @@ export default function ViewAccountScreen({ route, navigation }) {
               title: "expenses",
               data: Object.values(expenses),
               renderItem: ({ item }) => (
-                <View style={styles.topGroup}>
-                  {/* {console.log("HELP ME IM GOING TO KMS ")}
+                <TouchableOpacity
+                  onPress={() => {
+                    setTransactionModalVisible((prev) => !prev);
+                  }}
+                >
+                  <View style={styles.topGroup}>
+                    {/* {console.log("HELP ME IM GOING TO KMS ")}
                   {console.log(item)} */}
-                  <View style={styles.tranGroup}>
-                    <Text style={styles.item}>
-                      {item.transactionName ? item.transactionName : "Deposit"}
-                    </Text>
+                    <View style={styles.tranGroup}>
+                      <Text style={styles.item}>
+                        {item.transactionName
+                          ? item.transactionName
+                          : "Deposit"}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.item,
+                          {
+                            color:
+                              item.isWithdrawl == true
+                                ? "tomato"
+                                : "greenyellow",
+                          },
+                        ]}
+                      >
+                        ${item.cost}
+                      </Text>
+                    </View>
                     <Text
-                      style={[
-                        styles.item,
-                        {
-                          color:
-                            item.isWithdrawl == true ? "tomato" : "greenyellow",
-                        },
-                      ]}
+                      style={{ color: "#999", fontSize: 20, paddingLeft: 10 }}
                     >
-                      ${item.cost}
+                      {item.hasOwnProperty("date") &&
+                        item.date.toDate().toDateString()}
                     </Text>
                   </View>
-                  <Text
-                    style={{ color: "#999", fontSize: 20, paddingLeft: 10 }}
-                  >
-                    {item.hasOwnProperty("date") &&
-                      item.date.toDate().toDateString()}
-                  </Text>
-                </View>
+                </TouchableOpacity>
               ),
             },
           ]}
