@@ -28,6 +28,9 @@ import { Picker } from "@react-native-picker/picker";
 import _ from "lodash";
 import ShowMore from "../components/ShowMore";
 import TransactionModalComponent from "../components/TransactionModalComponent";
+import TransactionModal from "../components/TransactionModal";
+import DepositModal from "../components/DepositModal";
+import BudgetModal from "../components/BudgetModal";
 
 export default function ViewAccountScreen({ route, navigation }) {
   const handleBack = async () => {
@@ -55,41 +58,22 @@ export default function ViewAccountScreen({ route, navigation }) {
     }
   };
 
-  const [testInfo, setTest] = useState(0);
-
-  const [transactionInput, setTransactionInput] = useState(["", ""]);
-
   const [totalSpent, setTotalSpent] = useState(0);
 
-  const [depositInput, setDepositInput] = useState("");
-
   const [categories, setCategories] = useState({});
-
-  const [categoriesSet, setCategoriesSet] = useState(new Set());
-
-  const [myBudgetInput, setMyBudgetInput] = useState("");
-
-  const [curKeyValue, setCurKeyValue] = useState();
 
   const [myBudget, setMyBudget] = useState(5000);
 
   const [expenses, setExpenses] = useState({});
 
-  const [isTraModalVisible, setIsTraModalVisible] = useState(false);
-
-  const handleTraModal = () => setIsTraModalVisible(() => !isTraModalVisible);
-
-  const [isDepModalVisible, setIsDepModalVisible] = useState(false);
-
-  const handleDepModal = () => setIsDepModalVisible(() => !isDepModalVisible);
-
-  const [isBudgetModalVisible, setIsBudgetModalVisible] = useState(false);
-
   const [more, setMore] = useState(false);
 
-  const [pickerValue, setPickerValue] = useState("Select a Value");
+  // const [pickerValue, setPickerValue] = useState("Select a Value");
 
-  const [transactionModalVisible, setTransactionModalVisible] = useState(false);
+  const [
+    transactionModalComponentVisible,
+    setTransactionModalComponentVisible,
+  ] = useState(false);
 
   useEffect(() => {
     navigation.setOptions({
@@ -188,56 +172,6 @@ export default function ViewAccountScreen({ route, navigation }) {
     console.log(expenses);
   }, [expenses]);
 
-  const addTransaction = () => {
-    firestore()
-      .collection("users")
-      .doc(auth().currentUser.uid)
-      .collection("transactions")
-      .add({
-        category: pickerValue,
-        cost: parseFloat(transactionInput[1]),
-        isWithdrawl: true,
-        transactionName: transactionInput[0],
-        date: firestore.Timestamp.now(),
-      })
-      .then(() => console.log("this owrked"));
-    firestore()
-      .collection("users")
-      .add({
-        name: "test",
-      })
-      .then(() => console.log("this works"));
-    setTransactionInput(["", ""]);
-    setPickerValue("Select a Value");
-  };
-
-  const addDeposit = () => {
-    firestore()
-      .collection("users")
-      .doc(auth().currentUser.uid)
-      .collection("transactions")
-      .add({
-        transactionName: "Deposit",
-        isWithdrawl: false,
-        category: "Misc",
-        cost: parseFloat(depositInput),
-        date: firestore.Timestamp.now(),
-      });
-    setDepositInput("");
-  };
-
-  const addBudget = () => {
-    firestore()
-      .collection("users")
-      .doc(auth().currentUser.uid)
-      .update({
-        budget: parseFloat(myBudgetInput),
-      })
-      .then(() => {
-        setMyBudgetInput("");
-      });
-  };
-
   const handleMore = () => {
     setMore((prev) => !prev);
   };
@@ -252,152 +186,12 @@ export default function ViewAccountScreen({ route, navigation }) {
     //going to try to get state to work here and get it into components
     <View style={styles.container}>
       <TransactionModalComponent
-        visible={transactionModalVisible}
-        toggleVisible={setTransactionModalVisible}
+        viComponentsible={transactionModalComponentVisible}
+        toggleVisible={setTransactionModalComponentVisible}
       ></TransactionModalComponent>
       <StatusBar barStyle="light-content" />
-      <Modal isVisible={isTraModalVisible}>
-        <View style={styles.modalView}>
-          <View style={styles.modalViewable}>
-            <Text style={styles.modalTitle}>Add a Transaction</Text>
-            <View>
-              <Text style={styles.modalText}>Transaction Title</Text>
-              <TextInput
-                value={transactionInput[0]}
-                onChangeText={(text) =>
-                  setTransactionInput([text, transactionInput[1]])
-                }
-                placeholderTextColor={"gray"}
-                style={styles.input}
-                placeholder="e.g Turkey Sandwich"
-              />
-              <Text style={styles.modalText}>Transaction Amount</Text>
-              <TextInput
-                value={transactionInput[1]}
-                onChangeText={(text) =>
-                  setTransactionInput([transactionInput[0], text])
-                }
-                placeholderTextColor={"gray"}
-                style={styles.input}
-                placeholder="e.g $13.45"
-              />
-              <Text style={styles.modalText}>Category</Text>
-              {/* {console.log(categories.map((values) => values.name))} */}
-
-              {categories !== undefined ? (
-                <Picker
-                  selectedValue={pickerValue}
-                  onValueChange={(itemValue, itemIndex) =>
-                    setPickerValue(itemValue)
-                  }
-                  style={{ color: "white" }}
-                >
-                  <Picker.Item
-                    style={{ color: "black" }}
-                    label="Select a Value"
-                    value="Select a Value"
-                    key="Select a Value"
-                  ></Picker.Item>
-                  {Object.values(categories).map((values) => {
-                    return (
-                      <Picker.Item
-                        style={{ color: "black" }}
-                        label={values.key}
-                        value={values.key}
-                        key={values.key}
-                      ></Picker.Item>
-                    );
-                  })}
-                </Picker>
-              ) : null}
-            </View>
-            <View style={{ flexDirection: "row" }}>
-              <Button
-                title="Add"
-                onPress={() => {
-                  if (
-                    transactionInput[0] == "" ||
-                    transactionInput[1] == "" ||
-                    pickerValue == "Select a Value"
-                  ) {
-                    console.log("Fill out the form completely");
-                    return;
-                  }
-                  handleTraModal();
-                  addTransaction();
-                }}
-              />
-              <Button title="Cancel" onPress={handleTraModal} />
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      <Modal isVisible={isDepModalVisible}>
-        <View style={styles.modalView}>
-          <View style={styles.modalViewable}>
-            <Text style={styles.modalTitle}>Make a Deposit</Text>
-            <View>
-              <Text style={styles.modalText}>Deposit Amount</Text>
-              <TextInput
-                value={depositInput}
-                onChangeText={(text) => setDepositInput(text)}
-                placeholderTextColor={"gray"}
-                placeholder={"e.g $100"}
-                style={styles.input}
-              />
-            </View>
-            <View style={{ flexDirection: "row" }}>
-              <Button
-                title="Deposit"
-                onPress={() => {
-                  handleDepModal();
-                  addDeposit();
-                }}
-              />
-              <Button title="Cancel" onPress={handleDepModal} />
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      <Modal isVisible={isBudgetModalVisible}>
-        <View style={styles.modalView}>
-          <View style={styles.modalViewable}>
-            <Text style={styles.modalTitle}>Set a Budget</Text>
-            <View>
-              <Text style={styles.modalText}>Budget Amount</Text>
-              <TextInput
-                value={myBudgetInput}
-                onChangeText={(text) => setMyBudgetInput(text)}
-                placeholderTextColor={"gray"}
-                placeholder={"e.g $100"}
-                style={styles.input}
-              />
-            </View>
-            <View style={{ flexDirection: "row" }}>
-              <Button
-                title="Set Budget"
-                onPress={() => {
-                  handleBudgetModal();
-                  addBudget();
-                }}
-              />
-              <Button title="Cancel" onPress={handleBudgetModal} />
-            </View>
-          </View>
-        </View>
-      </Modal>
 
       <View styles={{ flex: 1 }}>
-        <TopBarStats
-          myBudget={myBudget}
-          totalSpent={totalSpent}
-          pixel80percent={pixel80percent}
-          handleTraModal={handleTraModal}
-          handleDepModal={handleDepModal}
-          handleBudgetModal={handleBudgetModal}
-        ></TopBarStats>
         <SectionList
           ListHeaderComponent={() => {
             return (
@@ -405,10 +199,11 @@ export default function ViewAccountScreen({ route, navigation }) {
                 myBudget={myBudget}
                 totalSpent={totalSpent}
                 pixel80percent={pixel80percent}
-                handleTraModal={handleTraModal}
-                handleDepModal={handleDepModal}
-                handleBudgetModal={handleBudgetModal}
-              ></TopBarStats>
+              >
+                <TransactionModal categories={categories}></TransactionModal>
+                <DepositModal></DepositModal>
+                <BudgetModal></BudgetModal>
+              </TopBarStats>
             );
           }}
           keyExtractor={(item, itemIndex) => item.key}
@@ -455,7 +250,7 @@ export default function ViewAccountScreen({ route, navigation }) {
               renderItem: ({ item }) => (
                 <TouchableOpacity
                   onPress={() => {
-                    setTransactionModalVisible((prev) => !prev);
+                    setTransactionModalComponentVisible((prev) => !prev);
                   }}
                 >
                   <View style={styles.topGroup}>

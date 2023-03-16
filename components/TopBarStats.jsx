@@ -1,89 +1,59 @@
-import React, { Component } from "react";
+import React, { Component, useEffect } from "react";
 import { Text, View, StyleSheet, Button } from "react-native";
 import * as Progress from "react-native-progress";
+import TransactionModal from "./TransactionModal";
 // import {styles} from 'C:\Users\eden\React Native\FinanceTracker\components\styles.jsx'
 
-class TopBarStats extends Component {
-  render() {
-    return (
-      <View style={styles.titleContainer}>
-        <View style={{ marginLeft: 20 }}>
-          <Text>
-            <Text style={styles.title}>
-              $
-              {(
-                Math.round(
-                  (this.props.myBudget - this.props.totalSpent) * 100
-                ) / 100
-              ).toFixed(2)}
-            </Text>
-            <Text style={{ fontSize: 40, color: "white" }}> Left</Text>
+const TopBarStats = (props) => {
+  return (
+    <View style={styles.titleContainer}>
+      <View style={{ marginLeft: 20 }}>
+        <Text>
+          <Text style={styles.title}>
+            $
+            {(
+              Math.round((props.myBudget - props.totalSpent) * 100) / 100
+            ).toFixed(2)}
           </Text>
-          <Text style={{ color: "white", paddingBottom: 10 }}>
-            Month Started With: ${this.props.myBudget}
-          </Text>
-        </View>
+          <Text style={{ fontSize: 40, color: "white" }}> Left</Text>
+        </Text>
+        <Text style={{ color: "white", paddingBottom: 10 }}>
+          Month Started With: ${props.myBudget}
+        </Text>
+      </View>
 
+      <View
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          width: "100%",
+        }}
+      >
+        <Progress.Bar
+          style={{ display: "flex" }}
+          progress={(props.myBudget - props.totalSpent) / props.myBudget}
+          width={props.pixel80percent}
+          borderRadius={10}
+          height={20}
+          color={"#414141"}
+          unfilledColor={"#d9d9d9"}
+        />
         <View
           style={{
             display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
+            flexDirection: "row",
+            marginTop: 10,
             width: "100%",
+            justifyContent: "space-around",
           }}
         >
-          <Progress.Bar
-            style={{ display: "flex" }}
-            progress={
-              (this.props.myBudget - this.props.totalSpent) /
-              this.props.myBudget
-            }
-            width={this.props.pixel80percent}
-            borderRadius={10}
-            height={20}
-            color={"#414141"}
-            unfilledColor={"#d9d9d9"}
-          />
-          <View
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              marginTop: 10,
-              width: "100%",
-              justifyContent: "space-around",
-            }}
-          >
-            <View>
-              <Button
-                color="tomato"
-                title="Add Transaction"
-                onPress={() => this.props.handleTraModal()}
-              />
-            </View>
-            <View>
-              <Button
-                color="greenyellow"
-                title="Deposit Money"
-                onPress={() => this.props.handleDepModal()}
-              />
-            </View>
-            <View>
-              <Button
-                color="yellow"
-                title="Set Budget"
-                onPress={() => this.props.handleBudgetModal()}
-              />
-            </View>
-            {/* <View>
-                <Button color = 'black' title = "Log" onPress={showAsyncStorageContentInDev}/>
-              </View> */}
-          </View>
+          {props.children}
         </View>
       </View>
-    );
-  }
-}
-
+    </View>
+  );
+};
 const styles = StyleSheet.create({
   TopBar: {
     position: "absolute",
@@ -102,7 +72,9 @@ const styles = StyleSheet.create({
   },
   titleContainer: {
     backgroundColor: "#2d2e30",
-    flex: 1,
+    flex: 0,
+    // height: "40%",
+    // width: "100%",
     justifyContent: "center",
     alignItems: "flex-start",
     // paddingLeft: 20,

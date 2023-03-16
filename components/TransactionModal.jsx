@@ -1,33 +1,139 @@
-import React, { Component } from "react";
-import { Text, View, StyleSheet, Modal, TextInput, Button } from "react-native";
+import React, { useState } from "react";
+import { Text, View, StyleSheet, TextInput, Button } from "react-native";
+import { Picker } from "@react-native-picker/picker";
+import Modal from "react-native-modal";
+import firestore from "@react-native-firebase/firestore";
+import auth from "@react-native-firebase/auth";
 
 const TransactionModal = (props) => {
+  const [isVisible, setVisible] = useState(false);
+  const [transactionInput, setTransactionInput] = useState(["", ""]);
+  const [pickerValue, setPickerValue] = useState("Select a Value");
+  const addTransaction = () => {
+    firestore()
+      .collection("users")
+      .doc(auth().currentUser.uid)
+      .collection("transactions")
+      .add({
+        category: pickerValue,
+        cost: parseFloat(transactionInput[1]),
+        isWithdrawl: true,
+        transactionName: transactionInput[0],
+        date: firestore.Timestamp.now(),
+      })
+      .then(() => console.log("this owrked"));
+    firestore().collection("users").add({
+      name: "test",
+    });
+    setTransactionInput(["", ""]);
+    setPickerValue("Select a Value");
+  };
+  // console.log(props.categories);
   return (
-    <Modal visible={false}>
-      <View style={styles.modalView}>
+    <View>
+      <View>
+        <Button
+          color="tomato"
+          title="Add Transaction"
+          onPress={() => {
+            setVisible((prev) => !prev);
+          }}
+        />
+      </View>
+      <Modal
+        isVisible={isVisible}
+        avoidKeyboard={false}
+        onBackdropPress={() => setVisible(false)}
+        statusBarTranslucent={true}
+      >
+        {/* <View style={styles.modalView}> */}
+        {/* <StatusBar hidden /> */}
         <View style={styles.modalViewable}>
           <Text style={styles.modalTitle}>Add a Transaction</Text>
           <View>
             <Text style={styles.modalText}>Transaction Title</Text>
             <TextInput
+              value={transactionInput[0]}
+              onChangeText={(text) =>
+                setTransactionInput([text, transactionInput[1]])
+              }
               placeholderTextColor={"gray"}
               style={styles.input}
               placeholder="e.g Turkey Sandwich"
             />
             <Text style={styles.modalText}>Transaction Amount</Text>
+            {/* inputMode={"numeric"}
+            onChangeText=
+            {(text) => {
+              const filteredText = text.replace(/[^0-9]+/, "");
+              setBudget(filteredText);
+            }} */}
             <TextInput
+              value={transactionInput[1]}
+              onChangeText={(text) => {
+                if (/^[0-9]*\.?[0-9]*$/.test(text)) {
+                  setTransactionInput([transactionInput[0], text]);
+                }
+              }}
+              inputMode={"numeric"}
               placeholderTextColor={"gray"}
               style={styles.input}
               placeholder="e.g $13.45"
             />
+            <Text style={styles.modalText}>Category</Text>
+            {/* {console.log(categories.map((values) => values.name))} */}
+            {props.categories !== undefined ? (
+              <Picker
+                selectedValue={pickerValue}
+                onValueChange={(itemValue, itemIndex) =>
+                  setPickerValue(itemValue)
+                }
+                style={{ color: "white" }}
+              >
+                <Picker.Item
+                  style={{ color: "black" }}
+                  label="Select a Value"
+                  value="Select a Value"
+                  key="Select a Value"
+                ></Picker.Item>
+                {Object.values(props.categories).map((values) => {
+                  return (
+                    <Picker.Item
+                      style={{ color: "black" }}
+                      label={values.key}
+                      value={values.key}
+                      key={values.key}
+                    ></Picker.Item>
+                  );
+                })}
+              </Picker>
+            ) : null}
           </View>
           <View style={{ flexDirection: "row" }}>
-            <Button title="Add" onPress={props.handleTraModal} />
-            <Button title="Cancel" onPress={props.handleTraModal} />
+            <Button
+              title="Add"
+              onPress={() => {
+                if (
+                  transactionInput[0] == "" ||
+                  transactionInput[1] == "" ||
+                  pickerValue == "Select a Value"
+                ) {
+                  console.log("Fill out the form completely");
+                  return;
+                }
+                setVisible((prev) => !prev);
+                addTransaction();
+              }}
+            />
+            <Button
+              title="Cancel"
+              onPress={() => setVisible((prev) => !prev)}
+            />
           </View>
         </View>
-      </View>
-    </Modal>
+        {/* </View> */}
+      </Modal>
+    </View>
   );
 };
 const styles = StyleSheet.create({
