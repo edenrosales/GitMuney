@@ -1,5 +1,5 @@
 import "react-native-gesture-handler";
-import React, { useState, useEffect, Component } from "react";
+import React, { useState, useEffect, Component, useTransition } from "react";
 import {
   StyleSheet,
   Text,
@@ -18,7 +18,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import uuid from "react-native-uuid";
 import TopBarStats from "../components/TopBarStats";
 import Categories from "../components/Categories";
-import { useFB } from "../components/ContextProvider";
+import {
+  useExpenses,
+  useCategories,
+  useTotalSpent,
+  useBudget,
+} from "../components/ContextProvider";
 import { HeaderBackButton } from "@react-navigation/elements";
 import auth from "@react-native-firebase/auth";
 import firestore, { Timestamp } from "@react-native-firebase/firestore";
@@ -38,7 +43,6 @@ export default function ViewAccountScreen({ route, navigation }) {
     await signOut();
     // navigation.navigate("Home");
   };
-
   const signOut = async () => {
     auth()
       .signOut()
@@ -52,6 +56,14 @@ export default function ViewAccountScreen({ route, navigation }) {
     }
   };
 
+  const screenWidth = Dimensions.get("window").width;
+  const pixel80percent = (screenWidth / 100) * 90;
+
+  const expensesContext = useExpenses();
+  const categoriesContext = useCategories();
+  const totalSpentContext = useTotalSpent();
+  const budgetContext = useBudget();
+
   const [totalSpent, setTotalSpent] = useState(0);
   const [categories, setCategories] = useState({});
   const [myBudget, setMyBudget] = useState(5000);
@@ -61,100 +73,21 @@ export default function ViewAccountScreen({ route, navigation }) {
     transactionModalComponentVisible,
     setTransactionModalComponentVisible,
   ] = useState(false);
-  const handleTransactionModalComponent = () => {
-    setTransactionModalComponentVisible((prev) => !prev);
-  };
-  // const [firstLogin, setFirstLogin] = useState(false);
-
-  // const toggleFirstLogin = () => {
-  //   setFirstLogin(false);
-  // };
-  // useEffect(() => {
-  //   navigation.setOptions({
-  //     headerLeft: () => {
-  //       return (
-  //         <HeaderBackButton
-  //           style={{ tontColor: "#746961", marginLeft: 0 }}
-  //           onPress={() => handleBack()}
-  //         />
-  //       );
-  //     },
-  //   });
-  // }, []);
+  const [transactionSelected, setTransactionSelected] = useState({});
+  // const [test, setTest] = useState(useExpenses());
 
   useEffect(() => {
-    const subscriber = firestore()
-      .collection("users")
-      .doc(auth().currentUser.uid)
-      .collection("transactions")
-      .orderBy("date", "desc")
-      .onSnapshot(
-        (result) => {
-          let currentSpent = 0;
-          const transactions = {};
-          const newCategories = {};
-          result.forEach((transaction) => {
-            const data = transaction.data();
-            currentSpent += data.cost;
-            transactions[transaction.id] = {
-              ...data,
-              key: transaction.id,
-            };
-            if (!(data.category in newCategories)) {
-              newCategories[data.category] = {
-                key: data.category,
-                total: data.cost,
-              };
-            } else {
-              newCategories[data.category].total += data.cost;
-            }
-          });
-          setExpenses(() => {
-            console.log("expenses updated");
-            return { ...transactions };
-          });
-          setCategories((previousCategories) => {
-            //i didnt know you could do this in js
-            //makes a new object and replaces all the keys that are identical in the first and second with the latter most object
-            return { ...previousCategories, ...newCategories };
-          });
-          setTotalSpent(currentSpent);
-        },
-        (err) => {
-          console.log("error here1");
-          console.log(err);
-        }
-      );
-    return () => subscriber();
-  }, []);
-
+    setExpenses(expensesContext);
+  }, [expensesContext]);
   useEffect(() => {
-    const subscriber = firestore()
-      .collection("users")
-      .doc(auth().currentUser.uid)
-      .onSnapshot(
-        (documentSnapshot) => {
-          const data = documentSnapshot.data();
-          const categories = {};
-          data.categories.forEach((category) => {
-            categories[category] = {
-              key: category,
-              total: 0,
-            };
-          });
-
-          setCategories((prev) => {
-            return { ...categories, ...prev };
-          });
-          setMyBudget(data.budget);
-        },
-        (err) => {
-          console.log("error here2");
-          console.log(err);
-        }
-      );
-    return () => subscriber();
-  }, []);
+    setCategories(categoriesContext);
+  }, [categoriesContext]);
+  useEffect(() => {
+    setTotalSpent(totalSpentContext);
+  }, [totalSpentContext]);
+  useEffect(() => {
+    setMyBudget(budgetContext);
+  }, [budgetContext]);
 
   useEffect(() => {
     console.log("categories!!!");
@@ -173,8 +106,16 @@ export default function ViewAccountScreen({ route, navigation }) {
   const handleBudgetModal = () =>
     setIsBudgetModalVisible(() => !isBudgetModalVisible);
 
-  const screenWidth = Dimensions.get("window").width;
-  const pixel80percent = (screenWidth / 100) * 90;
+  const handleTransactionPress = (item) => {
+    // console.log(item);
+    setTransactionModalComponentVisible((prev) => !prev);
+    setTransactionSelected(() => {
+      return item;
+    });
+  };
+  const handleTransactionModalComponent = () => {
+    setTransactionModalComponentVisible((prev) => !prev);
+  };
   return (
     //going to try to get state to work here and get it into components
     <View style={styles.container}>
@@ -186,9 +127,9 @@ export default function ViewAccountScreen({ route, navigation }) {
       <TransactionModalComponent
         visible={transactionModalComponentVisible}
         toggleVisible={handleTransactionModalComponent}
+        transaction={transactionSelected}
       ></TransactionModalComponent>
       <StatusBar barStyle="light-content" />
-
       <View styles={{ flex: 1 }}>
         <SectionList
           ListHeaderComponent={() => {
@@ -227,6 +168,7 @@ export default function ViewAccountScreen({ route, navigation }) {
                         alignItems: "center",
                       }}
                     >
+                      {/* {console.log(myBudget)} */}
                       <Progress.Bar
                         progress={item.total / myBudget}
                         width={pixel80percent}
@@ -246,42 +188,45 @@ export default function ViewAccountScreen({ route, navigation }) {
               title: "expenses",
               data: Object.values(expenses),
               renderItem: ({ item }) => (
-                <TouchableOpacity
-                  onPress={() => {
-                    setTransactionModalComponentVisible((prev) => !prev);
-                  }}
-                >
-                  <View style={styles.topGroup}>
-                    {/* {console.log("HELP ME IM GOING TO KMS ")}
+                <>
+                  <TouchableOpacity
+                    onPress={() => {
+                      handleTransactionPress(item);
+                      // @setTransactionModalComponentVisible((prev) => !prev);
+                    }}
+                  >
+                    <View style={styles.topGroup}>
+                      {/* {console.log("HELP ME IM GOING TO KMS ")}
                   {console.log(item)} */}
-                    <View style={styles.tranGroup}>
-                      <Text style={styles.item}>
-                        {item.transactionName
-                          ? item.transactionName
-                          : "Deposit"}
-                      </Text>
+                      <View style={styles.tranGroup}>
+                        <Text style={styles.item}>
+                          {item.transactionName
+                            ? item.transactionName
+                            : "Deposit"}
+                        </Text>
+                        <Text
+                          style={[
+                            styles.item,
+                            {
+                              color:
+                                item.isWithdrawl == true
+                                  ? "tomato"
+                                  : "greenyellow",
+                            },
+                          ]}
+                        >
+                          ${item.cost}
+                        </Text>
+                      </View>
                       <Text
-                        style={[
-                          styles.item,
-                          {
-                            color:
-                              item.isWithdrawl == true
-                                ? "tomato"
-                                : "greenyellow",
-                          },
-                        ]}
+                        style={{ color: "#999", fontSize: 20, paddingLeft: 10 }}
                       >
-                        ${item.cost}
+                        {item.hasOwnProperty("date") &&
+                          item.date.toDate().toDateString()}
                       </Text>
                     </View>
-                    <Text
-                      style={{ color: "#999", fontSize: 20, paddingLeft: 10 }}
-                    >
-                      {item.hasOwnProperty("date") &&
-                        item.date.toDate().toDateString()}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
+                  </TouchableOpacity>
+                </>
               ),
             },
           ]}

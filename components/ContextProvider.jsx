@@ -1,64 +1,125 @@
 import React, { useContext, useState, useEffect } from "react";
-// import { ThemeContext } from "react-navigation";
+import auth from "@react-native-firebase/auth";
+import firestore, { Timestamp } from "@react-native-firebase/firestore";
+import Categories from "./Categories";
 
-const FBContext = React.createContext();
-const FBUpdateContext = React.createContext();
-const DBContext = React.createContext();
-// const authContext = React.createContext()
-const userContext = React.createContext();
-const userUpdatecontext = React.createContext();
-
-export function useFB() {
-  return useContext(FBContext);
-}
-export function useDB() {
-  return useContext(DBContext);
-}
-// export function useAuth(){
-//     return useContext(authContext)
-// }
-export function useUser() {
-  return useContext(userContext);
-}
-export function useUserUpdate() {
-  return useContext(userUpdatecontext);
+{
+  /* THE CONCEPT OF CONTEXT IN REACT: 
+- use React.createContext() to create a context value that is stored somewhere 
+- the value that is returned is the context object
+  - does not hold info on its own - just which context other components read or provide(?) 
+ */
+  //FOR THIS FILE:
+  //We do not need to conisder if we are authenticated and if the data exists as this theme context should only be used
+  //if we are on post-authentication screens
 }
 
-// export function useFBUpdate() {
-//     return useContext(FBUpdateContext)
-// }
+// const FBContext = React.createContext();
+const ExpensesContext = React.createContext();
+const CategoriesContext = React.createContext();
+const TotalSpentContext = React.createContext();
+const BudgetContext = React.createContext();
+export const useExpenses = () => {
+  return useContext(ExpensesContext);
+};
+export const useCategories = () => {
+  return useContext(CategoriesContext);
+};
+export const useTotalSpent = () => {
+  return useContext(TotalSpentContext);
+};
+export const useBudget = () => {
+  return useContext(BudgetContext);
+};
+export const ThemeProvider = ({ children }) => {
+  const [expenses, setExpenses] = useState({});
+  const [categories, setCategories] = useState({});
+  const [totalSpent, setTotalSpent] = useState(0);
+  const [budget, setBudget] = useState(1);
 
-export function ThemeProvider({ children }) {
-  // const firebaseConfig = {
-  //     apiKey: "AIzaSyDV3Qc5xTGiR9g7_71qEVV_80sQZzsa89c",
-  //     authDomain: "gitmuney-3222e.firebaseapp.com",
-  //     projectId: "gitmuney-3222e",
-  //     storageBucket: "gitmuney-3222e.appspot.com",
-  //     messagingSenderId: "847719830073",
-  //     appId: "1:847719830073:web:66f41e044fb30ea21273e8",
-  //     measurementId: "G-0CT8W111V2"
-  // };
-  // const app = initializeApp(firebaseConfig);
-  // // const analytics = getAnalytics(app);
-  // const database = getFirestore(app);
-  // const authentication = getAuth(app);
+  useEffect(() => {
+    const subscriber = firestore()
+      .collection("users")
+      .doc(auth().currentUser.uid)
+      .collection("transactions")
+      .orderBy("date", "desc")
+      .onSnapshot(
+        (result) => {
+          let currentSpent = 0;
+          const transactions = {};
+          const newCategories = {};
+          result.forEach((transaction) => {
+            const data = transaction.data();
+            currentSpent += data.cost;
+            transactions[transaction.id] = {
+              ...data,
+              key: transaction.id,
+            };
+            if (!(data.category in newCategories)) {
+              newCategories[data.category] = {
+                key: data.category,
+                total: data.cost,
+              };
+            } else {
+              newCategories[data.category].total += data.cost;
+            }
+          });
+          setExpenses(() => {
+            console.log("expenses updated");
+            return { ...transactions };
+          });
+          setCategories((previousCategories) => {
+            //i didnt know you could do this in js
+            //makes a new object and replaces all the keys that are identical in the first and second with the latter most object
+            return { ...previousCategories, ...newCategories };
+          });
+          setTotalSpent(currentSpent);
+        },
+        (err) => {
+          console.log("error here1");
+          console.log(err);
+        }
+      );
+    return () => subscriber();
+  }, []);
 
-  // var ui = new firebaseui.auth.AuthUI(fb.auth());
-  const [fb, setFb] = useState();
-  const [db, setDb] = useState();
-  // const [auth,setAuth] = useState(authentication)
-  const [user, setUser] = useState();
+  useEffect(() => {
+    const subscriber = firestore()
+      .collection("users")
+      .doc(auth().currentUser.uid)
+      .onSnapshot(
+        (documentSnapshot) => {
+          const data = documentSnapshot.data();
+          const categories = {};
+          data.categories.forEach((category) => {
+            categories[category] = {
+              key: category,
+              total: 0,
+            };
+          });
+
+          setCategories((prev) => {
+            return { ...categories, ...prev };
+          });
+          setBudget(data.budget);
+        },
+        (err) => {
+          console.log("error here2");
+          console.log(err);
+        }
+      );
+    return () => subscriber();
+  }, []);
+
   return (
-    <FBContext.Provider value={fb}>
-      {/* <FBUpdateContext.Provider value = {setFb}> */}
-      <DBContext.Provider value={db}>
-        <userContext.Provider value={user}>
-          <userUpdatecontext.Provider value={setUser}>
+    <ExpensesContext.Provider value={expenses}>
+      <CategoriesContext.Provider value={categories}>
+        <TotalSpentContext.Provider value={totalSpent}>
+          <BudgetContext.Provider value={budget}>
             {children}
-          </userUpdatecontext.Provider>
-        </userContext.Provider>
-      </DBContext.Provider>
-      {/* </FBUpdateContext.Provider> */}
-    </FBContext.Provider>
+          </BudgetContext.Provider>
+        </TotalSpentContext.Provider>
+      </CategoriesContext.Provider>
+    </ExpensesContext.Provider>
   );
-}
+};

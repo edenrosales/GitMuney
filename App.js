@@ -60,78 +60,77 @@ export default function App() {
   };
   const MainContent = () => {
     return (
-      <Tab.Navigator
-        screenOptions={{
-          tabBarHideOnKeyboard: true,
-          headerShown: false,
-          tabBarActiveBackgroundColor: "#2d2e30",
-          tabBarInactiveBackgroundColor: "#2d2e30",
-          tabBarStyle: {
-            borderTopWidth: 0,
-          },
-          // tabBarBadgeStyle: { backgroundColor: "#2d2e30" },
-        }}
-      >
-        <Tab.Screen name="SortCategories" component={SortCategories} />
-        <Tab.Screen
-          name="ViewAccount"
-          component={ViewAccountScreen}
-          // options={{
-          //   gestureDirection: "horizontal",
-          //   title: "Logout",
-          //   headerTintColor: "#746961",
-          //   headerStyle: { backgroundColor: "#2d2e30" },
-          //   headerMode: "screen",
-          // }}
-        />
-        <Tab.Screen
-          name="SettingsAndAnalytics"
-          component={SettingsAndAnalytics}
-        />
-      </Tab.Navigator>
+      //Theme provider is the ContextWrapper for main screens after authentication flow is complete
+      <ThemeProvider>
+        <Tab.Navigator
+          screenOptions={{
+            tabBarHideOnKeyboard: true,
+            headerShown: false,
+            tabBarActiveBackgroundColor: "#2d2e30",
+            tabBarInactiveBackgroundColor: "#2d2e30",
+            tabBarStyle: {
+              borderTopWidth: 0,
+            },
+            // tabBarBadgeStyle: { backgroundColor: "#2d2e30" },
+          }}
+          initialRouteName="ViewAccount"
+        >
+          <Tab.Screen name="SortCategories" component={SortCategories} />
+          <Tab.Screen
+            name="ViewAccount"
+            component={ViewAccountScreen}
+            // options={{
+            //   gestureDirection: "horizontal",
+            //   title: "Logout",
+            //   headerTintColor: "#746961",
+            //   headerStyle: { backgroundColor: "#2d2e30" },
+            //   headerMode: "screen",
+            // }}
+          />
+          <Tab.Screen
+            name="SettingsAndAnalytics"
+            component={SettingsAndAnalytics}
+          />
+        </Tab.Navigator>
+      </ThemeProvider>
     );
   };
 
   return (
     <NavigationContainer>
-      <ThemeProvider>
-        {authState !== authStates.NotLoggedIn ? (
-          <>
-            {console.log(authState)}
-            <Stack.Navigator
-              initialRouteName={
-                authState === authStates.ConfigNotCompleted
-                  ? "FirstLoginConfig"
-                  : "MainContent"
-              }
-              screenOptions={{ headerShown: false }}
-            >
-              <Stack.Screen
-                name="MainContent"
-                component={MainContent}
-              ></Stack.Screen>
-              <Stack.Screen
-                name="FirstLoginConfig"
-                component={FirstLoginConfig}
-              ></Stack.Screen>
-            </Stack.Navigator>
-          </>
-        ) : (
-          <AuthStack.Navigator>
-            <Stack.Screen
-              name="Home"
-              component={WelcomeScreen}
-              options={{
-                headerShown: false,
-                gestureDirection: "horizontal",
-                title: "Home",
-                headerTintColor: "#746961",
-                headerStyle: { backgroundColor: "#2d2e30" },
-              }}
-            />
-          </AuthStack.Navigator>
-        )}
-      </ThemeProvider>
+      {authState !== authStates.NotLoggedIn ? (
+        <Stack.Navigator
+          initialRouteName={
+            authState === authStates.ConfigNotCompleted
+              ? "FirstLoginConfig"
+              : "MainContent"
+          }
+          screenOptions={{ headerShown: false }}
+        >
+          <Stack.Screen
+            name="MainContent"
+            component={MainContent}
+          ></Stack.Screen>
+          <Stack.Screen
+            name="FirstLoginConfig"
+            component={FirstLoginConfig}
+          ></Stack.Screen>
+        </Stack.Navigator>
+      ) : (
+        <AuthStack.Navigator>
+          <Stack.Screen
+            name="Home"
+            component={WelcomeScreen}
+            options={{
+              headerShown: false,
+              gestureDirection: "horizontal",
+              title: "Home",
+              headerTintColor: "#746961",
+              headerStyle: { backgroundColor: "#2d2e30" },
+            }}
+          />
+        </AuthStack.Navigator>
+      )}
     </NavigationContainer>
   );
 }
