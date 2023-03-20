@@ -34,23 +34,42 @@ import FirstLoginConfig from "../components/FirstLoginConfig";
 import SignUp from "../components/SignUp";
 
 function WelcomeScreen({ navigation, authCompleted }) {
-  const [firstLogin, setFirstLogin] = useState(false);
   const [signUp, setSignUp] = useState(false);
   const [logininfo, setLogininfo] = useState(["", ""]);
   const [reEnterPassword, setReEnterPassword] = useState("");
   const [reEnterPasswordValid, setReEnterPasswordValid] = useState(true);
 
   useEffect(() => {
-    // auth().signOut();
+    // console.log(auth().currentUser.uid);
     const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
     return subscriber;
-  }, [firstLogin]);
+  }, []);
 
   const onAuthStateChanged = async () => {
     if (auth().currentUser) {
       setLogininfo(["", ""]);
+      const userDocument = await firestore()
+        .collection("users")
+        .doc(auth().currentUser.uid)
+        .get();
+      if (!userDocument.exists) {
+        await firestore()
+          .collection("users")
+          .doc(auth().currentUser.uid)
+          .set({
+            categories: [
+              "Groceries",
+              "Rent",
+              "Entertainment",
+              "Bills",
+              "Taxes",
+              "Misc",
+              "Investing",
+            ],
+            firstLogin: true,
+          });
+      }
     } else {
-      setFirstLogin(false);
       console.log("not signed in");
     }
   };
@@ -76,22 +95,6 @@ function WelcomeScreen({ navigation, authCompleted }) {
     auth()
       .createUserWithEmailAndPassword(logininfo[0], logininfo[1])
       .then(() => {
-        firestore()
-          .collection("users")
-          .doc(auth().currentUser.uid)
-          .set({
-            categories: [
-              "Groceries",
-              "Rent",
-              "Entertainment",
-              "Bills",
-              "Taxes",
-              "Misc",
-              "Investing",
-            ],
-            firstLogin: true,
-          });
-
         setLogininfo(["", ""]);
         setReEnterPassword("");
         setSignUp(false);
@@ -117,18 +120,12 @@ function WelcomeScreen({ navigation, authCompleted }) {
       });
   };
 
-  const toggleFirstLogin = () => {
-    setFirstLogin((prev) => !prev);
-  };
   const toggleSignUp = () => {
     setSignUp((prev) => !prev);
   };
 
   return (
     <>
-      {/* <SignUp visible={signUp} toggleSignUp={toggleSignUp}></SignUp> */}
-
-      {/* </View> */}
       <View
         style={{
           position: "relative",
@@ -286,6 +283,12 @@ function WelcomeScreen({ navigation, authCompleted }) {
               <View style={{ marginTop: 20, paddingVertical: 10 }}>
                 <GoogleSignInButton />
               </View>
+              {/* <Button
+                onPress={() => {
+                  signOut();
+                }}
+                title="Test Sign Out"
+              ></Button> */}
             </>
           )}
         </View>
@@ -324,20 +327,7 @@ function WelcomeScreen({ navigation, authCompleted }) {
             </Text>
           )}
         </View>
-        {/* <Button title = "test this" onPress={()=>{
-                    
-                }
-                    if(GoogleSignin.isSignedIn()){
-                        console.log("google signed in ")
-                    }
-                } /> */}
-        {/* <Button title = "sign out" onPress ={() =>{signOut()}} /> */}
       </View>
-      {/* <Animated.View style = {{position:'absolute',
-            transform: [{translateY: modalTransition}]
-            , height: '75%', width:'100%', zIndex: 1, backgroundColor: 'white', borderTopRightRadius: 15, borderTopLeftRadius: 15 }}>
-                
-            </Animated.View> */}
     </>
   );
 }

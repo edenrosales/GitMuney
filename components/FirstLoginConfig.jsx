@@ -13,6 +13,11 @@ import {
 import { ScrollView, TextInput } from "react-native-gesture-handler";
 import auth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
+import {
+  GoogleSignin,
+  statusCodes,
+  isSignedIn,
+} from "@react-native-google-signin/google-signin";
 
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
@@ -25,6 +30,20 @@ const FirstLoginConfig = ({ props, navigation }) => {
   const [budget, setBudget] = useState(undefined);
   const onlyNumbersInput = RegExp("/^[0-9]+$/");
   const [inputStatus, setInputStatus] = useState(false);
+
+  const signOut = async () => {
+    auth()
+      .signOut()
+      .catch((error) => {
+        console.log(error);
+      });
+    if (GoogleSignin.isSignedIn()) {
+      await GoogleSignin.revokeAccess().catch((err) => console.log(err));
+      await GoogleSignin.signOut().catch((err) => console.log(err));
+      console.log("signed out");
+    }
+  };
+
   useEffect(() => {
     validInput();
   }, [budgetStyle, managementStyle, budget]);
@@ -389,7 +408,7 @@ const FirstLoginConfig = ({ props, navigation }) => {
       >
         <TouchableOpacity
           onPress={() => {
-            auth().signOut();
+            signOut();
           }}
           style={[
             styles.button,

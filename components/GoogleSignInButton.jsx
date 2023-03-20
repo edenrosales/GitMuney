@@ -2,6 +2,7 @@ import React from "react";
 import { Button } from "react-native";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import auth from "@react-native-firebase/auth";
+import firestore from "@react-native-firebase/firestore";
 
 const GoogleSignInButton = (props) => {
   const onGoogleButtonPress = async () => {
@@ -18,7 +19,8 @@ const GoogleSignInButton = (props) => {
     const googleCredential = auth.GoogleAuthProvider.credential(idToken);
 
     // Sign-in the user with the credential
-    return auth().signInWithCredential(googleCredential);
+    const credential = auth().signInWithCredential(googleCredential);
+    return credential;
   };
   return (
     <Button
