@@ -17,8 +17,8 @@ import firestore from "@react-native-firebase/firestore";
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
 
-const FirstLoginConfig = (props) => {
-  // props.toggleFirstLogin();
+const FirstLoginConfig = ({ props, navigation }) => {
+  // props.toggleFirstLogin()
   // console.log(props.visible);
   const [managementStyle, setManagementStyle] = useState(undefined);
   const [budgetStyle, setBudgetStyle] = useState(undefined);
@@ -28,6 +28,10 @@ const FirstLoginConfig = (props) => {
   useEffect(() => {
     validInput();
   }, [budgetStyle, managementStyle, budget]);
+
+  const navigateToAccountScreen = () => {
+    navigation.navigate("MainContent");
+  };
   //returns a string identifying which valid input has been passed
   const validInput = () => {
     if (
@@ -55,8 +59,7 @@ const FirstLoginConfig = (props) => {
           setManagementStyle(undefined);
           setBudgetStyle(undefined);
           setBudget(undefined);
-          // handleToggleFirstLogin();
-          props.toggleFirstLogin();
+          navigateToAccountScreen();
         });
     } else if (inputStatus == "manual budget style") {
       firestore()
@@ -72,11 +75,10 @@ const FirstLoginConfig = (props) => {
           setManagementStyle(undefined);
           setBudgetStyle(undefined);
           setBudget(undefined);
-          props.toggleFirstLogin();
+          navigateToAccountScreen();
         });
     } else {
       console.log("Invalid Press");
-      // props.toggleFirstLogin();
     }
   };
   return (
@@ -87,7 +89,7 @@ const FirstLoginConfig = (props) => {
         backgroundColor: "#ffffff",
         width: screenWidth,
         height: screenHeight,
-        zIndex: props.visible ? 1 : -1,
+        // zIndex: props.visible ? 1 : -1,
         // opacity: props.visible ? 1 : 0,
       }}
     >
@@ -387,7 +389,7 @@ const FirstLoginConfig = (props) => {
       >
         <TouchableOpacity
           onPress={() => {
-            props.signOut();
+            auth().signOut();
           }}
           style={[
             styles.button,

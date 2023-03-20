@@ -31,18 +31,12 @@ import TransactionModalComponent from "../components/TransactionModalComponent";
 import TransactionModal from "../components/TransactionModal";
 import DepositModal from "../components/DepositModal";
 import BudgetModal from "../components/BudgetModal";
+import FirstLoginConfig from "../components/FirstLoginConfig";
 
 export default function ViewAccountScreen({ route, navigation }) {
   const handleBack = async () => {
-    //make this function limited to 5 seconds
-    // await GoogleSignin.revokeAccess(0)
     await signOut();
-    navigation.navigate("Home");
-    // auth()
-    //   .signOut()
-    //   .then(()=> {
-    //     navigation.navigate("Home").
-    //   })
+    // navigation.navigate("Home");
   };
 
   const signOut = async () => {
@@ -59,34 +53,34 @@ export default function ViewAccountScreen({ route, navigation }) {
   };
 
   const [totalSpent, setTotalSpent] = useState(0);
-
   const [categories, setCategories] = useState({});
-
   const [myBudget, setMyBudget] = useState(5000);
-
   const [expenses, setExpenses] = useState({});
-
   const [more, setMore] = useState(false);
-
-  // const [pickerValue, setPickerValue] = useState("Select a Value");
-
   const [
     transactionModalComponentVisible,
     setTransactionModalComponentVisible,
   ] = useState(false);
+  const handleTransactionModalComponent = () => {
+    setTransactionModalComponentVisible((prev) => !prev);
+  };
+  // const [firstLogin, setFirstLogin] = useState(false);
 
-  useEffect(() => {
-    navigation.setOptions({
-      headerLeft: () => {
-        return (
-          <HeaderBackButton
-            style={{ tontColor: "#746961", marginLeft: 0 }}
-            onPress={() => handleBack()}
-          />
-        );
-      },
-    });
-  }, []);
+  // const toggleFirstLogin = () => {
+  //   setFirstLogin(false);
+  // };
+  // useEffect(() => {
+  //   navigation.setOptions({
+  //     headerLeft: () => {
+  //       return (
+  //         <HeaderBackButton
+  //           style={{ tontColor: "#746961", marginLeft: 0 }}
+  //           onPress={() => handleBack()}
+  //         />
+  //       );
+  //     },
+  //   });
+  // }, []);
 
   useEffect(() => {
     const subscriber = firestore()
@@ -180,14 +174,18 @@ export default function ViewAccountScreen({ route, navigation }) {
     setIsBudgetModalVisible(() => !isBudgetModalVisible);
 
   const screenWidth = Dimensions.get("window").width;
-  // console.log(screenWidth)
   const pixel80percent = (screenWidth / 100) * 90;
   return (
     //going to try to get state to work here and get it into components
     <View style={styles.container}>
+      {/* <FirstLoginConfig
+        visible={true}
+        toggleFirstLogin={toggleFirstLogin}
+        // signOut={signOut}
+      ></FirstLoginConfig> */}
       <TransactionModalComponent
-        viComponentsible={transactionModalComponentVisible}
-        toggleVisible={setTransactionModalComponentVisible}
+        visible={transactionModalComponentVisible}
+        toggleVisible={handleTransactionModalComponent}
       ></TransactionModalComponent>
       <StatusBar barStyle="light-content" />
 

@@ -33,7 +33,7 @@ import firestore from "@react-native-firebase/firestore";
 import FirstLoginConfig from "../components/FirstLoginConfig";
 import SignUp from "../components/SignUp";
 
-function WelcomeScreen({ navigation }) {
+function WelcomeScreen({ navigation, authCompleted }) {
   const [firstLogin, setFirstLogin] = useState(false);
   const [signUp, setSignUp] = useState(false);
   const [logininfo, setLogininfo] = useState(["", ""]);
@@ -49,22 +49,11 @@ function WelcomeScreen({ navigation }) {
   const onAuthStateChanged = async () => {
     if (auth().currentUser) {
       setLogininfo(["", ""]);
-      const firstLogin = await (
-        await firestore().collection("users").doc(auth().currentUser.uid).get()
-      ).data().firstLogin;
-      if (firstLogin === true) {
-        setFirstLogin(true);
-        Keyboard.dismiss();
-        //this will show the first time setup for the user
-      } else {
-        navigation.navigate("ViewAccount");
-      }
     } else {
       setFirstLogin(false);
       console.log("not signed in");
     }
   };
-  const fb = useFB();
 
   const signOut = async () => {
     auth()
@@ -139,11 +128,6 @@ function WelcomeScreen({ navigation }) {
     <>
       {/* <SignUp visible={signUp} toggleSignUp={toggleSignUp}></SignUp> */}
 
-      <FirstLoginConfig
-        visible={firstLogin}
-        toggleFirstLogin={toggleFirstLogin}
-        signOut={signOut}
-      ></FirstLoginConfig>
       {/* </View> */}
       <View
         style={{
