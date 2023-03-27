@@ -138,6 +138,8 @@ function WelcomeScreen({ navigation, authCompleted }) {
           backgroundColor: "white",
         }}
       >
+        {/* {signOut()} */}
+        {/* {console.log(auth().currentUser.uid)} */}
         <Image
           style={styles.image}
           source={require("../assets/gitMunnyLogo.png")}
@@ -284,11 +286,11 @@ function WelcomeScreen({ navigation, authCompleted }) {
                 <GoogleSignInButton />
               </View>
               {/* <Button
-                onPress={() => {
-                  signOut();
-                }}
-                title="Test Sign Out"
-              ></Button> */}
+              onPress={() => {
+                signOut();
+              }}
+              title="Test Sign Out"
+            ></Button> */}
             </>
           )}
         </View>

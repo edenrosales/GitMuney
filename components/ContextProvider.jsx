@@ -13,12 +13,33 @@ import Categories from "./Categories";
   //We do not need to conisder if we are authenticated and if the data exists as this theme context should only be used
   //if we are on post-authentication screens
 }
+const authStates = {
+  NotLoggedIn: "Not Logged In",
+  ConfigCompleted: "Config Completed",
+  ConfigNotCompleted: "Config Not Completed",
+};
 
-// const FBContext = React.createContext();
 const ExpensesContext = React.createContext();
 const CategoriesContext = React.createContext();
 const TotalSpentContext = React.createContext();
 const BudgetContext = React.createContext();
+const AppStateContext = React.createContext();
+const AppStateUpdateContext = React.createContext();
+const PendingSortContext = React.createContext();
+const ExcludedContext = React.createContext();
+
+export const usePendingSort = () => {
+  return useContext(PendingSortContext);
+};
+export const useExcluded = () => {
+  return useContext(ExcludedContext);
+};
+export const useAppStateUpdate = () => {
+  return useContext(AppStateUpdateContext);
+};
+export const useAppState = () => {
+  return useContext(AppStateContext);
+};
 export const useExpenses = () => {
   return useContext(ExpensesContext);
 };
@@ -36,8 +57,17 @@ export const ThemeProvider = ({ children }) => {
   const [categories, setCategories] = useState({});
   const [totalSpent, setTotalSpent] = useState(0);
   const [budget, setBudget] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [authState, setAuthState] = useState(authStates.NotLoggedIn);
+  const [authenticated, setAuthenticated] = useState(false);
+  const [clearCleanupFunctions, setClearCleanupFunctions] = useState(false);
+  const [pendingSort, setPendingSort] = useState({});
+  const [excluded, setExcluded] = useState({});
 
   useEffect(() => {
+    if (!authenticated) {
+      return;
+    }
     const subscriber = firestore()
       .collection("users")
       .doc(auth().currentUser.uid)
@@ -48,25 +78,45 @@ export const ThemeProvider = ({ children }) => {
           let currentSpent = 0;
           const transactions = {};
           const newCategories = {};
+          const notSorted = {};
+          const excluded = {};
           result.forEach((transaction) => {
             const data = transaction.data();
-            currentSpent += data.cost;
-            transactions[transaction.id] = {
-              ...data,
-              key: transaction.id,
-            };
-            if (!(data.category in newCategories)) {
-              newCategories[data.category] = {
-                key: data.category,
-                total: data.cost,
+            if (data.excluded) {
+              excluded[transaction.id] = {
+                ...data,
+                key: transaction.id,
+              };
+            } else if (data.pendingSort) {
+              notSorted[transaction.id] = {
+                ...data,
+                key: transaction.id,
               };
             } else {
-              newCategories[data.category].total += data.cost;
+              currentSpent += data.cost;
+              transactions[transaction.id] = {
+                ...data,
+                key: transaction.id,
+              };
+              if (!(data.category in newCategories)) {
+                newCategories[data.category] = {
+                  key: data.category,
+                  total: data.cost,
+                };
+              } else {
+                newCategories[data.category].total += data.cost;
+              }
             }
           });
           setExpenses(() => {
             console.log("expenses updated");
             return { ...transactions };
+          });
+          setPendingSort(() => {
+            return { ...notSorted };
+          });
+          setExcluded(() => {
+            return { ...excluded };
           });
           setCategories((previousCategories) => {
             //i didnt know you could do this in js
@@ -81,42 +131,87 @@ export const ThemeProvider = ({ children }) => {
         }
       );
     return () => subscriber();
-  }, []);
+  }, [authenticated]);
 
   useEffect(() => {
-    const subscriber = firestore()
-      .collection("users")
-      .doc(auth().currentUser.uid)
-      .onSnapshot(
-        (documentSnapshot) => {
-          const data = documentSnapshot.data();
-          const categories = {};
-          data.categories.forEach((category) => {
-            categories[category] = {
-              key: category,
-              total: 0,
-            };
-          });
+    let subscriber;
+    if (authenticated) {
+      console.log("this ran in");
+      subscriber = firestore()
+        .collection("users")
+        .doc(auth().currentUser.uid)
+        .onSnapshot(
+          (documentSnapshot) => {
+            // console.log("!!!!!!!");
+            // console.log(documentSnapshot.metadata);
+            const data = documentSnapshot.data();
+            console.log("FIREBASE DATA: ");
+            console.log(data);
+            const categories = {};
+            data.categories.forEach((category) => {
+              categories[category] = {
+                key: category,
+                total: 0,
+              };
+            });
 
-          setCategories((prev) => {
-            return { ...categories, ...prev };
-          });
-          setBudget(data.budget);
-        },
-        (err) => {
-          console.log("error here2");
-          console.log(err);
-        }
-      );
-    return () => subscriber();
+            setCategories((prev) => {
+              return { ...categories, ...prev };
+            });
+            setBudget(data.budget);
+            setAuthState(() => {
+              if (data.firstLogin === true) {
+                return authStates.ConfigNotCompleted;
+              } else {
+                return authStates.ConfigCompleted;
+              }
+            });
+          },
+          (err) => {
+            console.log("error here2");
+            console.log(err);
+          }
+        );
+    }
+    return () => {
+      if (subscriber) {
+        console.log("this ran out");
+        subscriber();
+      }
+    };
+  }, [authenticated]);
+
+  useEffect(() => {
+    const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
+    return subscriber;
   }, []);
+  useEffect(() => {
+    console.log("AUTH STATE: " + authState);
+  }, [authState]);
+  useEffect(() => {
+    console.log("AUTHENTICATION STATE: " + authenticated);
+  }, [authenticated]);
+  const onAuthStateChanged = async () => {
+    if (auth().currentUser) {
+      setAuthenticated(true);
+    } else {
+      setAuthenticated(false);
+      setAuthState(authStates.NotLoggedIn);
+    }
+  };
 
   return (
     <ExpensesContext.Provider value={expenses}>
       <CategoriesContext.Provider value={categories}>
         <TotalSpentContext.Provider value={totalSpent}>
           <BudgetContext.Provider value={budget}>
-            {children}
+            <AppStateContext.Provider value={authState}>
+              <PendingSortContext.Provider value={pendingSort}>
+                <ExcludedContext.Provider value={excluded}>
+                  {children}
+                </ExcludedContext.Provider>
+              </PendingSortContext.Provider>
+            </AppStateContext.Provider>
           </BudgetContext.Provider>
         </TotalSpentContext.Provider>
       </CategoriesContext.Provider>

@@ -13,6 +13,7 @@ import {
 import { ScrollView, TextInput } from "react-native-gesture-handler";
 import auth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
+import { useAppStateUpdate, useAppState } from "./ContextProvider";
 import {
   GoogleSignin,
   statusCodes,
@@ -22,7 +23,7 @@ import {
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
 
-const FirstLoginConfig = ({ props, navigation }) => {
+const FirstLoginConfig = ({ props, navigation, route }) => {
   // props.toggleFirstLogin()
   // console.log(props.visible);
   const [managementStyle, setManagementStyle] = useState(undefined);
@@ -30,16 +31,28 @@ const FirstLoginConfig = ({ props, navigation }) => {
   const [budget, setBudget] = useState(undefined);
   const onlyNumbersInput = RegExp("/^[0-9]+$/");
   const [inputStatus, setInputStatus] = useState(false);
+  const [authState, setAuthState] = useState();
+  const appStateContext = useAppState();
+
+  useEffect(() => {
+    console.log("Auth State");
+    console.log(authState);
+    setAuthState(appStateContext);
+  }, [appStateContext]);
 
   const signOut = async () => {
     auth()
       .signOut()
       .catch((error) => {
-        console.log(error);
+        console.log("Sign out Error" + error);
       });
     if (GoogleSignin.isSignedIn()) {
-      await GoogleSignin.revokeAccess().catch((err) => console.log(err));
-      await GoogleSignin.signOut().catch((err) => console.log(err));
+      await GoogleSignin.revokeAccess().catch((err) =>
+        console.log("Sign out Error" + err)
+      );
+      await GoogleSignin.signOut().catch((err) =>
+        console.log("Sign out Error" + err)
+      );
       console.log("signed out");
     }
   };
@@ -78,7 +91,7 @@ const FirstLoginConfig = ({ props, navigation }) => {
           setManagementStyle(undefined);
           setBudgetStyle(undefined);
           setBudget(undefined);
-          navigateToAccountScreen();
+          // navigateToAccountScreen();
         });
     } else if (inputStatus == "manual budget style") {
       firestore()
@@ -94,11 +107,12 @@ const FirstLoginConfig = ({ props, navigation }) => {
           setManagementStyle(undefined);
           setBudgetStyle(undefined);
           setBudget(undefined);
-          navigateToAccountScreen();
+          // navigateToAccountScreen();
         });
     } else {
       console.log("Invalid Press");
     }
+    console.log("this ran");
   };
   return (
     <View

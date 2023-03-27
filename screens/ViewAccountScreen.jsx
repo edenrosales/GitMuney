@@ -23,6 +23,7 @@ import {
   useCategories,
   useTotalSpent,
   useBudget,
+  useExcluded,
 } from "../components/ContextProvider";
 import { HeaderBackButton } from "@react-navigation/elements";
 import auth from "@react-native-firebase/auth";
@@ -37,6 +38,7 @@ import TransactionModal from "../components/TransactionModal";
 import DepositModal from "../components/DepositModal";
 import BudgetModal from "../components/BudgetModal";
 import FirstLoginConfig from "../components/FirstLoginConfig";
+import { usePendingSort } from "./../components/ContextProvider";
 
 export default function ViewAccountScreen({ route, navigation }) {
   const handleBack = async () => {
@@ -47,11 +49,15 @@ export default function ViewAccountScreen({ route, navigation }) {
     auth()
       .signOut()
       .catch((error) => {
-        console.log(error);
+        console.log("Sign out Error" + error);
       });
     if (await GoogleSignin.isSignedIn()) {
-      await GoogleSignin.revokeAccess().catch((err) => console.log(err));
-      await GoogleSignin.signOut().catch((err) => console.log(err));
+      await GoogleSignin.revokeAccess().catch((err) =>
+        console.log("Sign out Error" + err)
+      );
+      await GoogleSignin.signOut().catch((err) =>
+        console.log("Sign out Error" + err)
+      );
       console.log("signed out");
     }
   };
@@ -63,6 +69,8 @@ export default function ViewAccountScreen({ route, navigation }) {
   const categoriesContext = useCategories();
   const totalSpentContext = useTotalSpent();
   const budgetContext = useBudget();
+  const excludedContext = useExcluded();
+  const pendingSortContext = usePendingSort();
 
   const [totalSpent, setTotalSpent] = useState(0);
   const [categories, setCategories] = useState({});
@@ -75,7 +83,15 @@ export default function ViewAccountScreen({ route, navigation }) {
   ] = useState(false);
   const [transactionSelected, setTransactionSelected] = useState({});
   // const [test, setTest] = useState(useExpenses());
+  const [excluded, setExcluded] = useState({});
+  const [pendingSort, setPendingSort] = useState({});
 
+  useEffect(() => {
+    setExcluded(excludedContext);
+  }, [excludedContext]);
+  useEffect(() => {
+    setPendingSort(pendingSortContext);
+  }, [pendingSortContext]);
   useEffect(() => {
     setExpenses(expensesContext);
   }, [expensesContext]);
@@ -98,6 +114,15 @@ export default function ViewAccountScreen({ route, navigation }) {
     console.log("EXPENSES");
     console.log(expenses);
   }, [expenses]);
+  // useEffect(() => {
+  //   console.log("EXCLUDED");
+  //   console.log(excluded);
+  // }, [excluded]);
+
+  // useEffect(() => {
+  //   console.log("pendingSort");
+  //   console.log(pendingSort);
+  // }, [pendingSort]);
 
   const handleMore = () => {
     setMore((prev) => !prev);
@@ -119,6 +144,7 @@ export default function ViewAccountScreen({ route, navigation }) {
   return (
     //going to try to get state to work here and get it into components
     <View style={styles.container}>
+      {/* {console.log(auth().currentUser.uid)} */}
       {/* <FirstLoginConfig
         visible={true}
         toggleFirstLogin={toggleFirstLogin}
@@ -197,7 +223,7 @@ export default function ViewAccountScreen({ route, navigation }) {
                   >
                     <View style={styles.topGroup}>
                       {/* {console.log("HELP ME IM GOING TO KMS ")}
-                  {console.log(item)} */}
+                    {console.log(item)} */}
                       <View style={styles.tranGroup}>
                         <Text style={styles.item}>
                           {item.transactionName

@@ -11,7 +11,7 @@ const ShowMore = (props) => {
         paddingLeft: 10,
       }}
     >
-      Show more...
+      Show less...
     </Text>
   ) : (
     <Text
