@@ -79,6 +79,8 @@ const Main = () => {
 
   return (
     <NavigationContainer>
+      {console.log("THIS WORKS")}
+      {console.log(global.HermesInternal)}
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {appState === authStates.ConfigCompleted ||
         appState === authStates.ConfigNotCompleted ? (

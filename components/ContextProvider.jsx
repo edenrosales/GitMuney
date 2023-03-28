@@ -64,6 +64,14 @@ export const ThemeProvider = ({ children }) => {
   const [pendingSort, setPendingSort] = useState({});
   const [excluded, setExcluded] = useState({});
 
+  const clearData = () => {
+    setExpenses({});
+    setCategories({});
+    setTotalSpent(0);
+    setBudget(1);
+    setPendingSort({});
+    setExcluded({});
+  };
   useEffect(() => {
     if (!authenticated) {
       return;
@@ -197,6 +205,7 @@ export const ThemeProvider = ({ children }) => {
     } else {
       setAuthenticated(false);
       setAuthState(authStates.NotLoggedIn);
+      clearData();
     }
   };
 
