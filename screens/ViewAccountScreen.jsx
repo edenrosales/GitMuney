@@ -39,6 +39,12 @@ import DepositModal from "../components/DepositModal";
 import BudgetModal from "../components/BudgetModal";
 import FirstLoginConfig from "../components/FirstLoginConfig";
 import { usePendingSort } from "./../components/ContextProvider";
+import Animated, {
+  useSharedValue,
+  withTiming,
+  useAnimatedStyle,
+  Easing,
+} from "react-native-reanimated";
 
 export default function ViewAccountScreen({ route, navigation }) {
   const handleBack = async () => {
@@ -132,7 +138,6 @@ export default function ViewAccountScreen({ route, navigation }) {
     setIsBudgetModalVisible(() => !isBudgetModalVisible);
 
   const handleTransactionPress = (item) => {
-    // console.log(item);
     setTransactionModalComponentVisible((prev) => !prev);
     setTransactionSelected(() => {
       return item;
@@ -141,19 +146,15 @@ export default function ViewAccountScreen({ route, navigation }) {
   const handleTransactionModalComponent = () => {
     setTransactionModalComponentVisible((prev) => !prev);
   };
+  // debugger;
   return (
     //going to try to get state to work here and get it into components
     <View style={styles.container}>
-      {/* {console.log(auth().currentUser.uid)} */}
-      {/* <FirstLoginConfig
-        visible={true}
-        toggleFirstLogin={toggleFirstLogin}
-        // signOut={signOut}
-      ></FirstLoginConfig> */}
       <TransactionModalComponent
         visible={transactionModalComponentVisible}
         toggleVisible={handleTransactionModalComponent}
         transaction={transactionSelected}
+        category={categories[transactionSelected.category]}
       ></TransactionModalComponent>
       <StatusBar barStyle="light-content" />
       <View styles={{ flex: 1 }}>
@@ -194,7 +195,6 @@ export default function ViewAccountScreen({ route, navigation }) {
                         alignItems: "center",
                       }}
                     >
-                      {/* {console.log(myBudget)} */}
                       <Progress.Bar
                         progress={item.total / myBudget}
                         width={pixel80percent}

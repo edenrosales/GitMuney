@@ -2,13 +2,40 @@ import React, { useState, useEffect } from "react";
 import { View, StyleSheet, Dimensions, Pressable, Text } from "react-native";
 import Modal from "react-native-modal";
 import _ from "lodash";
+import Emoji from "./Emoji";
+import { debug } from "react-native-reanimated";
+import { useExcluded } from "./ContextProvider";
+import auth from "@react-native-firebase/auth";
+import firestore, { Timestamp } from "@react-native-firebase/firestore";
+
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
 const TransactionModalComponent = (props) => {
-  const [transactionSelected, setTransactionSelected] = useState({});
+  const [transactionSelected, setTransactionSelected] = useState(undefined);
+  const [category, setCategories] = useState(undefined);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     setTransactionSelected(props.transaction);
   }, [props.transaction]);
+
+  useEffect(() => {
+    setCategories(props.category);
+  }, [props.category]);
+
+  useEffect(() => {
+    setLoading(() => {
+      if (transactionSelected !== undefined && category !== undefined) {
+        return false;
+      } else {
+        return true;
+      }
+    });
+  }, [transactionSelected, category]);
+  // debugger;
+  if (loading) {
+    return <></>;
+  }
   return (
     <>
       <View style={{}}>
@@ -33,7 +60,7 @@ const TransactionModalComponent = (props) => {
             style={{
               borderRadius: 25,
               width: "95%",
-              height: "55%",
+              height: "45%",
               backgroundColor: "white",
               display: "flex",
               flexDirection: "column",
@@ -52,15 +79,22 @@ const TransactionModalComponent = (props) => {
                 justifyContent: "center",
               }}
             >
-              <Text>Icon</Text>
-              <Text style={{ fontFamily: "SSP-Regular", fontSize: 20 }}>
-                {props.transaction.transactionName}
+              <Emoji
+                name={props.category.key}
+                symbol={props.category.icon}
+              ></Emoji>
+              <Text style={{ fontFamily: "SSP-Regular", fontSize: 15 }}>
+                {props.category.key}
               </Text>
+
               <Text
                 style={{ fontFamily: "SSP-Bold", fontSize: 70 }}
                 // allowFontScaling={true}
               >
-                ${props.transaction.cost}
+                ${transactionSelected.cost}
+              </Text>
+              <Text style={{ fontFamily: "SSP-SemiBold", fontSize: 20 }}>
+                {transactionSelected.transactionName}
               </Text>
               <Text
                 style={{
@@ -68,16 +102,17 @@ const TransactionModalComponent = (props) => {
                   color: "gray",
                 }}
               >
-                {props.transaction.date &&
-                  props.transaction.date.toDate().toDateString()}
+                {transactionSelected.date &&
+                  transactionSelected.date.toDate().toDateString()}
               </Text>
             </View>
             <View
               style={{
-                flex: 0.5,
+                flex: 0.33,
                 display: "flex",
                 flexDirection: "column",
-                padding: 10,
+                marginTop: 10,
+                // padding: 10,
               }}
             >
               <View
@@ -94,17 +129,27 @@ const TransactionModalComponent = (props) => {
                     flex: 1,
                     backgroundColor: "#eef2f5",
                     margin: 5,
-                    aspectRatio: 1,
+                    // aspectRatio: 1,
                     borderRadius: 10,
                     justifyContent: "center",
                   }}
                   onPress={() => {
-                    console.log("left");
+                    firestore()
+                      .collection("users")
+                      .doc(auth().currentUser.uid)
+                      .collection("transactions")
+                      .doc(transactionSelected.key)
+                      .update({
+                        pendingSort: true,
+                      });
+                    props.toggleVisible();
                   }}
                 >
                   <Text style={{ textAlign: "center" }}>Re-sort</Text>
                 </Pressable>
-                <View style={{ flex: 1 }}></View>
+                {/* <View style={{ flex: 1 }}>
+                  <Text>This works</Text>
+                </View> */}
                 {/* <Pressable
                   style={{
                     flex: 1,
@@ -117,7 +162,7 @@ const TransactionModalComponent = (props) => {
                 >
                   <Text style={{ textAlign: "center" }}>Exclude</Text>
                 </Pressable> */}
-                <Pressable
+                {/* <Pressable
                   style={{
                     flex: 1,
                     backgroundColor: "#eef2f5",
@@ -131,7 +176,7 @@ const TransactionModalComponent = (props) => {
                   }}
                 >
                   <Text style={{ textAlign: "center" }}>Exclude</Text>
-                </Pressable>
+                </Pressable> */}
               </View>
             </View>
           </View>

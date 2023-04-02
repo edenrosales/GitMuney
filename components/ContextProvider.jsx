@@ -27,7 +27,11 @@ const AppStateContext = React.createContext();
 const AppStateUpdateContext = React.createContext();
 const PendingSortContext = React.createContext();
 const ExcludedContext = React.createContext();
+const CategoriesEmojisContext = React.createContext();
 
+export const useCategoryEmoji = () => {
+  return useContext(CategoriesEmojisContext);
+};
 export const usePendingSort = () => {
   return useContext(PendingSortContext);
 };
@@ -63,6 +67,7 @@ export const ThemeProvider = ({ children }) => {
   const [clearCleanupFunctions, setClearCleanupFunctions] = useState(false);
   const [pendingSort, setPendingSort] = useState({});
   const [excluded, setExcluded] = useState({});
+  // const [categoriesEmojis, setCategoriesEmojis] = useState({});
 
   const clearData = () => {
     setExpenses({});
@@ -127,9 +132,19 @@ export const ThemeProvider = ({ children }) => {
             return { ...excluded };
           });
           setCategories((previousCategories) => {
+            // debugger;
+            const categories = { ...previousCategories, ...newCategories };
+            for (category of Object.keys(categories)) {
+              categories[category] = {
+                ...previousCategories[category],
+                ...categories[category],
+              };
+            }
+
+            return categories;
             //i didnt know you could do this in js
             //makes a new object and replaces all the keys that are identical in the first and second with the latter most object
-            return { ...previousCategories, ...newCategories };
+            // return { ...previousCategories, ...newCategories };
           });
           setTotalSpent(currentSpent);
         },
@@ -150,21 +165,25 @@ export const ThemeProvider = ({ children }) => {
         .doc(auth().currentUser.uid)
         .onSnapshot(
           (documentSnapshot) => {
-            // console.log("!!!!!!!");
-            // console.log(documentSnapshot.metadata);
             const data = documentSnapshot.data();
-            console.log("FIREBASE DATA: ");
-            console.log(data);
             const categories = {};
             data.categories.forEach((category) => {
-              categories[category] = {
-                key: category,
+              categories[category.name] = {
+                key: category.name,
                 total: 0,
+                icon: category.icon,
               };
             });
-
+            // setCategoriesEmojis(data.categoriesEmojis);
             setCategories((prev) => {
-              return { ...categories, ...prev };
+              // debugger;
+              for (category of Object.keys(categories)) {
+                categories[category] = {
+                  ...categories[category],
+                  ...prev[category],
+                };
+              }
+              return categories;
             });
             setBudget(data.budget);
             setAuthState(() => {
@@ -183,7 +202,6 @@ export const ThemeProvider = ({ children }) => {
     }
     return () => {
       if (subscriber) {
-        console.log("this ran out");
         subscriber();
       }
     };

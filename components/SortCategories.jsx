@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, Text, Pressable, SectionList } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Text,
+  Pressable,
+  SectionList,
+  useWindowDimensions,
+} from "react-native";
 import {
   usePendingSort,
   useExcluded,
@@ -8,10 +15,28 @@ import {
 import _, { isEmpty } from "lodash";
 import Categories from "../components/Categories";
 import TransactionModalComponent from "../components/TransactionModalComponent";
-import { FlatList } from "react-native-gesture-handler";
+import { Directions, FlatList } from "react-native-gesture-handler";
 import firestore, { Timestamp } from "@react-native-firebase/firestore";
 import auth from "@react-native-firebase/auth";
+import Animated, {
+  useSharedValue,
+  withTiming,
+  useAnimatedStyle,
+  Easing,
+  withSpring,
+  runOnJS,
+  useDerivedValue,
+  runOnUI,
+} from "react-native-reanimated";
+import { GestureDetector, Gesture } from "react-native-gesture-handler";
+import SortCard from "./SortCard";
+
 const SortCategories = () => {
+  const { width, height } = useWindowDimensions();
+  let cardWidth = 250 / 2;
+  let cardHeight = 250 / 2;
+  const leftBorder = -width / 2;
+  const rightBorder = width / 2;
   const PendingSortContext = usePendingSort();
   const ExcludedContext = useExcluded();
   const CategoriesContext = useCategories();
@@ -19,14 +44,16 @@ const SortCategories = () => {
   const [loading, setLoading] = useState(true);
   const [pendingSort, setPendingSort] = useState();
   const [excluded, setExcluded] = useState();
-  const [firstCard, setFirstCard] = useState();
+  // const [firstCard, setFirstCard] = useState();
   const [categories, setCategories] = useState();
   const [needsSorting, setNeedsSorting] = useState();
+  const [panViewBottomHeight, setPanViewBottomHeight] = useState(height);
+  const [panViewTopHeight, setPanViewTopHeight] = useState(-height);
   useEffect(() => {
-    setPendingSort(PendingSortContext);
+    setPendingSort(Object.values(PendingSortContext));
   }, [PendingSortContext]);
   useEffect(() => {
-    setExcluded(ExcludedContext);
+    setExcluded(Object.values(ExcludedContext));
   }, [ExcludedContext]);
   useEffect(() => {
     if (CategoriesContext !== undefined && !_.isEmpty(CategoriesContext)) {
@@ -37,17 +64,17 @@ const SortCategories = () => {
   }, [CategoriesContext]);
   useEffect(() => {
     if (pendingSort !== undefined && !_.isEmpty(PendingSortContext)) {
-      setFirstCard(Object.values(pendingSort)[0]);
+      // setFirstCard(Object.values(pendingSort)[0]);
       setNeedsSorting(true);
     } else {
-      setFirstCard({});
+      // setFirstCard({});
       setNeedsSorting(false);
     }
   }, [pendingSort]);
-  useEffect(() => {
-    console.log("first card");
-    console.log(firstCard);
-  }, [firstCard]);
+  // useEffect(() => {
+  //   console.log("first card");
+  //   console.log(firstCard);
+  // }, [firstCard]);
 
   useEffect(() => {
     console.log("pending sort");
@@ -63,7 +90,6 @@ const SortCategories = () => {
       !(
         pendingSort === undefined ||
         excluded === undefined ||
-        firstCard === undefined ||
         categories === undefined ||
         needsSorting === undefined
       )
@@ -71,19 +97,26 @@ const SortCategories = () => {
       setLoading(false);
       console.log("done loading");
     }
-  }, [pendingSort, excluded, firstCard, categories, needsSorting]);
+  }, [pendingSort, excluded, , categories, needsSorting]);
 
   const handleCategoryPress = (category) => {
     firestore()
       .collection("users")
       .doc(auth().currentUser.uid)
       .collection("transactions")
-      .doc(firstCard.key)
+      .doc(pendingSort[pendingSort.length - 1].key)
       .update({
         category: category,
         pendingSort: false,
       });
   };
+
+  // const animatedColorStyle = useAnimatedStyle(() => ({
+  //   backgroundColor: "blue",
+  //   opacity: leftActive.value
+  //     ? withTiming(1, { duration: 500 })
+  //     : withTiming(0, { duration: 500 }),
+  // }));
   if (loading) {
     return <Text>Loading</Text>;
   }
@@ -99,47 +132,42 @@ const SortCategories = () => {
         alignItems: "center",
       }}
     >
-      <View style={{ flex: 0.25, backgroundColor: "white" }}></View>
       <View
         style={{
-          flex: 2,
-          aspectRatio: 1,
-          backgroundColor: "#eef2f5",
-          borderRadius: 20,
-          display: "flex",
-          flexDirection: "column",
+          height: "100%",
+          width: "100%",
+          flex: 2.5,
           alignItems: "center",
           justifyContent: "center",
+          // backgroundColor: "black",
+        }}
+        onLayout={(eventLayout) => {
+          const viewHeight = eventLayout.nativeEvent.layout.height;
+          console.log(viewHeight);
+          setPanViewBottomHeight(viewHeight / 2 - cardHeight);
+          setPanViewTopHeight(-(viewHeight / 2 - cardHeight));
         }}
       >
-        <>
-          <Text>Icon</Text>
-          <Text style={{ fontFamily: "SSP-Regular", fontSize: 20 }}>
-            {firstCard.transactionName}
-          </Text>
-          <Text
-            style={{ fontFamily: "SSP-Bold", fontSize: 70 }}
-            // allowFontScaling={true}
-          >
-            ${firstCard.cost}
-          </Text>
-          <Text
-            style={{
-              fontFamily: "SSP-Regular",
-              color: "gray",
-            }}
-          >
-            {firstCard.date && firstCard.date.toDate().toDateString()}
-          </Text>
-        </>
+        {pendingSort.map((transaction) => {
+          return (
+            <SortCard
+              style={{}}
+              key={transaction.key}
+              transaction={transaction}
+              leftTranslation={leftBorder}
+              rightTranslation={rightBorder}
+              upTranslation={panViewTopHeight}
+              downTranslation={panViewBottomHeight}
+            ></SortCard>
+          );
+        })}
       </View>
-      <View style={{ flex: 0.25 }}></View>
       <View
         style={{
           flex: 1.5,
           flexDirection: "column",
-          // height: "100%",
-          // width: "100%",
+          height: "100%",
+          width: "100%",
         }}
       >
         <View
@@ -204,16 +232,6 @@ const SortCategories = () => {
           ></FlatList>
         </View>
       </View>
-      {/* <View
-        style={{
-          flex: 0.4,
-          backgroundColor: "black",
-          height: "100%",
-          width: "100%",
-        }}
-      >
-        <Text style={{ flex: 1 }}> hi </Text>
-      </View> */}
     </View>
   ) : (
     <View
@@ -234,6 +252,11 @@ const SortCategories = () => {
   );
 };
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  test: {
+    height: 20,
+    backgroundColor: "green",
+  },
+});
 
 export default SortCategories;
