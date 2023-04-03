@@ -79,9 +79,9 @@ export default function ViewAccountScreen({ route, navigation }) {
   const pendingSortContext = usePendingSort();
 
   const [totalSpent, setTotalSpent] = useState(0);
-  const [categories, setCategories] = useState({});
+  const [categories, setCategories] = useState();
   const [myBudget, setMyBudget] = useState(5000);
-  const [expenses, setExpenses] = useState({});
+  const [expenses, setExpenses] = useState();
   const [more, setMore] = useState(false);
   const [
     transactionModalComponentVisible,
@@ -89,8 +89,9 @@ export default function ViewAccountScreen({ route, navigation }) {
   ] = useState(false);
   const [transactionSelected, setTransactionSelected] = useState({});
   // const [test, setTest] = useState(useExpenses());
-  const [excluded, setExcluded] = useState({});
-  const [pendingSort, setPendingSort] = useState({});
+  const [excluded, setExcluded] = useState();
+  const [pendingSort, setPendingSort] = useState();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setExcluded(excludedContext);
@@ -129,6 +130,20 @@ export default function ViewAccountScreen({ route, navigation }) {
   //   console.log("pendingSort");
   //   console.log(pendingSort);
   // }, [pendingSort]);
+  useEffect(() => {
+    setLoading(() => {
+      if (
+        categories !== undefined &&
+        expenses !== undefined &&
+        excluded !== undefined &&
+        pendingSort !== undefined
+      ) {
+        return false;
+      } else {
+        return false;
+      }
+    });
+  }, [categories, expenses, excluded, pendingSort]);
 
   const handleMore = () => {
     setMore((prev) => !prev);
@@ -147,6 +162,9 @@ export default function ViewAccountScreen({ route, navigation }) {
     setTransactionModalComponentVisible((prev) => !prev);
   };
   // debugger;
+  if (loading) {
+    return <></>;
+  }
   return (
     //going to try to get state to work here and get it into components
     <View style={styles.container}>

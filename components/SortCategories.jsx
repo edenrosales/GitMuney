@@ -30,6 +30,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { GestureDetector, Gesture } from "react-native-gesture-handler";
 import SortCard from "./SortCard";
+import Emoji from "./Emoji";
 
 const SortCategories = () => {
   const { width, height } = useWindowDimensions();
@@ -57,7 +58,8 @@ const SortCategories = () => {
   }, [ExcludedContext]);
   useEffect(() => {
     if (CategoriesContext !== undefined && !_.isEmpty(CategoriesContext)) {
-      setCategories(Object.keys(CategoriesContext).slice(0, 6));
+      // debugger;
+      setCategories(Object.values(CategoriesContext).slice(0, 6));
     } else {
       setCategories({});
     }
@@ -199,7 +201,7 @@ const SortCategories = () => {
               <Pressable
                 onPress={() => {
                   console.log("transaction sorted!");
-                  handleCategoryPress(item);
+                  handleCategoryPress(item.key);
                 }}
                 style={{
                   width: "30%",
@@ -211,21 +213,19 @@ const SortCategories = () => {
                   justifyContent: "center",
                   borderRadius: 15,
                   backgroundColor: "#eef2f5",
+                  alignItems: "center",
                 }}
               >
+                <Emoji name={item.key} symbol={item.icon}></Emoji>
                 <Text
                   style={{
                     textAlign: "center",
-                    fontSize: 30,
                     fontFamily: "SSP-Regular",
+                    marginTop: 15,
+                    // marignTop: 15,
                   }}
                 >
-                  Icon
-                </Text>
-                <Text
-                  style={{ textAlign: "center", fontFamily: "SSP-Regular" }}
-                >
-                  {item}
+                  {item.key}
                 </Text>
               </Pressable>
             )}
