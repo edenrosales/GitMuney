@@ -67,8 +67,13 @@ export const ThemeProvider = ({ children }) => {
   const [clearCleanupFunctions, setClearCleanupFunctions] = useState(false);
   const [pendingSort, setPendingSort] = useState({});
   const [excluded, setExcluded] = useState({});
+  const [date, setDate] = useState(new Date());
+  
   // const [categoriesEmojis, setCategoriesEmojis] = useState({});
-
+  const getDateRange = (date)=>{
+    console.log(date.getMonth())
+    return {startDate: 0, endDate: new Date(date.getFullYear(),date.getMonth()+1, 0).getDate()}
+  }
   const clearData = () => {
     setExpenses({});
     setCategories({});
@@ -76,15 +81,27 @@ export const ThemeProvider = ({ children }) => {
     setBudget(1);
     setPendingSort({});
     setExcluded({});
-  };
+  };  
+  useEffect(()=>{
+    console.log("month data")
+    console.log(date)
+    console.log(getDateRange(date))
+  },[date])
   useEffect(() => {
+
     if (!authenticated) {
       return;
     }
+    
+    let {startDate,endDate} = getDateRange(date);
+    console.log("query date")
+    console.log(new Date(date.getFullYear(), date.getMonth(), startDate))
     const subscriber = firestore()
       .collection("users")
       .doc(auth().currentUser.uid)
       .collection("transactions")
+      .where("date" ,">=", new Date(date.getFullYear(), date.getMonth(), startDate))
+      .where("date", "<=", new Date(date.getFullYear(), date.getMonth(), endDate))
       .orderBy("date", "desc")
       .onSnapshot(
         (result) => {
@@ -154,7 +171,7 @@ export const ThemeProvider = ({ children }) => {
         }
       );
     return () => subscriber();
-  }, [authenticated]);
+  }, [authenticated,date]);
 
   useEffect(() => {
     let subscriber;
