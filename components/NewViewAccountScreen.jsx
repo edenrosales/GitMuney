@@ -203,7 +203,7 @@ const NewViewAccountScreen = (props) => {
                 title: "TOTALS",
                 data: [
                   {
-                    title: "Ententional",
+                    title: "Intentional",
                     spent: totalSpent,
                     icon: "💰",
                     backgroundColor: "#C7E9B0",
@@ -241,9 +241,9 @@ const NewViewAccountScreen = (props) => {
                   return 0;
                 }),
                 renderItem: ({ item }) => {
-                  // if (item.total === 0) {
-                  //   return <></>;
-                  // }
+                  if (item.total === 0) {
+                    return <></>;
+                  }
 
                   return (
                     <NewCategoryCard
