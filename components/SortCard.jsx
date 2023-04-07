@@ -124,6 +124,7 @@ const SortCard = (props) => {
                 width: 250,
                 aspectRatio: 1,
                 backgroundColor: "#eef2f5",
+                // backgroundColor: "transparent",
                 borderRadius: 20,
                 display: "flex",
                 flexDirection: "column",

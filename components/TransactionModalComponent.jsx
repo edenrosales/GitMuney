@@ -80,6 +80,7 @@ const TransactionModalComponent = (props) => {
               }}
             >
               <Emoji
+                fontSize={40}
                 name={props.category.key}
                 symbol={props.category.icon}
               ></Emoji>

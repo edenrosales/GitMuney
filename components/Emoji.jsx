@@ -7,7 +7,7 @@ const Emoji = (props) => {
     <Text
       aria-label={props.name}
       accessibilityRole="image"
-      style={{ fontSize: 40 }}
+      style={[{ fontSize: props.fontSize }, props.style]}
     >
       {props.symbol}
     </Text>

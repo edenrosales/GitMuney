@@ -54,7 +54,7 @@ const SettingsAndAnalytics = () => {
   }));
 
   return (
-    <View>
+    <View style={{ backgroundColor: "white", height: "100%", width: "100%" }}>
       <Button
         title="Sign Out"
         onPress={() => {

@@ -27,6 +27,18 @@ import firestore, { Timestamp } from "@react-native-firebase/firestore";
 import FirstLoginConfig from "./components/FirstLoginConfig";
 import SortCategories from "./components/SortCategories";
 import SettingsAndAnalytics from "./components/SettingsAndAnalytics";
+import NewViewAccountScreen from "./components/NewViewAccountScreen";
+import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
+import Animated, {
+  useSharedValue,
+  withTiming,
+  useAnimatedStyle,
+  Easing,
+  withSpring,
+  runOnJS,
+  useDerivedValue,
+  runOnUI,
+} from "react-native-reanimated";
 
 const Main = () => {
   const [fontsLoaded] = useFonts({
@@ -61,17 +73,105 @@ const Main = () => {
           headerShown: false,
           tabBarActiveBackgroundColor: "#2d2e30",
           tabBarInactiveBackgroundColor: "#2d2e30",
+          tabBarShowLabel: false,
           tabBarStyle: {
+            // position: "absolute",
             borderTopWidth: 0,
           },
         }}
         initialRouteName="ViewAccount"
       >
-        <Tab.Screen name="SortCategories" component={SortCategories} />
-        <Tab.Screen name="ViewAccount" component={ViewAccountScreen} />
+        <Tab.Screen
+          name="SortCategories"
+          component={SortCategories}
+          options={{
+            tabBarActiveBackgroundColor: "white",
+            tabBarInactiveBackgroundColor: "white",
+            tabBarIcon: ({ focused, color, size }) => (
+              <View
+                style={{
+                  height: "100%",
+                  // width: "100%",
+                  aspectRatio: 1,
+                  borderRadius: 10,
+                  backgroundColor: focused ? "black" : "transparent",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <MaterialIcons
+                  name="sort"
+                  size={24}
+                  color={focused ? "white" : "black"}
+                />
+              </View>
+            ),
+            // tabBarIconStyle: {
+            //   height: "100%",
+            //   // width: "100%",
+            //   aspectRatio: 1,
+            //   borderRadius: 10,
+            //   backgroundColor: "black",
+            // },
+          }}
+        />
+        <Tab.Screen
+          name="ViewAccount"
+          component={NewViewAccountScreen}
+          options={{
+            tabBarActiveBackgroundColor: "white",
+            tabBarInactiveBackgroundColor: "white",
+            tabBarIcon: ({ focused, color, size }) => (
+              <View
+                style={{
+                  height: "100%",
+                  // width: "100%",
+                  aspectRatio: 1,
+                  borderRadius: 10,
+                  backgroundColor: focused ? "black" : "transparent",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <MaterialIcons
+                  name="attach-money"
+                  size={24}
+                  color={focused ? "white" : "black"}
+                />
+              </View>
+            ),
+            tabBarIconStyle: {
+              backgroundColor: "green",
+              color: "red",
+            },
+          }}
+        />
         <Tab.Screen
           name="SettingsAndAnalytics"
           component={SettingsAndAnalytics}
+          options={{
+            tabBarActiveBackgroundColor: "white",
+            tabBarInactiveBackgroundColor: "white",
+            tabBarIcon: ({ focused, color, size }) => (
+              <View
+                style={{
+                  height: "100%",
+                  // width: "100%",
+                  aspectRatio: 1,
+                  borderRadius: 10,
+                  backgroundColor: focused ? "black" : "transparent",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <MaterialCommunityIcons
+                  name="account"
+                  size={24}
+                  color={focused ? "white" : "black"}
+                />
+              </View>
+            ),
+          }}
         />
       </Tab.Navigator>
     );

@@ -122,133 +122,167 @@ const SortCategories = () => {
   if (loading) {
     return <Text>Loading</Text>;
   }
-  return needsSorting && needsSorting !== undefined ? (
-    <View
-      style={{
-        height: "100%",
-        width: "100%",
-        backgroundColor: "white",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <View
-        style={{
-          height: "100%",
-          width: "100%",
-          flex: 2.5,
-          alignItems: "center",
-          justifyContent: "center",
-          // backgroundColor: "black",
-        }}
-        onLayout={(eventLayout) => {
-          const viewHeight = eventLayout.nativeEvent.layout.height;
-          console.log(viewHeight);
-          setPanViewBottomHeight(viewHeight / 2 - cardHeight);
-          setPanViewTopHeight(-(viewHeight / 2 - cardHeight));
-        }}
-      >
-        {pendingSort.map((transaction) => {
-          return (
-            <SortCard
-              style={{}}
-              key={transaction.key}
-              transaction={transaction}
-              leftTranslation={leftBorder}
-              rightTranslation={rightBorder}
-              upTranslation={panViewTopHeight}
-              downTranslation={panViewBottomHeight}
-            ></SortCard>
-          );
-        })}
-      </View>
-      <View
-        style={{
-          flex: 1.5,
-          flexDirection: "column",
-          height: "100%",
-          width: "100%",
-        }}
-      >
+  return (
+    <>
+      {needsSorting && needsSorting !== undefined ? (
         <View
           style={{
-            // margin: 5,
-            flex: 1,
-            // margin: 20,
-            padding: 10,
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
+            // zIndex: 0,
             height: "100%",
             width: "100%",
-            backgroundColor: "#f2f5f7",
-            borderTopEndRadius: 10,
-            borderTopStartRadius: 10,
+            backgroundColor: "white",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
           }}
         >
-          <FlatList
-            contentContainerStyle={{
+          <View
+            style={{
               height: "100%",
-              alignContent: "center",
+              width: "100%",
+              flex: 2.5,
+              alignItems: "center",
               justifyContent: "center",
+              // backgroundColor: "black",
             }}
-            data={categories.slice(0, 6)}
-            numColumns={3}
-            renderItem={({ item }) => (
-              <Pressable
-                onPress={() => {
-                  console.log("transaction sorted!");
-                  handleCategoryPress(item.key);
-                }}
-                style={{
-                  width: "30%",
-                  height: "50%",
-                  aspectRatio: 1,
-                  backgroundColor: "white",
-                  margin: 5,
-                  flexDirection: "column",
+            onLayout={(eventLayout) => {
+              const viewHeight = eventLayout.nativeEvent.layout.height;
+              console.log(viewHeight);
+              setPanViewBottomHeight(viewHeight / 2 - cardHeight);
+              setPanViewTopHeight(-(viewHeight / 2 - cardHeight));
+            }}
+          >
+            {pendingSort.map((transaction) => {
+              return (
+                <SortCard
+                  style={{}}
+                  key={transaction.key}
+                  transaction={transaction}
+                  leftTranslation={leftBorder}
+                  rightTranslation={rightBorder}
+                  upTranslation={panViewTopHeight}
+                  downTranslation={panViewBottomHeight}
+                ></SortCard>
+              );
+            })}
+          </View>
+          <View
+            style={{
+              flex: 1.5,
+              flexDirection: "column",
+              height: "100%",
+              width: "100%",
+            }}
+          >
+            <View
+              style={{
+                // margin: 5,
+                flex: 1,
+                // margin: 20,
+                padding: 10,
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                height: "100%",
+                width: "100%",
+                backgroundColor: "white",
+                borderTopEndRadius: 10,
+                borderTopStartRadius: 10,
+              }}
+            >
+              <FlatList
+                contentContainerStyle={{
+                  height: "100%",
+                  alignContent: "center",
                   justifyContent: "center",
-                  borderRadius: 15,
-                  backgroundColor: "#eef2f5",
-                  alignItems: "center",
                 }}
-              >
-                <Emoji name={item.key} symbol={item.icon}></Emoji>
-                <Text
-                  style={{
-                    textAlign: "center",
-                    fontFamily: "SSP-Regular",
-                    marginTop: 15,
-                    // marignTop: 15,
-                  }}
-                >
-                  {item.key}
-                </Text>
-              </Pressable>
-            )}
-          ></FlatList>
+                data={categories.slice(0, 6)}
+                numColumns={3}
+                renderItem={({ item }) => (
+                  <Pressable
+                    onPress={() => {
+                      console.log("transaction sorted!");
+                      handleCategoryPress(item.key);
+                    }}
+                    style={{
+                      width: "30%",
+                      height: "50%",
+                      aspectRatio: 1,
+                      backgroundColor: "white",
+                      margin: 5,
+                      flexDirection: "column",
+                      justifyContent: "center",
+                      borderRadius: 15,
+                      backgroundColor: "#eef2f5",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Emoji
+                      name={item.key}
+                      symbol={item.icon}
+                      fontSize={35}
+                    ></Emoji>
+                    <Text
+                      style={{
+                        textAlign: "center",
+                        fontFamily: "SSP-Regular",
+                        marginTop: 15,
+                        // marignTop: 15,
+                      }}
+                    >
+                      {item.key}
+                    </Text>
+                  </Pressable>
+                )}
+              ></FlatList>
+            </View>
+          </View>
         </View>
+      ) : (
+        <View
+          style={{
+            flex: 1,
+            height: "100%",
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <Text style={{ textAlign: "center" }}>
+            No transactions to sort... come back later : ]
+          </Text>
+        </View>
+      )}
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          position: "absolute",
+          width: "100%",
+          height: "6%",
+          backgroundColor: "white",
+          zIndex: 1,
+          paddingTop: 10,
+        }}
+      >
+        <Text
+          style={{
+            position: "absolute",
+            left: 15,
+            fontSize: 24,
+            fontFamily: "SSP-SemiBold",
+            bottom: 0,
+            // top: 10,
+          }}
+        >
+          Sort
+        </Text>
       </View>
-    </View>
-  ) : (
-    <View
-      style={{
-        flex: 1,
-        height: "100%",
-        width: "100%",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <Text style={{ textAlign: "center" }}>
-        No transactions to sort... come back later : ]
-      </Text>
-    </View>
+    </>
   );
 };
 
