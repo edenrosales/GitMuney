@@ -1,9 +1,40 @@
-import React from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { View, StyleSheet, Pressable, Text } from "react-native";
 import Emoji from "./Emoji";
 import { Entypo } from "@expo/vector-icons";
+import { useDateDispatch, useDate } from "./ContextProvider";
 
 const MonthSwitcher = (props) => {
+  // const useDateDispatch = useRef(useDateDispatch());
+  const dateDispatcherContext = useDateDispatch();
+  const dateContext = useDate();
+  const [date, setDate] = useState();
+  useEffect(() => {
+    // console.log("This is the date: " + dateContext);
+    setDate(dateContext);
+  }, [dateContext]);
+  const [dateDispatcher, setDateDispatcher] = useState();
+  const [loading, setLoading] = useState(true);
+  // useEffect(() => {
+  //   if (dateDispatcherContext !== undefined) {
+  //     // debugger;
+  //     console.log(dateDispatcherContext);
+  //     // setDateDispatcher(dateDispatcherContext);
+  //   }
+  // }, [dateDispatcherContext]);
+
+  useEffect(() => {
+    setLoading(() => {
+      if (date !== undefined) {
+        return false;
+      }
+      return true;
+    });
+  }, [date]);
+
+  if (loading) {
+    return <></>;
+  }
   return (
     <View
       style={{
@@ -30,13 +61,6 @@ const MonthSwitcher = (props) => {
           justifyContent: "space-between",
         }}
       >
-        <Pressable style={{ left: 10 }}>
-          <Entypo name="chevron-left" size={24} color="black" />
-        </Pressable>
-        <Text style={{ fontFamily: "SSP-SemiBold", fontSize: 15 }}>Month</Text>
-        <Pressable style={{ right: 10 }}>
-          <Entypo name="chevron-right" size={24} color="black" />
-        </Pressable>
         <View
           style={{
             position: "absolute",
@@ -46,6 +70,26 @@ const MonthSwitcher = (props) => {
             opacity: 0.15,
           }}
         ></View>
+        <Pressable
+          style={{ left: 10 }}
+          onPress={() => {
+            // console.log("this ran");
+            dateDispatcherContext({ type: "Decrease Month" });
+          }}
+        >
+          <Entypo name="chevron-left" size={24} color="black" />
+        </Pressable>
+        <Text style={{ fontFamily: "SSP-SemiBold", fontSize: 15 }}>
+          {date.toLocaleString("default", { month: "long" })}
+        </Text>
+        <Pressable
+          style={{ right: 10 }}
+          onPress={() => {
+            dateDispatcherContext({ type: "Increase Month" });
+          }}
+        >
+          <Entypo name="chevron-right" size={24} color="black" />
+        </Pressable>
       </View>
     </View>
   );

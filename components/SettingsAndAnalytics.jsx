@@ -1,5 +1,5 @@
 import React from "react";
-import { View, StyleSheet, Text, Button } from "react-native";
+import { View, StyleSheet, Text, Button, Pressable } from "react-native";
 import auth from "@react-native-firebase/auth";
 import {
   GoogleSignin,
@@ -13,6 +13,7 @@ import Animated, {
   Easing,
 } from "react-native-reanimated";
 import { GestureDetector, Gesture } from "react-native-gesture-handler";
+import Emoji from "./Emoji";
 
 const SettingsAndAnalytics = () => {
   const signOut = async () => {
@@ -28,49 +29,39 @@ const SettingsAndAnalytics = () => {
     }
   };
 
-  const END_POSITION = 200;
-  const onLeft = useSharedValue(true);
-  const position = useSharedValue(0);
-  const panGesture = Gesture.Pan()
-    .onUpdate((e) => {
-      if (onLeft.value) {
-        position.value = e.translationX;
-      } else {
-        position.value = END_POSITION + e.translationX;
-      }
-    })
-    .onEnd((e) => {
-      if (position.value > END_POSITION / 2) {
-        position.value = withTiming(END_POSITION, { duration: 100 });
-        onLeft.value = false;
-      } else {
-        position.value = withTiming(0, { duration: 100 });
-        onLeft.value = true;
-      }
-    });
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: position.value }],
-  }));
-
   return (
-    <View style={{ backgroundColor: "white", height: "100%", width: "100%" }}>
-      <Button
-        title="Sign Out"
-        onPress={() => {
-          signOut();
+    <>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          // position: "absolute",
+          width: "100%",
+          height: "6%",
+          backgroundColor: "white",
+          zIndex: 1,
+          paddingTop: 10,
         }}
-      ></Button>
+      >
+        <Text
+          style={{
+            position: "absolute",
+            left: 15,
+            fontSize: 24,
+            fontFamily: "SSP-SemiBold",
+            bottom: 0,
+            // top: 10,
+          }}
+        >
+          Account and Settings
+        </Text>
+      </View>
 
-      <GestureDetector gesture={panGesture}>
-        <Animated.View
-          style={[
-            animatedStyle,
-            { height: 20, width: 20, backgroundColor: "black" },
-          ]}
-        ></Animated.View>
-      </GestureDetector>
-    </View>
+      <View style={{ height: "100%", width: "100%", backgroundColor: "white" }}>
+        <View style={{ flex: 1 }}></View>
+        <View style={{}}></View>
+      </View>
+    </>
   );
 };
 

@@ -29,6 +29,7 @@ import Animated, {
   runOnUI,
 } from "react-native-reanimated";
 import { GestureDetector, Gesture } from "react-native-gesture-handler";
+import Emoji from "./Emoji";
 
 const SortCard = (props) => {
   const excludeWrapper = () => {
@@ -134,7 +135,11 @@ const SortCard = (props) => {
               }}
             >
               <>
-                <Text>Icon</Text>
+                <Emoji
+                  fontSize={27}
+                  name={props.transaction.categoryName}
+                  symbol={props.transaction.categoryIcon}
+                ></Emoji>
                 <Text style={{ fontFamily: "SSP-Regular", fontSize: 20 }}>
                   {props.transaction.transactionName}
                 </Text>

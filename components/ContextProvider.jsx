@@ -1,7 +1,8 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect, useReducer } from "react";
 import auth from "@react-native-firebase/auth";
 import firestore, { Timestamp } from "@react-native-firebase/firestore";
 import Categories from "./Categories";
+import { debug } from "react-native-reanimated";
 
 {
   /* THE CONCEPT OF CONTEXT IN REACT: 
@@ -28,6 +29,20 @@ const AppStateUpdateContext = React.createContext();
 const PendingSortContext = React.createContext();
 const ExcludedContext = React.createContext();
 const CategoriesEmojisContext = React.createContext();
+const DateContext = React.createContext();
+const DateDispatchContext = React.createContext();
+const SortCategoriesContext = React.createContext();
+
+export const useSortCategories = () => {
+  return useContext(SortCategoriesContext);
+};
+
+export const useDateDispatch = () => {
+  return useContext(DateDispatchContext);
+};
+export const useDate = () => {
+  return useContext(DateContext);
+};
 
 export const useCategoryEmoji = () => {
   return useContext(CategoriesEmojisContext);
@@ -56,8 +71,39 @@ export const useTotalSpent = () => {
 export const useBudget = () => {
   return useContext(BudgetContext);
 };
+
+const changeDate = (state, action) => {
+  // debugger;
+  let newDate;
+  if (action.type === "Increase Month") {
+    if (state.getMonth() === 11) {
+      newDate = new Date(state.getFullYear() + 1, 0);
+    } else {
+      newDate = new Date(state.getFullYear(), state.getMonth() + 1);
+    }
+  } else if (action.type === "Decrease Month") {
+    if (state.getMonth() === 0) {
+      newDate = new Date(state.getFullYear() - 1, 11);
+    } else {
+      newDate = new Date(state.getFullYear(), state.getMonth() - 1);
+    }
+  }
+  return newDate;
+};
+
 export const ThemeProvider = ({ children }) => {
+  // debugger;
+  const getDateRange = (date) => {
+    console.log("test");
+    console.log(date.getMonth());
+    return {
+      startDate: 0,
+      endDate: new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate(),
+    };
+  };
+
   const [expenses, setExpenses] = useState({});
+  const [sortCategories, setSortCategories] = useState({});
   const [categories, setCategories] = useState({});
   const [totalSpent, setTotalSpent] = useState(0);
   const [budget, setBudget] = useState(1);
@@ -67,13 +113,14 @@ export const ThemeProvider = ({ children }) => {
   const [clearCleanupFunctions, setClearCleanupFunctions] = useState(false);
   const [pendingSort, setPendingSort] = useState({});
   const [excluded, setExcluded] = useState({});
-  const [date, setDate] = useState(new Date());
-  
+  const [date, dispatchDate] = useReducer(changeDate, new Date());
+
   // const [categoriesEmojis, setCategoriesEmojis] = useState({});
-  const getDateRange = (date)=>{
-    console.log(date.getMonth())
-    return {startDate: 0, endDate: new Date(date.getFullYear(),date.getMonth()+1, 0).getDate()}
-  }
+  // useEffect(() => {
+  //   console.log("sort categories");
+  //   console.log(sortCategories);
+  // }, [sortCategories]);
+
   const clearData = () => {
     setExpenses({});
     setCategories({});
@@ -81,27 +128,34 @@ export const ThemeProvider = ({ children }) => {
     setBudget(1);
     setPendingSort({});
     setExcluded({});
-  };  
-  useEffect(()=>{
-    console.log("month data")
-    console.log(date)
-    console.log(getDateRange(date))
-  },[date])
+  };
   useEffect(() => {
-
+    console.log("month data");
+    console.log(date);
+    console.log(getDateRange(date));
+  }, [date]);
+  useEffect(() => {
     if (!authenticated) {
       return;
     }
-    
-    let {startDate,endDate} = getDateRange(date);
-    console.log("query date")
-    console.log(new Date(date.getFullYear(), date.getMonth(), startDate))
+
+    let { startDate, endDate } = getDateRange(date);
+    // console.log("query date");
+    // console.log(new Date(date.getFullYear(), date.getMonth(), startDate));
     const subscriber = firestore()
       .collection("users")
       .doc(auth().currentUser.uid)
       .collection("transactions")
-      .where("date" ,">=", new Date(date.getFullYear(), date.getMonth(), startDate))
-      .where("date", "<=", new Date(date.getFullYear(), date.getMonth(), endDate))
+      .where(
+        "date",
+        ">=",
+        new Date(date.getFullYear(), date.getMonth(), startDate)
+      )
+      .where(
+        "date",
+        "<=",
+        new Date(date.getFullYear(), date.getMonth(), endDate)
+      )
       .orderBy("date", "desc")
       .onSnapshot(
         (result) => {
@@ -123,15 +177,22 @@ export const ThemeProvider = ({ children }) => {
                 key: transaction.id,
               };
             } else {
-              currentSpent += data.cost;
+              if (data.isWithdrawl) {
+                currentSpent += data.cost;
+              } else {
+                currentSpent -= data.cost;
+              }
               transactions[transaction.id] = {
                 ...data,
                 key: transaction.id,
               };
               if (!(data.category in newCategories)) {
-                newCategories[data.category] = {
-                  key: data.category,
+                newCategories[data.categoryName] = {
                   total: data.cost,
+                  categoryName: data.categoryName,
+                  categoryBackgroundColor: data.categoryBackgroundColor,
+                  categoryIcon: data.categoryIcon,
+                  categoryTextColor: data.categoryTextColor,
                 };
               } else {
                 newCategories[data.category].total += data.cost;
@@ -139,7 +200,7 @@ export const ThemeProvider = ({ children }) => {
             }
           });
           setExpenses(() => {
-            console.log("expenses updated");
+            // console.log("expenses updated");
             return { ...transactions };
           });
           setPendingSort(() => {
@@ -148,21 +209,7 @@ export const ThemeProvider = ({ children }) => {
           setExcluded(() => {
             return { ...excluded };
           });
-          setCategories((previousCategories) => {
-            // debugger;
-            const categories = { ...previousCategories, ...newCategories };
-            for (category of Object.keys(categories)) {
-              categories[category] = {
-                ...previousCategories[category],
-                ...categories[category],
-              };
-            }
-
-            return categories;
-            //i didnt know you could do this in js
-            //makes a new object and replaces all the keys that are identical in the first and second with the latter most object
-            // return { ...previousCategories, ...newCategories };
-          });
+          setCategories(newCategories);
           setTotalSpent(currentSpent);
         },
         (err) => {
@@ -171,7 +218,7 @@ export const ThemeProvider = ({ children }) => {
         }
       );
     return () => subscriber();
-  }, [authenticated,date]);
+  }, [authenticated, date]);
 
   useEffect(() => {
     let subscriber;
@@ -184,24 +231,18 @@ export const ThemeProvider = ({ children }) => {
           (documentSnapshot) => {
             const data = documentSnapshot.data();
             const categories = {};
-            data.categories.forEach((category) => {
-              categories[category.name] = {
-                key: category.name,
-                total: 0,
-                icon: category.icon,
+            data.sortCategories.forEach((category) => {
+              categories[category.categoryName] = {
+                categoryName: category.categoryName,
+                // categoryTotal: 0,
+                categoryIcon: category.categoryIcon,
+                categoryBackgroundColor: category.categoryBackgroundColor,
+                categoryTextColor: category.categoryTextColor,
               };
             });
             // setCategoriesEmojis(data.categoriesEmojis);
-            setCategories((prev) => {
-              // debugger;
-              for (category of Object.keys(categories)) {
-                categories[category] = {
-                  ...categories[category],
-                  ...prev[category],
-                };
-              }
-              return categories;
-            });
+            // debugger;
+            setSortCategories(categories);
             setBudget(data.budget);
             setAuthState(() => {
               if (data.firstLogin === true) {
@@ -252,7 +293,13 @@ export const ThemeProvider = ({ children }) => {
             <AppStateContext.Provider value={authState}>
               <PendingSortContext.Provider value={pendingSort}>
                 <ExcludedContext.Provider value={excluded}>
-                  {children}
+                  <DateContext.Provider value={date}>
+                    <DateDispatchContext.Provider value={dispatchDate}>
+                      <SortCategoriesContext.Provider value={sortCategories}>
+                        {children}
+                      </SortCategoriesContext.Provider>
+                    </DateDispatchContext.Provider>
+                  </DateContext.Provider>
                 </ExcludedContext.Provider>
               </PendingSortContext.Provider>
             </AppStateContext.Provider>

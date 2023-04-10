@@ -11,6 +11,7 @@ import {
   usePendingSort,
   useExcluded,
   useCategories,
+  useSortCategories,
 } from "../components/ContextProvider";
 import _, { isEmpty } from "lodash";
 import Categories from "../components/Categories";
@@ -40,13 +41,13 @@ const SortCategories = () => {
   const rightBorder = width / 2;
   const PendingSortContext = usePendingSort();
   const ExcludedContext = useExcluded();
-  const CategoriesContext = useCategories();
+  const SortCategoriesContext = useSortCategories();
 
   const [loading, setLoading] = useState(true);
   const [pendingSort, setPendingSort] = useState();
   const [excluded, setExcluded] = useState();
   // const [firstCard, setFirstCard] = useState();
-  const [categories, setCategories] = useState();
+  const [sortCategories, setSortCategories] = useState();
   const [needsSorting, setNeedsSorting] = useState();
   const [panViewBottomHeight, setPanViewBottomHeight] = useState(height);
   const [panViewTopHeight, setPanViewTopHeight] = useState(-height);
@@ -57,13 +58,20 @@ const SortCategories = () => {
     setExcluded(Object.values(ExcludedContext));
   }, [ExcludedContext]);
   useEffect(() => {
-    if (CategoriesContext !== undefined && !_.isEmpty(CategoriesContext)) {
+    if (
+      SortCategoriesContext !== undefined &&
+      !_.isEmpty(SortCategoriesContext)
+    ) {
       // debugger;
-      setCategories(Object.values(CategoriesContext).slice(0, 6));
+      setSortCategories(Object.values(SortCategoriesContext).slice(0, 6));
     } else {
-      setCategories({});
+      setSortCategories({});
     }
-  }, [CategoriesContext]);
+  }, [SortCategoriesContext]);
+  useEffect(() => {
+    console.log("sort categories");
+    console.log(sortCategories);
+  }, [sortCategories]);
   useEffect(() => {
     if (pendingSort !== undefined && !_.isEmpty(PendingSortContext)) {
       // setFirstCard(Object.values(pendingSort)[0]);
@@ -92,14 +100,14 @@ const SortCategories = () => {
       !(
         pendingSort === undefined ||
         excluded === undefined ||
-        categories === undefined ||
+        sortCategories === undefined ||
         needsSorting === undefined
       )
     ) {
       setLoading(false);
       console.log("done loading");
     }
-  }, [pendingSort, excluded, , categories, needsSorting]);
+  }, [pendingSort, excluded, , sortCategories, needsSorting]);
 
   const handleCategoryPress = (category) => {
     firestore()
@@ -144,7 +152,7 @@ const SortCategories = () => {
               flex: 2.5,
               alignItems: "center",
               justifyContent: "center",
-              // backgroundColor: "black",
+              // backgroundColor: "white",
             }}
             onLayout={(eventLayout) => {
               const viewHeight = eventLayout.nativeEvent.layout.height;
@@ -198,13 +206,13 @@ const SortCategories = () => {
                   alignContent: "center",
                   justifyContent: "center",
                 }}
-                data={categories.slice(0, 6)}
+                data={sortCategories.slice(0, 6)}
                 numColumns={3}
                 renderItem={({ item }) => (
                   <Pressable
                     onPress={() => {
                       console.log("transaction sorted!");
-                      handleCategoryPress(item.key);
+                      handleCategoryPress(item.categoryName);
                     }}
                     style={{
                       width: "30%",
@@ -220,8 +228,8 @@ const SortCategories = () => {
                     }}
                   >
                     <Emoji
-                      name={item.key}
-                      symbol={item.icon}
+                      name={item.categoryName}
+                      symbol={item.categoryIcon}
                       fontSize={35}
                     ></Emoji>
                     <Text
@@ -232,7 +240,7 @@ const SortCategories = () => {
                         // marignTop: 15,
                       }}
                     >
-                      {item.key}
+                      {item.categoryName}
                     </Text>
                   </Pressable>
                 )}
@@ -250,6 +258,7 @@ const SortCategories = () => {
             flexDirection: "column",
             justifyContent: "center",
             alignItems: "center",
+            backgroundColor: "white",
           }}
         >
           <Text style={{ textAlign: "center" }}>

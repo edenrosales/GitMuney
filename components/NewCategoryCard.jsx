@@ -17,7 +17,9 @@ const NewCategoryCard = (props) => {
     >
       <Pressable
         onPress={() => {
-          console.log("this works");
+          // debugger;
+          props.handleCategorySelect(props.categoryName);
+          props.toggleTransactionsList();
         }}
         style={{
           overflow: "hidden",
