@@ -270,11 +270,47 @@ const FirstLoginConfig = ({ props, navigation, route }) => {
               </Text>
             </TouchableOpacity>
           </View>
+          <View
+            style={{
+              alignItems: "center",
+              justifyContent: "center",
+              marginTop: 25,
+              opacity:
+                managementStyle === "Automatic" || managementStyle === "Hybrid"
+                  ? 1
+                  : 0,
+            }}
+          >
+            <Pressable
+              style={{
+                height: 40,
+                width: "80%",
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: "#7a3cf5",
+                // opacity: 0.7,
+                borderRadius: 1,
+              }}
+              onPress={() => {
+                console.log("this works");
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 18,
+                  color: "white",
+                  fontFamily: "SSP-SemiBold",
+                }}
+              >
+                Connect Bank or Card
+              </Text>
+            </Pressable>
+          </View>
           <Text
             style={{
               fontFamily: "SSP-SemiBold",
               fontSize: 20,
-              marginTop: 60,
+              marginTop: 20,
               left: 10,
             }}
           >

@@ -1,8 +1,8 @@
 import React from "react";
-import { View, StyleSheet, Text, Pressable } from "react-native";
+import { View, StyleSheet, Pressable, Text } from "react-native";
 import Emoji from "./Emoji";
 
-const NewCategoryCard = (props) => {
+const SettingsCard = (props) => {
   return (
     <View
       style={{
@@ -16,11 +16,7 @@ const NewCategoryCard = (props) => {
       }}
     >
       <Pressable
-        onPress={() => {
-          // debugger;
-          props.handleCategorySelect(props.categoryName);
-          props.toggleTransactionsList();
-        }}
+        onPress={props.specialFunction}
         style={{
           overflow: "hidden",
           width: "93%",
@@ -37,33 +33,32 @@ const NewCategoryCard = (props) => {
               height: "100%",
               borderRadius: 15,
               width: 0.5,
-              width:
-                String((props.categoryAmount / props.totalSpent) * 100) + "%",
+              width: "100%",
+              backgroundColor: "#f3f2f5",
+              opacity: 0.8,
             },
-            props.loadingStyle,
+            props.backgroundStyles,
           ]}
         ></View>
         <View style={{ position: "absolute", left: 10 }}>
           <Emoji
             style={{}}
-            name={props.categoryName}
+            name={props.settingName}
             fontSize={25}
-            symbol={props.categoryIcon}
+            symbol={props.settingIcon}
           ></Emoji>
         </View>
         <Text
           style={{
             position: "absolute",
             left: 60,
-            fontSize: 14.5,
-            fontFamily: "SSP-Regular",
+            fontSize: 17,
+            fontFamily: "SSP-SemiBold",
           }}
         >
-          {props.categoryName}
+          {props.settingName}
         </Text>
-        <Text style={{ position: "absolute", right: 10 }}>
-          ${props.categoryAmount}
-        </Text>
+        {props.rightSideText}
       </Pressable>
     </View>
   );
@@ -71,4 +66,4 @@ const NewCategoryCard = (props) => {
 
 const styles = StyleSheet.create({});
 
-export default NewCategoryCard;
+export default SettingsCard;

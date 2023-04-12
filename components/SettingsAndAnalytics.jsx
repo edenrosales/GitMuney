@@ -1,6 +1,5 @@
 import React from "react";
 import { View, StyleSheet, Text, Button, Pressable } from "react-native";
-import auth from "@react-native-firebase/auth";
 import {
   GoogleSignin,
   statusCodes,
@@ -14,6 +13,9 @@ import Animated, {
 } from "react-native-reanimated";
 import { GestureDetector, Gesture } from "react-native-gesture-handler";
 import Emoji from "./Emoji";
+import SettingsCard from "./SettingsCard";
+import auth from "@react-native-firebase/auth";
+import firestore, { Timestamp } from "@react-native-firebase/firestore";
 
 const SettingsAndAnalytics = () => {
   const signOut = async () => {
@@ -28,7 +30,11 @@ const SettingsAndAnalytics = () => {
       console.log("signed out");
     }
   };
-
+  const resetBudgetPreferences = () => {
+    firestore().collection("users").doc(auth().currentUser.uid).update({
+      firstLogin: true,
+    });
+  };
   return (
     <>
       <View
@@ -57,9 +63,136 @@ const SettingsAndAnalytics = () => {
         </Text>
       </View>
 
-      <View style={{ height: "100%", width: "100%", backgroundColor: "white" }}>
-        <View style={{ flex: 1 }}></View>
-        <View style={{}}></View>
+      <View
+        style={{
+          height: "100%",
+          width: "100%",
+          backgroundColor: "white",
+          // marginTop: 20,
+        }}
+      >
+        <View style={{ marginTop: 25 }}>
+          <View
+            style={{
+              alignItems: "center",
+              marginBottom: 5,
+              marginTop: 5,
+            }}
+          >
+            <Text
+              style={{
+                width: "93%",
+                color: "grey",
+                fontFamily: "SSP-Regular",
+              }}
+            >
+              PROFILE
+            </Text>
+          </View>
+          <SettingsCard
+            // backgroundStyles={{ backgroundColor: "#868380", opacity: 0.8 }}
+            settingName={"Name"}
+            settingIcon={"👶"}
+            rightSideText={
+              <Text style={{ position: "absolute", color: "black", right: 30 }}>
+                Eden Rosales
+              </Text>
+            }
+          ></SettingsCard>
+          <View
+            style={{
+              alignItems: "center",
+              marginBottom: 5,
+              //STANDARD SEPARATION BETWEEN SECTIONS
+              marginTop: 25,
+            }}
+          >
+            <Text
+              style={{
+                width: "93%",
+                color: "grey",
+                fontFamily: "SSP-Regular",
+              }}
+            >
+              ACCOUNTS
+            </Text>
+          </View>
+          <SettingsCard
+            // backgroundColor={"purple"}
+            settingName={"Connected Accounts..."}
+            settingIcon={"🏛️"}
+            // backgroundStyles={{ backgroundColor: "#868380", opacity: 0.8 }}
+          ></SettingsCard>
+          <View
+            style={{
+              alignItems: "center",
+              justifyContent: "center",
+              margin: 10,
+            }}
+          >
+            <Pressable
+              style={{
+                height: 40,
+                width: "100%",
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: "#7a3cf5",
+                // opacity: 0.7,
+                borderRadius: 30,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 18,
+                  color: "white",
+                  fontFamily: "SSP-SemiBold",
+                }}
+              >
+                Connect Bank or Card
+              </Text>
+            </Pressable>
+          </View>
+          <View
+            style={{
+              alignItems: "center",
+              marginBottom: 5,
+              //STANDARD SEPARATION BETWEEN SECTIONS
+              marginTop: 25,
+            }}
+          >
+            <Text
+              style={{
+                width: "93%",
+                color: "grey",
+                fontFamily: "SSP-Regular",
+              }}
+            >
+              MISC
+            </Text>
+          </View>
+          <SettingsCard
+            // backgroundColor={""}
+            settingName={"Reset Budgetting Preferences"}
+            settingIcon={"🔄"}
+            specialFunction={resetBudgetPreferences}
+          ></SettingsCard>
+          <SettingsCard
+            // backgroundColor={""}
+            settingName={"Provide Feedback"}
+            settingIcon={"💖"}
+          ></SettingsCard>
+          <SettingsCard
+            // backgroundColor={""}
+            settingName={"Visit us online!"}
+            settingIcon={"🌐"}
+          ></SettingsCard>
+          <SettingsCard
+            // backgroundColor={""}
+            settingName={"Sign out..."}
+            settingIcon={"👋🏽"}
+            specialFunction={signOut}
+          ></SettingsCard>
+        </View>
       </View>
     </>
   );
