@@ -45,11 +45,13 @@ import Animated, {
   withTiming,
   useAnimatedStyle,
   Easing,
+  debug,
 } from "react-native-reanimated";
 import NewCategoryCard from "./NewCategoryCard";
 import Emoji from "./Emoji";
 import MonthSwitcher from "./MonthSwitcher";
 import TransactionsList from "./TransactionsList";
+import { DebugInstructions } from "react-native/Libraries/NewAppScreen";
 
 const NewViewAccountScreen = (props) => {
   const screenHeight = Dimensions.get("window").height;
@@ -132,19 +134,63 @@ const NewViewAccountScreen = (props) => {
   }, [categories, expenses, pendingSort, excluded]);
 
   const handleCategorySelect = (categoryName) => {
-    setTransactionsListInformation(() => {
-      const transactionList = {};
-      const allExpenses = Object.values(expenses);
-      allExpenses.forEach((transaction) => {
-        if (transaction.categoryName === categoryName) {
-          transactionList[transaction.key] = transaction;
-        }
+    if (categoryName === "Intentional") {
+      // debugger;
+      setTransactionsListInformation({
+        category: {
+          categoryBackgroundColor: "#C7E9B0",
+          categoryIcon: "✔️",
+          categoryName: "Intentional",
+          categoryTextColor: "black",
+          // total: totalSpent,
+        },
+        transactions: "Intentional",
       });
-      return {
-        category: categories[categoryName],
-        transactions: transactionList,
-      };
-    });
+    } else if (categoryName === "Excluded") {
+      setTransactionsListInformation({
+        category: {
+          categoryBackgroundColor: "#52575D",
+          categoryIcon: "🗑️",
+          categoryName: "Excluded",
+          categoryTextColor: "black",
+          // total: "Excluded",
+        },
+        transactions: "Excluded",
+      });
+    } else if (categoryName === "Income") {
+      // const incomeExpenses = {};
+      // let income = 0;
+      // Object.values(expenses).forEach((transaction) => {
+      //   if (!transaction.isWithdrawl) {
+      //     incomeExpenses[transaction.key] = transaction;
+      //     income += transaction.cost;
+      //   }
+      // });
+      setTransactionsListInformation({
+        category: {
+          categoryBackgroundColor: "#52575D",
+          categoryIcon: "💰",
+          categoryName: "Income",
+          categoryTextColor: "black",
+          // total: income,
+        },
+        transactions: "Income",
+      });
+    } else {
+      setTransactionsListInformation(() => {
+        // const transactionList = {};
+        // const allExpenses = Object.values(expenses);
+        // allExpenses.forEach((transaction) => {
+        //   if (transaction.categoryName === categoryName) {
+        //     transactionList[transaction.key] = transaction;
+        //   }
+        // });
+        return {
+          category: categories[categoryName],
+          transactions: categoryName,
+        };
+      });
+    }
   };
 
   const handleTransactionListVisibleToggle = () => {
@@ -242,55 +288,69 @@ const NewViewAccountScreen = (props) => {
               sections={[
                 {
                   title: "TOTALS",
-                  data: [
-                    {
-                      title: "Intentional",
-                      spent: totalSpent,
-                      icon: "✔️",
-                      backgroundColor: "#C7E9B0",
-                    },
-                    {
-                      title: "Excluded",
-                      spent: totalExcluded,
-                      backgroundColor: "#52575D",
-                      icon: "🗑️",
-                    },
-                    {
-                      title: "Income",
-                      spent: 0,
-                      backgroundColor: "#52575D",
-                      icon: "💰",
-                    },
-                  ],
+                  data: Object.values(categories)
+                    .filter((entry) => {
+                      if (
+                        entry.categoryName === "Intentional" ||
+                        entry.categoryName === "Excluded" ||
+                        entry.categoryName === "Income"
+                      ) {
+                        // debugger;
+                        return true;
+                      }
+                      return false;
+                    })
+                    .sort((a, b) => {
+                      if (a.sortOrder > b.sortOrder) {
+                        return 1;
+                      } else {
+                        return -1;
+                      }
+                    }),
                   renderItem: ({ item }) => {
                     if (item.spent === 0 && item.title === "Income") {
                       return <></>;
                     }
                     return (
                       <NewCategoryCard
-                        categoryIcon={item.icon}
-                        categoryName={item.title}
-                        categoryAmount={item.spent}
+                        categoryIcon={item.categoryIcon}
+                        categoryName={item.categoryName}
+                        categoryAmount={item.total}
                         totalSpent={totalSpent + totalExcluded}
                         loadingStyle={{
-                          backgroundColor: item.backgroundColor,
+                          backgroundColor: item.categoryBackgroundColor,
                           opacity: 0.7,
                         }}
                         handleCategorySelect={handleCategorySelect}
+                        toggleTransactionsList={
+                          handleTransactionListVisibleToggle
+                        }
                       ></NewCategoryCard>
                     );
                   },
                 },
                 {
                   title: "CATEGORIES",
-                  data: Object.values(categories).sort((a, b) => {
-                    if (a.total > b.total) {
-                      return -1;
-                    } else if (a.total < b.total) {
-                      return 1;
-                    }
-                    return 0;
-                  }),
+                  data: Object.values(categories)
+                    .sort((a, b) => {
+                      if (a.total > b.total) {
+                        return -1;
+                      } else if (a.total < b.total) {
+                        return 1;
+                      }
+                      return 0;
+                    })
+                    .filter((entry) => {
+                      if (
+                        entry.categoryName === "Intentional" ||
+                        entry.categoryName === "Excluded" ||
+                        entry.categoryName === "Income"
+                      ) {
+                        // debugger;
+                        return false;
+                      }
+                      return true;
+                    }),
                   renderItem: ({ item }) => {
                     if (item.total === 0) {
                       return <></>;

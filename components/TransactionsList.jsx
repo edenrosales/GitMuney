@@ -4,23 +4,69 @@ import Emoji from "./Emoji";
 // import {}
 
 // import Modal from "react-native-modal";
-import { useTotalSpent } from "./ContextProvider";
+import { useExcluded, useExpenses, useTotalSpent } from "./ContextProvider";
+import TransactionModalComponent from "./TransactionModalComponent";
 
 const TransactionsList = (props) => {
+  const transactionsContext = useExpenses();
+  const excludedContext = useExcluded();
+
   const [loading, setLoading] = useState(true);
-  //   const [visible, setVisible] = useState(false);
   const [category, setCategory] = useState();
   const [transactions, setTransactions] = useState();
-  //   const [visible, setVisible]
+  const [transactionModalVisible, setTransactionModalVisible] = useState(false);
+  const [transactionSelected, setTransactionSelected] = useState();
+  const [total, setTotal] = useState(0);
+  // const [allTransactions, setAllTransactions] = useState();
+
   useEffect(() => {
-    console.log(props.listInfo.category);
+    // console.log(props.listInfo.category);
+
     setCategory(props.listInfo.category);
   }, [props.listInfo.category]);
+
   useEffect(() => {
-    setTransactions(props.listInfo.transactions);
-  }, [props.listInfo.transactions]);
+    setTransactions(() => {
+      if (
+        props.listInfo.transactions !== undefined &&
+        transactionsContext !== undefined &&
+        excludedContext !== undefined
+      ) {
+        const expensesObject = transactionsContext;
+        if (props.listInfo.transactions === "Intentional") {
+          return Object.values(expensesObject);
+        } else if (props.listInfo.transactions === "Excluded") {
+          return Object.values(excludedContext);
+        } else if (props.listInfo.transactions === "Income") {
+          return Object.values(transactionsContext).filter((item) => {
+            if (!item.isWithdrawl) {
+              return true;
+            }
+            return false;
+          });
+        } else {
+          return Object.values(expensesObject).filter((item) => {
+            if (item.categoryName === props.listInfo.transactions) {
+              return true;
+            }
+            return false;
+          });
+        }
+      }
+    });
+  }, [props.listInfo.transactions, transactionsContext, excludedContext]);
   useEffect(() => {
-    // debugger;
+    console.log(transactions);
+    if (transactions !== undefined) {
+      let totalSpent = 0;
+      transactions.forEach((item) => {
+        totalSpent += item.cost;
+      });
+      setTotal(totalSpent);
+    }
+  }, [transactions]);
+  //for loading
+  useEffect(() => {
     setLoading(() => {
       if (category !== undefined && transactions !== undefined) {
         return false;
@@ -28,11 +74,21 @@ const TransactionsList = (props) => {
       return true;
     });
   }, [category, transactions]);
+
+  const toggleTransactionModalVisible = () => {
+    setTransactionModalVisible((prev) => !prev);
+  };
+  const handleTransactionPress = (item) => {
+    setTransactionSelected(item);
+    toggleTransactionModalVisible();
+  };
+
   if (loading) {
     return <></>;
   }
   return (
     <>
+      {/* <View style={{ height: "100%", width: "100%" }}> */}
       <Pressable
         style={{
           position: "absolute",
@@ -61,6 +117,12 @@ const TransactionsList = (props) => {
           alignItems: "center",
         }}
       >
+        <TransactionModalComponent
+          visible={transactionModalVisible}
+          category={category}
+          transaction={transactionSelected}
+          toggleVisible={toggleTransactionModalVisible}
+        ></TransactionModalComponent>
         <Emoji
           style={{ marginTop: 20 }}
           fontSize={55}
@@ -68,7 +130,7 @@ const TransactionsList = (props) => {
           symbol={category.categoryIcon}
         ></Emoji>
         <Text style={{ fontSize: 35, fontFamily: "SSP-Bold", marginTop: 10 }}>
-          ${props.listInfo.category.total}
+          ${total}
         </Text>
         <Text
           style={{
@@ -78,7 +140,7 @@ const TransactionsList = (props) => {
             color: "gray",
           }}
         >
-          {props.listInfo.category.categoryName}
+          {category.categoryName}
         </Text>
         <FlatList
           style={{
@@ -87,10 +149,13 @@ const TransactionsList = (props) => {
             // zIndex: 5,
             // backgroundColor: "black",
           }}
-          data={Object.values(props.listInfo.transactions)}
+          data={transactions}
           renderItem={({ item }) => {
             return (
-              <View
+              <Pressable
+                onPress={() => {
+                  handleTransactionPress(item);
+                }}
                 style={{
                   height: 50,
                   width: "100%",
@@ -119,7 +184,7 @@ const TransactionsList = (props) => {
                     style={{
                       backgroundColor: item.categoryBackgroundColor,
                       aspectRatio: 1,
-                    //   borderRadius: 
+                    //   borderRadius:
                     }}
                   >
                   </View> */}
@@ -148,11 +213,12 @@ const TransactionsList = (props) => {
                     ${item.cost}
                   </Text>
                 </View>
-              </View>
+              </Pressable>
             );
           }}
         ></FlatList>
       </View>
+      {/* </View> */}
     </>
   );
 };

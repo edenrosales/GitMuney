@@ -24,6 +24,7 @@ const TransactionModalComponent = (props) => {
   }, [props.category]);
 
   useEffect(() => {
+    // debugger;
     setLoading(() => {
       if (transactionSelected !== undefined && category !== undefined) {
         return false;
@@ -32,13 +33,21 @@ const TransactionModalComponent = (props) => {
       }
     });
   }, [transactionSelected, category]);
-  // debugger;
+
   if (loading) {
     return <></>;
   }
   return (
     <>
-      <View style={{}}>
+      <View
+        style={
+          {
+            // zIndex: 5,
+            // height: "50%",
+            // width: "50%",
+          }
+        }
+      >
         <Modal
           // onSwipeComplete={() => {
           //   props.toggleVisible();
@@ -81,11 +90,11 @@ const TransactionModalComponent = (props) => {
             >
               <Emoji
                 fontSize={40}
-                name={props.category.key}
-                symbol={props.category.icon}
+                name={category.categoryName}
+                symbol={category.categoryIcon}
               ></Emoji>
               <Text style={{ fontFamily: "SSP-Regular", fontSize: 15 }}>
-                {props.category.key}
+                {category.categoryName}
               </Text>
 
               <Text

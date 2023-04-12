@@ -114,6 +114,7 @@ export const ThemeProvider = ({ children }) => {
   const [pendingSort, setPendingSort] = useState({});
   const [excluded, setExcluded] = useState({});
   const [date, dispatchDate] = useReducer(changeDate, new Date());
+  const [income, setIncome] = useState({});
 
   // const [categoriesEmojis, setCategoriesEmojis] = useState({});
   // useEffect(() => {
@@ -171,6 +172,18 @@ export const ThemeProvider = ({ children }) => {
                 ...data,
                 key: transaction.id,
               };
+              if (!("Excluded" in newCategories)) {
+                newCategories["Excluded"] = {
+                  total: data.cost,
+                  categoryName: "Excluded",
+                  categoryBackgroundColor: "#52575D",
+                  categoryIcon: "🗑️",
+                  categoryTextColor: "black",
+                  sortOrder: 3,
+                };
+              } else {
+                newCategories["Excluded"].total += data.cost;
+              }
             } else if (data.pendingSort) {
               notSorted[transaction.id] = {
                 ...data,
@@ -197,8 +210,46 @@ export const ThemeProvider = ({ children }) => {
               } else {
                 newCategories[data.category].total += data.cost;
               }
+              if (!data.isWithdrawl) {
+                if ("Income" in newCategories) {
+                  newCategories["Income"].total += data.cost;
+                } else {
+                  newCategories["Income"] = {
+                    total: data.cost,
+                    categoryName: "Income",
+                    categoryBackgroundColor: "#52575D",
+                    categoryIcon: "💰",
+                    categoryTextColor: "black",
+                    sortOrder: 2,
+                  };
+                }
+              }
+              {
+                if ("Intentional" in newCategories) {
+                  newCategories["Intentional"].total += data.cost;
+                } else {
+                  newCategories["Intentional"] = {
+                    total: data.cost,
+                    categoryName: "Intentional",
+                    categoryBackgroundColor: "#C7E9B0",
+                    categoryIcon: "✔️",
+                    categoryTextColor: "black",
+                    sortOrder: 1,
+                  };
+                }
+              }
             }
           });
+          if (!("Excluded" in newCategories)) {
+            newCategories["Excluded"] = {
+              total: 0,
+              categoryName: "Excluded",
+              categoryBackgroundColor: "#52575D",
+              categoryIcon: "🗑️",
+              categoryTextColor: "black",
+              sortOrder: 3,
+            };
+          }
           setExpenses(() => {
             // console.log("expenses updated");
             return { ...transactions };
