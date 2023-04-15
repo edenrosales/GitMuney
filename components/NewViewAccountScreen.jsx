@@ -69,11 +69,6 @@ const NewViewAccountScreen = (props) => {
   const [categories, setCategories] = useState();
   const [myBudget, setMyBudget] = useState(5000);
   const [expenses, setExpenses] = useState();
-  //   const [more, setMore] = useState(false);
-  // const [
-  //   transactionModalComponentVisible,
-  //   setTransactionModalComponentVisible,
-  // ] = useState(false);
   const [transactionsListInformation, setTransactionsListInformation] =
     useState({});
   const [excluded, setExcluded] = useState();
