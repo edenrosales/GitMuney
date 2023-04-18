@@ -16,10 +16,13 @@ import {
   MenuProvider,
 } from "react-native-popup-menu";
 import Dialog from "react-native-dialog";
+import DatePicker from "react-native-date-picker";
 
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
 const TransactionModalComponent = (props) => {
+  // const [transactionDate, setTransactionDate] = useState(new Date())
+  const [editDateVisible, setEditDateVisible] = useState(false);
   const [editAmountVisible, setEditAmountVisible] = useState(false);
   const [editNameVisible, setEditNameVisible] = useState(false);
   const [editName, setEditName] = useState("");
@@ -31,7 +34,11 @@ const TransactionModalComponent = (props) => {
   useEffect(() => {
     setTransactionSelected(props.transaction);
   }, [props.transaction]);
-
+  // useEffect(() => {
+  //   if (transactionSelected !== undefined) {
+  //     setTransactionDate(net Date(transactionSelected.date.toDate()))
+  //   }
+  // }, [transactionSelected]);
   useEffect(() => {
     setCategories(props.category);
   }, [props.category]);
@@ -46,7 +53,20 @@ const TransactionModalComponent = (props) => {
       }
     });
   }, [transactionSelected, category]);
-
+  const handleEditDateSubmit = (date) => {
+    firestore()
+      .collection("users")
+      .doc(auth().currentUser.uid)
+      .collection("transactions")
+      .doc(transactionSelected.key)
+      .update({
+        date: date,
+      })
+      .then(() => {
+        setEditDateVisible(false);
+      });
+    // setEditDateVisible(false);
+  };
   const handleEditNameSubmit = () => {
     firestore()
       .collection("users")
@@ -83,6 +103,25 @@ const TransactionModalComponent = (props) => {
   return (
     <>
       <View style={{}}>
+        <DatePicker
+          modal
+          open={editDateVisible}
+          date={transactionSelected.date.toDate()}
+          onConfirm={(date) => {
+            handleEditDateSubmit(date);
+          }}
+          onCancel={() => {
+            setEditDateVisible(false);
+          }}
+          style={{
+            zIndex: 100,
+            position: "absolute",
+            top: 0,
+            left: 0,
+            // height: "100%",
+            // width: "100%",
+          }}
+        ></DatePicker>
         <Dialog.Container visible={editNameVisible}>
           <Dialog.Title>Edit Name</Dialog.Title>
           <Dialog.Input
@@ -209,7 +248,10 @@ const TransactionModalComponent = (props) => {
                     </MenuTrigger>
                     <MenuOptions>
                       <MenuOption
-                        onSelect={() => alert(`Change Date`)}
+                        onSelect={() => {
+                          setEditDateVisible(true);
+                          console.log(editDateVisible);
+                        }}
                         text="Change Date"
                       />
                       <MenuOption

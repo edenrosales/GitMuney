@@ -1,77 +1,108 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, Pressable, Text, FlatList } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Pressable,
+  Text,
+  SectionList,
+  TextInput,
+  Keyboard,
+} from "react-native";
 import Emoji from "./Emoji";
 import { useExcluded, useExpenses, useTotalSpent } from "./ContextProvider";
 import TransactionModalComponent from "./TransactionModalComponent";
+import Fuse from "fuse.js";
+// import { TextInput } from "react-native-gesture-handler";
 
-const TransactionsList = (props) => {
+const SearchMenu = (props) => {
   const transactionsContext = useExpenses();
-  const excludedContext = useExcluded();
-
   const [loading, setLoading] = useState(true);
-  const [category, setCategory] = useState();
   const [transactions, setTransactions] = useState();
   const [transactionModalVisible, setTransactionModalVisible] = useState(false);
   const [transactionSelected, setTransactionSelected] = useState();
-  const [total, setTotal] = useState(0);
-  // const [allTransactions, setAllTransactions] = useState();
-
-  useEffect(() => {
-    // console.log(props.listInfo.category);
-
-    setCategory(props.listInfo.category);
-  }, [props.listInfo.category]);
+  const [categorySelected, setCategorySelected] = useState();
+  const [searchWord, setSearchWord] = useState("");
+  const [searchIndex, setSearchIndex] = useState();
+  const [foundTransactions, setFoundTransactions] = useState();
 
   useEffect(() => {
     setTransactions(() => {
-      if (
-        props.listInfo.transactions !== undefined &&
-        transactionsContext !== undefined &&
-        excludedContext !== undefined
-      ) {
-        const expensesObject = transactionsContext;
-        if (props.listInfo.transactions === "Intentional") {
-          return Object.values(expensesObject);
-        } else if (props.listInfo.transactions === "Excluded") {
-          return Object.values(excludedContext);
-        } else if (props.listInfo.transactions === "Income") {
-          return Object.values(transactionsContext).filter((item) => {
-            if (!item.isWithdrawl) {
-              return true;
-            }
-            return false;
-          });
-        } else {
-          return Object.values(expensesObject).filter((item) => {
-            if (item.categoryName === props.listInfo.transactions) {
-              return true;
-            }
-            return false;
-          });
-        }
-      }
+      return transactionsContext;
     });
-  }, [props.listInfo.transactions, transactionsContext, excludedContext]);
+    setSearchIndex(() => {
+      if (transactionsContext !== undefined) {
+        const options = {
+          threshold: 0.3,
+          keys: ["transactionName"],
+        };
+        return new Fuse(Object.values(transactionsContext), options);
+      }
+      return undefined;
+    });
+    // console.log(transactionsContext);
+  }, [transactionsContext]);
   useEffect(() => {
-    console.log(transactions);
-    if (transactions !== undefined) {
-      let totalSpent = 0;
-      transactions.forEach((item) => {
-        totalSpent += item.cost;
+    if (transactionSelected !== undefined) {
+      setCategorySelected({
+        categoryBackgroundColor: transactionSelected.categoryBackgroundColor,
+        categoryIcon: transactionSelected.categoryIcon,
+        categoryName: transactionSelected.categoryName,
+        categoryTextColor: transactionSelected.categtoryTextColor,
       });
-      setTotal(totalSpent);
     }
-  }, [transactions]);
+  }, [transactionSelected]);
   //for loading
   useEffect(() => {
     setLoading(() => {
-      if (category !== undefined && transactions !== undefined) {
+      if (foundTransactions !== undefined) {
+        // console.log(transactions);
         return false;
       }
       return true;
     });
-  }, [category, transactions]);
+  }, [foundTransactions]);
 
+  useEffect(() => {
+    if (transactions !== undefined) {
+      setFoundTransactions(() => {
+        let searchResults;
+        if (searchWord === "") {
+          searchResults = Object.values(transactions);
+        } else {
+          searchResults = searchIndex.search(searchWord).map((transaction) => {
+            return transaction.item;
+          });
+        }
+        const sortedResults = Object.values(searchResults).sort((a, b) => {
+          if (a.date > b.date) {
+            return -11;
+          } else if (a.date < b.date) {
+            return 1;
+          }
+          return 0;
+        });
+        const groupedResults = sortedResults.reduce((object, transaction) => {
+          const date = transaction.date.toDate();
+          const compareDate = new Date(
+            date.getFullYear(),
+            date.getMonth(),
+            date.getDay()
+          );
+
+          if (!object[compareDate]) {
+            object[compareDate] = {
+              title: compareDate,
+              data: [],
+            };
+          }
+
+          object[compareDate].data.push(transaction);
+          return object;
+        }, {});
+        return Object.values(groupedResults);
+      });
+    }
+  }, [searchWord, searchIndex]);
   const toggleTransactionModalVisible = () => {
     setTransactionModalVisible((prev) => !prev);
   };
@@ -83,9 +114,9 @@ const TransactionsList = (props) => {
   if (loading) {
     return <></>;
   }
+
   return (
     <>
-      {/* <View style={{ height: "100%", width: "100%" }}> */}
       <Pressable
         style={{
           position: "absolute",
@@ -97,6 +128,7 @@ const TransactionsList = (props) => {
         }}
         onPress={() => {
           props.toggleVisible();
+          Keyboard.dismiss();
         }}
       ></Pressable>
       <View
@@ -116,38 +148,62 @@ const TransactionsList = (props) => {
       >
         <TransactionModalComponent
           visible={transactionModalVisible}
-          category={category}
+          category={categorySelected}
           transaction={transactionSelected}
           toggleVisible={toggleTransactionModalVisible}
         ></TransactionModalComponent>
-        <Emoji
-          style={{ marginTop: 20 }}
-          fontSize={55}
-          name={category.categoryName}
-          symbol={category.categoryIcon}
-        ></Emoji>
-        <Text style={{ fontSize: 35, fontFamily: "SSP-Bold", marginTop: 10 }}>
-          ${total}
-        </Text>
-        <Text
+        <TextInput
+          placeholder="Search..."
           style={{
-            fontSize: 20,
-            fontFamily: "SSP-SemiBold",
-            marginTop: 5,
-            color: "gray",
+            position: "relative",
+            margin: 15,
+            backgroundColor: "#f0f0f0",
+            borderRadius: 20,
+            width: "85%",
+            height: "5%",
+            marginLeft: "auto",
+            marginRight: "auto",
+            textAlign: "center",
           }}
-        >
-          {category.categoryName}
-        </Text>
-        <FlatList
+          value={searchWord}
+          onChangeText={(text) => {
+            setSearchWord(text);
+          }}
+          placeholderTextColor={"gray"}
+          caretHidden
+        ></TextInput>
+        <SectionList
           style={{
             height: "100%",
             width: "100%",
             // zIndex: 5,
             // backgroundColor: "black",
           }}
-          data={transactions}
+          sections={foundTransactions}
+          renderSectionHeader={({ section }) => {
+            // debugger;
+            return (
+              <View
+                style={{
+                  alignItems: "center",
+                  marginBottom: 5,
+                  marginTop: 5,
+                }}
+              >
+                <Text
+                  style={{
+                    width: "93%",
+                    color: "grey",
+                    fontFamily: "SSP-Regular",
+                  }}
+                >
+                  {section.title.toDateString()}
+                </Text>
+              </View>
+            );
+          }}
           renderItem={({ item }) => {
+            // debugger;
             return (
               <Pressable
                 onPress={() => {
@@ -189,7 +245,7 @@ const TransactionsList = (props) => {
                     <Text style={{ fontSize: 15, fontFamily: "SSP-SemiBold" }}>
                       {item.transactionName}
                     </Text>
-                    <Text
+                    {/* <Text
                       style={{
                         fontSize: 12,
                         fontFamily: "SSP-Regular",
@@ -197,7 +253,7 @@ const TransactionsList = (props) => {
                       }}
                     >
                       {item.date.toDate().toDateString()}
-                    </Text>
+                    </Text> */}
                   </View>
                   <Text
                     style={{
@@ -213,13 +269,12 @@ const TransactionsList = (props) => {
               </Pressable>
             );
           }}
-        ></FlatList>
+        ></SectionList>
       </View>
-      {/* </View> */}
     </>
   );
 };
 
 const styles = StyleSheet.create({});
 
-export default TransactionsList;
+export default SearchMenu;

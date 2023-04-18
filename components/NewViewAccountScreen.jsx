@@ -52,6 +52,7 @@ import Emoji from "./Emoji";
 import MonthSwitcher from "./MonthSwitcher";
 import TransactionsList from "./TransactionsList";
 import { DebugInstructions } from "react-native/Libraries/NewAppScreen";
+import SearchMenu from "./SearchMenu";
 
 const NewViewAccountScreen = (props) => {
   const screenHeight = Dimensions.get("window").height;
@@ -76,6 +77,7 @@ const NewViewAccountScreen = (props) => {
   const [loading, setLoading] = useState(true);
   const [totalExcluded, setTotalExcluded] = useState(0);
   const [transactionListVisible, setTransactionListVisible] = useState(false);
+  const [searchMenuVisible, setSearchMenuVisible] = useState(false);
 
   useEffect(() => {
     setExcluded(excludedContext);
@@ -191,6 +193,9 @@ const NewViewAccountScreen = (props) => {
   const handleTransactionListVisibleToggle = () => {
     setTransactionListVisible((prev) => !prev);
   };
+  const handleSearchMenuVisibleToggle = () => {
+    setSearchMenuVisible((prev) => !prev);
+  };
   useEffect(() => {
     console.log("transaction list information");
     console.log(transactionsListInformation);
@@ -206,6 +211,10 @@ const NewViewAccountScreen = (props) => {
         toggleVisible={handleTransactionListVisibleToggle}
         // visible={transactionListVisible}
       ></TransactionsList>
+      <SearchMenu
+        isVisible={searchMenuVisible}
+        toggleVisible={handleSearchMenuVisibleToggle}
+      ></SearchMenu>
       <View
         style={{
           height: "100%",
@@ -241,7 +250,7 @@ const NewViewAccountScreen = (props) => {
           <Pressable
             style={{ position: "absolute", right: 15, bottom: 0 }}
             onPress={() => {
-              console.log("this works");
+              handleSearchMenuVisibleToggle();
             }}
           >
             <Emoji name={"Search"} fontSize={21} symbol={"🔍"}></Emoji>

@@ -110,13 +110,17 @@ const SortCategories = () => {
   }, [pendingSort, excluded, , sortCategories, needsSorting]);
 
   const handleCategoryPress = (category) => {
+    // debugger;
     firestore()
       .collection("users")
       .doc(auth().currentUser.uid)
       .collection("transactions")
       .doc(pendingSort[pendingSort.length - 1].key)
       .update({
-        category: category,
+        categoryName: category.categoryName,
+        categoryBackgroundColor: category.categoryBackgroundColor,
+        categoryIcon: category.categoryIcon,
+        categoryTextColor: category.categoryTextColor,
         pendingSort: false,
       });
   };
@@ -212,7 +216,7 @@ const SortCategories = () => {
                   <Pressable
                     onPress={() => {
                       console.log("transaction sorted!");
-                      handleCategoryPress(item.categoryName);
+                      handleCategoryPress(item);
                     }}
                     style={{
                       width: "30%",
