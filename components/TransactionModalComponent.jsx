@@ -105,6 +105,7 @@ const TransactionModalComponent = (props) => {
       <View style={{}}>
         <DatePicker
           modal
+          mode={"date"}
           open={editDateVisible}
           date={transactionSelected.date.toDate()}
           onConfirm={(date) => {

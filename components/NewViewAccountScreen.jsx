@@ -53,6 +53,7 @@ import MonthSwitcher from "./MonthSwitcher";
 import TransactionsList from "./TransactionsList";
 import { DebugInstructions } from "react-native/Libraries/NewAppScreen";
 import SearchMenu from "./SearchMenu";
+import AddTransactionModal from "./AddTransactionModal";
 
 const NewViewAccountScreen = (props) => {
   const screenHeight = Dimensions.get("window").height;
@@ -78,6 +79,7 @@ const NewViewAccountScreen = (props) => {
   const [totalExcluded, setTotalExcluded] = useState(0);
   const [transactionListVisible, setTransactionListVisible] = useState(false);
   const [searchMenuVisible, setSearchMenuVisible] = useState(false);
+  const [addTransactionVisible, setAddTransactionVisible] = useState(false);
 
   useEffect(() => {
     setExcluded(excludedContext);
@@ -196,6 +198,9 @@ const NewViewAccountScreen = (props) => {
   const handleSearchMenuVisibleToggle = () => {
     setSearchMenuVisible((prev) => !prev);
   };
+  const handleAddTransactionVisibleToggle = () => {
+    setAddTransactionVisible((prev) => !prev);
+  };
   useEffect(() => {
     console.log("transaction list information");
     console.log(transactionsListInformation);
@@ -215,6 +220,10 @@ const NewViewAccountScreen = (props) => {
         isVisible={searchMenuVisible}
         toggleVisible={handleSearchMenuVisibleToggle}
       ></SearchMenu>
+      <AddTransactionModal
+        isVisible={addTransactionVisible}
+        toggleVisible={handleAddTransactionVisibleToggle}
+      ></AddTransactionModal>
       <View
         style={{
           height: "100%",
@@ -283,6 +292,37 @@ const NewViewAccountScreen = (props) => {
                   </View>
                   <View style={{ height: "30%" }}>
                     <MonthSwitcher></MonthSwitcher>
+                  </View>
+                  <View
+                    style={{
+                      width: "100%",
+                      // backgroundColor: "black",
+                      height: "10%",
+                      flexDirection: "row",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Pressable
+                      onPress={() => {
+                        // console.log("this works");
+                        handleAddTransactionVisibleToggle();
+                      }}
+                      style={{
+                        height: "100%",
+                        width: "33%",
+                        // backgroundColor: "black",
+                      }}
+                    >
+                      <Text
+                        style={{
+                          textAlign: "center",
+                          fontFamily: "SSP-SemiBold",
+                          fontSize: 15,
+                        }}
+                      >
+                        Add Transaction
+                      </Text>
+                    </Pressable>
                   </View>
                 </View>
                 // {/* <View style={{ height: screenHeight * 0.08 }}>
