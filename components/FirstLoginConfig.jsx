@@ -324,6 +324,7 @@ const FirstLoginConfig = ({ props, navigation, route }) => {
             }}
           >
             <TouchableOpacity
+              disabled
               onPress={() => {
                 if (budgetStyle === "Automatic (WIP)") {
                   setBudgetStyle(undefined);
@@ -336,6 +337,9 @@ const FirstLoginConfig = ({ props, navigation, route }) => {
                 {
                   backgroundColor:
                     budgetStyle === "Automatic (WIP)" ? "black" : "white",
+                },
+                {
+                  backgroundColor: "gray",
                 },
               ]}
             >

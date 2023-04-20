@@ -25,6 +25,7 @@ import {
   useTotalSpent,
   useBudget,
   useExcluded,
+  useUserSettings,
 } from "../components/ContextProvider";
 import { HeaderBackButton } from "@react-navigation/elements";
 import auth from "@react-native-firebase/auth";
@@ -66,6 +67,7 @@ const NewViewAccountScreen = (props) => {
   const budgetContext = useBudget();
   const excludedContext = useExcluded();
   const pendingSortContext = usePendingSort();
+  const userSettingsContext = useUserSettings();
 
   const [totalSpent, setTotalSpent] = useState(0);
   const [categories, setCategories] = useState();
@@ -80,7 +82,11 @@ const NewViewAccountScreen = (props) => {
   const [transactionListVisible, setTransactionListVisible] = useState(false);
   const [searchMenuVisible, setSearchMenuVisible] = useState(false);
   const [addTransactionVisible, setAddTransactionVisible] = useState(false);
-
+  const [userSettings, setUserSettings] = useState();
+  // const [categoryData, setCategoryData] = useState();
+  useEffect(() => {
+    setUserSettings(userSettingsContext);
+  }, [userSettingsContext]);
   useEffect(() => {
     setExcluded(excludedContext);
     if (excludedContext !== undefined) {
@@ -110,8 +116,13 @@ const NewViewAccountScreen = (props) => {
   useEffect(() => {
     console.log("categories!!!");
     console.log(categories);
+    // setCategoryData(() => {
+    //   if (categories !== undefined) {
+    //     // console.log(setti)
+    //     return Object.values(categories);
+    //   }
+    // });
   }, [categories]);
-
   useEffect(() => {
     console.log("EXPENSES");
     console.log(expenses);
@@ -123,14 +134,15 @@ const NewViewAccountScreen = (props) => {
         categories !== undefined &&
         expenses !== undefined &&
         pendingSort !== undefined &&
-        excluded !== undefined
+        excluded !== undefined &&
+        userSettings !== undefined
       ) {
         return false;
       } else {
         return true;
       }
     });
-  }, [categories, expenses, pendingSort, excluded]);
+  }, [categories, expenses, pendingSort, excluded, userSettings]);
 
   const handleCategorySelect = (categoryName) => {
     if (categoryName === "Intentional") {
@@ -280,50 +292,87 @@ const NewViewAccountScreen = (props) => {
                     }}
                   >
                     <Pressable
-                      style={{}}
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        // justifyContent: "center",
+                        // gap: 15,
+                      }}
                       onPress={() => {
                         console.log("total spent press");
                       }}
                     >
-                      <Text style={{ fontSize: 55, fontFamily: "SSP-Bold" }}>
-                        ${totalSpent}
-                      </Text>
+                      {userSettings.budgetStyle === "Manual" ? (
+                        <>
+                          <Text
+                            style={{
+                              flex: 2,
+                              fontSize: 55,
+                              fontFamily: "SSP-Bold",
+                              textAlign: "right",
+                            }}
+                          >
+                            ${userSettings.budget - totalSpent}
+                          </Text>
+                          <Text
+                            style={{
+                              flex: 1,
+                              left: 15,
+                              fontFamily: "SSP-Bold",
+                              fontSize: 30,
+
+                              // textAlign: "top",
+                              // backgroundColor: "black",
+                            }}
+                          >
+                            Left
+                          </Text>
+                        </>
+                      ) : (
+                        <Text
+                          style={{ fontSize: 55, fontFamily: "SSP-Bold" }}
+                        >{`$${totalSpent}`}</Text>
+                      )}
                     </Pressable>
                   </View>
                   <View style={{ height: "30%" }}>
                     <MonthSwitcher></MonthSwitcher>
                   </View>
-                  <View
-                    style={{
-                      width: "100%",
-                      // backgroundColor: "black",
-                      height: "10%",
-                      flexDirection: "row",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <Pressable
-                      onPress={() => {
-                        // console.log("this works");
-                        handleAddTransactionVisibleToggle();
-                      }}
+                  {userSettings.managementStyle !== "Automatic" ? (
+                    <View
                       style={{
-                        height: "100%",
-                        width: "33%",
+                        width: "100%",
                         // backgroundColor: "black",
+                        height: "10%",
+                        flexDirection: "row",
+                        justifyContent: "center",
                       }}
                     >
-                      <Text
+                      <Pressable
+                        onPress={() => {
+                          // console.log("this works");
+                          handleAddTransactionVisibleToggle();
+                        }}
                         style={{
-                          textAlign: "center",
-                          fontFamily: "SSP-SemiBold",
-                          fontSize: 15,
+                          height: "100%",
+                          width: "33%",
+                          // backgroundColor: "black",
                         }}
                       >
-                        Add Transaction
-                      </Text>
-                    </Pressable>
-                  </View>
+                        <Text
+                          style={{
+                            textAlign: "center",
+                            fontFamily: "SSP-SemiBold",
+                            fontSize: 15,
+                          }}
+                        >
+                          Add Transaction
+                        </Text>
+                      </Pressable>
+                    </View>
+                  ) : (
+                    <></>
+                  )}
                 </View>
                 // {/* <View style={{ height: screenHeight * 0.08 }}>
                 //   <MonthSwitcher></MonthSwitcher>

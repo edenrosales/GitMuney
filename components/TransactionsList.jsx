@@ -13,9 +13,20 @@ const TransactionsList = (props) => {
   const [transactions, setTransactions] = useState();
   const [transactionModalVisible, setTransactionModalVisible] = useState(false);
   const [transactionSelected, setTransactionSelected] = useState();
+  const [transactionSelectedKey, setTransactionSelectedKey] = useState();
   const [total, setTotal] = useState(0);
-  // const [allTransactions, setAllTransactions] = useState();
 
+  useEffect(() => {
+    if (transactionSelectedKey !== undefined && transactions !== undefined) {
+      setTransactionSelected(() => {
+        for (let transaction of transactions) {
+          if (transaction.key === transactionSelectedKey) {
+            return transaction;
+          }
+        }
+      });
+    }
+  }, [transactionSelectedKey, transactions]);
   useEffect(() => {
     // console.log(props.listInfo.category);
 
@@ -23,6 +34,8 @@ const TransactionsList = (props) => {
   }, [props.listInfo.category]);
 
   useEffect(() => {
+    //this is making sure that the special cases for transactions are handled properly
+
     setTransactions(() => {
       if (
         props.listInfo.transactions !== undefined &&
@@ -75,8 +88,12 @@ const TransactionsList = (props) => {
   const toggleTransactionModalVisible = () => {
     setTransactionModalVisible((prev) => !prev);
   };
-  const handleTransactionPress = (item) => {
-    setTransactionSelected(item);
+
+  //we have to make sure that the selectedTransaction is tied to the state of the trasnsactions state
+  //this is so that it receives updates when it is changed on the card
+  const handleTransactionPress = (itemKey) => {
+    // debugger;
+    setTransactionSelectedKey(itemKey);
     toggleTransactionModalVisible();
   };
 
@@ -151,7 +168,7 @@ const TransactionsList = (props) => {
             return (
               <Pressable
                 onPress={() => {
-                  handleTransactionPress(item);
+                  handleTransactionPress(item.key);
                 }}
                 style={{
                   height: 50,

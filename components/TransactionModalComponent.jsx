@@ -32,6 +32,7 @@ const TransactionModalComponent = (props) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // debugger;
     setTransactionSelected(props.transaction);
   }, [props.transaction]);
   // useEffect(() => {

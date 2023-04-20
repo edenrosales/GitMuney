@@ -32,7 +32,11 @@ const CategoriesEmojisContext = React.createContext();
 const DateContext = React.createContext();
 const DateDispatchContext = React.createContext();
 const SortCategoriesContext = React.createContext();
+const UserSettingsContext = React.createContext();
 
+export const useUserSettings = () => {
+  return useContext(UserSettingsContext);
+};
 export const useSortCategories = () => {
   return useContext(SortCategoriesContext);
 };
@@ -115,6 +119,7 @@ export const ThemeProvider = ({ children }) => {
   const [excluded, setExcluded] = useState({});
   const [date, dispatchDate] = useReducer(changeDate, new Date());
   const [income, setIncome] = useState({});
+  const [userSettings, setUserSettings] = useState({});
 
   // const [categoriesEmojis, setCategoriesEmojis] = useState({});
   // useEffect(() => {
@@ -199,7 +204,7 @@ export const ThemeProvider = ({ children }) => {
                 ...data,
                 key: transaction.id,
               };
-              if (!(data.category in newCategories)) {
+              if (!(data.categoryName in newCategories)) {
                 newCategories[data.categoryName] = {
                   total: data.cost,
                   categoryName: data.categoryName,
@@ -208,7 +213,7 @@ export const ThemeProvider = ({ children }) => {
                   categoryTextColor: data.categoryTextColor,
                 };
               } else {
-                newCategories[data.category].total += data.cost;
+                newCategories[data.categoryName].total += data.cost;
               }
               if (!data.isWithdrawl) {
                 if ("Income" in newCategories) {
@@ -224,19 +229,17 @@ export const ThemeProvider = ({ children }) => {
                   };
                 }
               }
-              {
-                if ("Intentional" in newCategories) {
-                  newCategories["Intentional"].total += data.cost;
-                } else {
-                  newCategories["Intentional"] = {
-                    total: data.cost,
-                    categoryName: "Intentional",
-                    categoryBackgroundColor: "#C7E9B0",
-                    categoryIcon: "✔️",
-                    categoryTextColor: "black",
-                    sortOrder: 1,
-                  };
-                }
+              if ("Intentional" in newCategories) {
+                newCategories["Intentional"].total += data.cost;
+              } else {
+                newCategories["Intentional"] = {
+                  total: data.cost,
+                  categoryName: "Intentional",
+                  categoryBackgroundColor: "#C7E9B0",
+                  categoryIcon: "✔️",
+                  categoryTextColor: "black",
+                  sortOrder: 1,
+                };
               }
             }
           });
@@ -260,6 +263,7 @@ export const ThemeProvider = ({ children }) => {
           setExcluded(() => {
             return { ...excluded };
           });
+          // debugger;
           setCategories(newCategories);
           setTotalSpent(currentSpent);
         },
@@ -302,6 +306,7 @@ export const ThemeProvider = ({ children }) => {
                 return authStates.ConfigCompleted;
               }
             });
+            setUserSettings(data);
           },
           (err) => {
             console.log("error here2");
@@ -347,7 +352,9 @@ export const ThemeProvider = ({ children }) => {
                   <DateContext.Provider value={date}>
                     <DateDispatchContext.Provider value={dispatchDate}>
                       <SortCategoriesContext.Provider value={sortCategories}>
-                        {children}
+                        <UserSettingsContext.Provider value={userSettings}>
+                          {children}
+                        </UserSettingsContext.Provider>
                       </SortCategoriesContext.Provider>
                     </DateDispatchContext.Provider>
                   </DateContext.Provider>
