@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { View, StyleSheet, Text, Button, Pressable } from "react-native";
 import {
   GoogleSignin,
@@ -16,8 +16,38 @@ import Emoji from "./Emoji";
 import SettingsCard from "./SettingsCard";
 import auth from "@react-native-firebase/auth";
 import firestore, { Timestamp } from "@react-native-firebase/firestore";
+import { PlaidLink, LinkSuccess, LinkExit } from "react-native-plaid-link-sdk";
+import {
+  getPlaidLinkToken,
+  useGenerateLinkToken,
+  useLinkSuccess,
+} from "../backend/PlaidConnector";
+import { result } from "lodash";
+import { useAccessToken } from "./ContextProvider";
 
 const SettingsAndAnalytics = () => {
+  const accessTokenContext = useAccessToken();
+  const [linkToken, setLinkToken] = useState(undefined);
+  const [accessToken, setAccessToken] = useState(undefined);
+  useEffect(() => {
+    setAccessToken(accessTokenContext);
+  }, [accessTokenContext]);
+
+  useEffect(() => {
+    if (accessToken !== undefined) {
+      (async () => {
+        const response = await useGenerateLinkToken(accessToken);
+        console.log(typeof response.link_token);
+        setLinkToken(response.link_token);
+      })();
+    }
+  }, [accessToken]);
+  useEffect(() => {
+    console.log("=======");
+    console.log(typeof linkToken);
+    console.log(linkToken);
+  }, [linkToken]);
+
   const signOut = async () => {
     auth()
       .signOut()
@@ -35,6 +65,7 @@ const SettingsAndAnalytics = () => {
       firstLogin: true,
     });
   };
+
   return (
     <>
       <View
@@ -130,27 +161,35 @@ const SettingsAndAnalytics = () => {
               margin: 10,
             }}
           >
-            <Pressable
-              style={{
-                height: 40,
-                width: "100%",
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: "#7a3cf5",
-                // opacity: 0.7,
-                borderRadius: 30,
-              }}
-            >
-              <Text
+            {linkToken !== undefined && (
+              <View
                 style={{
-                  fontSize: 18,
-                  color: "white",
-                  fontFamily: "SSP-SemiBold",
+                  height: 40,
+                  width: "100%",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: "#7a3cf5",
+
+                  borderRadius: 30,
                 }}
               >
-                Connect Bank or Card
-              </Text>
-            </Pressable>
+                <PlaidLink
+                  tokenConfig={{ token: linkToken }}
+                  onSuccess={(success) => useLinkSuccess(success)}
+                  onExit={(exit) => console.log(exit)}
+                >
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      color: "black",
+                      fontFamily: "SSP-SemiBold",
+                    }}
+                  >
+                    Connect Bank or Card
+                  </Text>
+                </PlaidLink>
+              </View>
+            )}
           </View>
           <View
             style={{

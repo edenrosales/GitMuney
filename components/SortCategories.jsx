@@ -12,6 +12,8 @@ import {
   useExcluded,
   useCategories,
   useSortCategories,
+  useAccessToken,
+  useUserSettings,
 } from "../components/ContextProvider";
 import _, { isEmpty } from "lodash";
 import Categories from "../components/Categories";
@@ -32,6 +34,7 @@ import Animated, {
 import { GestureDetector, Gesture } from "react-native-gesture-handler";
 import SortCard from "./SortCard";
 import Emoji from "./Emoji";
+import { useUpdateTransactions } from "../backend/PlaidConnector";
 
 const SortCategories = () => {
   const { width, height } = useWindowDimensions();
@@ -42,6 +45,8 @@ const SortCategories = () => {
   const PendingSortContext = usePendingSort();
   const ExcludedContext = useExcluded();
   const SortCategoriesContext = useSortCategories();
+  const AccessTokenContext = useAccessToken();
+  const UserSettingsContext = useUserSettings();
 
   const [loading, setLoading] = useState(true);
   const [pendingSort, setPendingSort] = useState();
@@ -51,6 +56,18 @@ const SortCategories = () => {
   const [needsSorting, setNeedsSorting] = useState();
   const [panViewBottomHeight, setPanViewBottomHeight] = useState(height);
   const [panViewTopHeight, setPanViewTopHeight] = useState(-height);
+  const [accessToken, setAccessToken] = useState();
+  const [userSettings, setUserSettings] = useState();
+
+  useEffect(() => {
+    setUserSettings(UserSettingsContext);
+  }, [UserSettingsContext]);
+  useEffect(() => {
+    if (AccessTokenContext) {
+      setAccessToken(AccessTokenContext);
+    }
+  }, [AccessTokenContext]);
+
   useEffect(() => {
     setPendingSort(Object.values(PendingSortContext));
   }, [PendingSortContext]);
@@ -125,6 +142,17 @@ const SortCategories = () => {
       });
   };
 
+  const decrementRefreshes = (count) => {
+    if (count > 0) {
+      firestore()
+        .collection("users")
+        .doc(auth().currentUser.uid)
+        .update({ refreshes: userSettings.refreshes - 1 })
+        .finally(() => {
+          useUpdateTransactions(accessToken);
+        });
+    }
+  };
   // const animatedColorStyle = useAnimatedStyle(() => ({
   //   backgroundColor: "blue",
   //   opacity: leftActive.value
@@ -294,6 +322,36 @@ const SortCategories = () => {
         >
           Sort
         </Text>
+        {accessToken !== "" ? (
+          <Pressable
+            style={{
+              position: "absolute",
+              right: 15,
+              bottom: 0,
+            }}
+            onPress={() => {
+              decrementRefreshes();
+            }}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Text
+                style={{
+                  fontSize: 30,
+                  fontFamily: "SSP-SemiBold",
+                  // right: 15,
+                  bottom: 0,
+                }}
+              >
+                ⟳
+              </Text>
+              <Text style={{ fontFamily: "SSP-Light", fontSize: 20 }}>
+                {userSettings.refreshes} Left
+              </Text>
+            </View>
+          </Pressable>
+        ) : (
+          <></>
+        )}
       </View>
     </>
   );

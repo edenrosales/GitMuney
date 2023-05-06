@@ -33,6 +33,7 @@ const DateContext = React.createContext();
 const DateDispatchContext = React.createContext();
 const SortCategoriesContext = React.createContext();
 const UserSettingsContext = React.createContext();
+const AccessTokenContext = React.createContext();
 
 export const useUserSettings = () => {
   return useContext(UserSettingsContext);
@@ -75,7 +76,18 @@ export const useTotalSpent = () => {
 export const useBudget = () => {
   return useContext(BudgetContext);
 };
+export const useAccessToken = () => {
+  return useContext(AccessTokenContext);
+};
 
+const handleRefreshes = (needsUpdate) => {
+  if (needsUpdate) {
+    firestore().collection("users").doc(auth().currentUser.uid).update({
+      refreshes: 2,
+      lastLogin: new Date(),
+    });
+  }
+};
 const changeDate = (state, action) => {
   // debugger;
   let newDate;
@@ -120,6 +132,7 @@ export const ThemeProvider = ({ children }) => {
   const [date, dispatchDate] = useReducer(changeDate, new Date());
   const [income, setIncome] = useState({});
   const [userSettings, setUserSettings] = useState({});
+  const [accessToken, setAccessToken] = useState("");
 
   // const [categoriesEmojis, setCategoriesEmojis] = useState({});
   // useEffect(() => {
@@ -140,6 +153,7 @@ export const ThemeProvider = ({ children }) => {
     console.log(date);
     console.log(getDateRange(date));
   }, [date]);
+
   useEffect(() => {
     if (!authenticated) {
       return;
@@ -307,6 +321,14 @@ export const ThemeProvider = ({ children }) => {
               }
             });
             setUserSettings(data);
+            setAccessToken(() => {
+              return data.accessToken === undefined ? "" : data.accessToken;
+            });
+            if (data.lastLogin.toDate().getDate() !== new Date().getDate()) {
+              handleRefreshes(false);
+            } else {
+              handleRefreshes(false);
+            }
           },
           (err) => {
             console.log("error here2");
@@ -340,6 +362,10 @@ export const ThemeProvider = ({ children }) => {
       clearData();
     }
   };
+  useEffect(() => {
+    console.log("Access Token: ");
+    console.log(accessToken);
+  }, [accessToken]);
 
   return (
     <ExpensesContext.Provider value={expenses}>
@@ -353,7 +379,9 @@ export const ThemeProvider = ({ children }) => {
                     <DateDispatchContext.Provider value={dispatchDate}>
                       <SortCategoriesContext.Provider value={sortCategories}>
                         <UserSettingsContext.Provider value={userSettings}>
-                          {children}
+                          <AccessTokenContext.Provider value={accessToken}>
+                            {children}
+                          </AccessTokenContext.Provider>
                         </UserSettingsContext.Provider>
                       </SortCategoriesContext.Provider>
                     </DateDispatchContext.Provider>
