@@ -34,6 +34,11 @@ const DateDispatchContext = React.createContext();
 const SortCategoriesContext = React.createContext();
 const UserSettingsContext = React.createContext();
 const AccessTokenContext = React.createContext();
+const CursorContext = React.createContext();
+
+export const useCursor = () => {
+  return useContext(CursorContext);
+};
 
 export const useUserSettings = () => {
   return useContext(UserSettingsContext);
@@ -133,6 +138,7 @@ export const ThemeProvider = ({ children }) => {
   const [income, setIncome] = useState({});
   const [userSettings, setUserSettings] = useState({});
   const [accessToken, setAccessToken] = useState("");
+  const [cursor, setCursor] = useState("");
 
   // const [categoriesEmojis, setCategoriesEmojis] = useState({});
   // useEffect(() => {
@@ -324,8 +330,11 @@ export const ThemeProvider = ({ children }) => {
             setAccessToken(() => {
               return data.accessToken === undefined ? "" : data.accessToken;
             });
+            setCursor(() => {
+              return data.cursor === undefined ? "" : data.cursor;
+            });
             if (data.lastLogin.toDate().getDate() !== new Date().getDate()) {
-              handleRefreshes(false);
+              handleRefreshes(true);
             } else {
               handleRefreshes(false);
             }
@@ -380,7 +389,9 @@ export const ThemeProvider = ({ children }) => {
                       <SortCategoriesContext.Provider value={sortCategories}>
                         <UserSettingsContext.Provider value={userSettings}>
                           <AccessTokenContext.Provider value={accessToken}>
-                            {children}
+                            <CursorContext.Provider value={cursor}>
+                              {children}
+                            </CursorContext.Provider>
                           </AccessTokenContext.Provider>
                         </UserSettingsContext.Provider>
                       </SortCategoriesContext.Provider>

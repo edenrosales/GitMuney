@@ -14,6 +14,7 @@ import {
   useSortCategories,
   useAccessToken,
   useUserSettings,
+  useCursor,
 } from "../components/ContextProvider";
 import _, { isEmpty } from "lodash";
 import Categories from "../components/Categories";
@@ -47,6 +48,7 @@ const SortCategories = () => {
   const SortCategoriesContext = useSortCategories();
   const AccessTokenContext = useAccessToken();
   const UserSettingsContext = useUserSettings();
+  const CursorContext = useCursor();
 
   const [loading, setLoading] = useState(true);
   const [pendingSort, setPendingSort] = useState();
@@ -57,8 +59,13 @@ const SortCategories = () => {
   const [panViewBottomHeight, setPanViewBottomHeight] = useState(height);
   const [panViewTopHeight, setPanViewTopHeight] = useState(-height);
   const [accessToken, setAccessToken] = useState();
+  const [cursor, setCursor] = useState();
   const [userSettings, setUserSettings] = useState();
 
+  useEffect(() => {
+    console.log(CursorContext);
+    setCursor(CursorContext);
+  }, [cursor]);
   useEffect(() => {
     setUserSettings(UserSettingsContext);
   }, [UserSettingsContext]);
@@ -142,14 +149,14 @@ const SortCategories = () => {
       });
   };
 
-  const decrementRefreshes = (count) => {
-    if (count > 0) {
+  const decrementRefreshes = () => {
+    if (userSettings.refreshes > 0) {
       firestore()
         .collection("users")
         .doc(auth().currentUser.uid)
         .update({ refreshes: userSettings.refreshes - 1 })
         .finally(() => {
-          useUpdateTransactions(accessToken);
+          useUpdateTransactions(accessToken, cursor);
         });
     }
   };

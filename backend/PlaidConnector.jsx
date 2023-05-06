@@ -3,15 +3,95 @@ import auth from "@react-native-firebase/auth";
 import firestore, { Timestamp } from "@react-native-firebase/firestore";
 import keys from "./../keys.json";
 
-export const useUpdateTransactions = async () => {
-  let response = await fetch("https://sandbox.plaid.com/transactions/sync", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      client_id: "63f3d7137ba715001385d56f",
-      secret: "3c60f5b3d2a47477e80b96e6baacde",
-    }),
+const massUpdateFirebase = async (adds, updates, deletes) => {
+  const transactionsCollectionReference = firestore()
+    .collection("users")
+    .doc(auth().currentUser.uid)
+    .collection("transactions");
+
+  const batch = firestore().batch();
+  adds.map((transaction) => {
+    const transactionReference = transactionsCollectionReference.doc(
+      transaction.transaction_id
+    );
+    batch.set(transactionReference, {
+      cost: transaction.amount,
+      date: new Date(transaction.date),
+      excluded: false,
+      isWithdrawl: true,
+      pendingSort: true,
+      transactionName: transaction.name,
+      fromPlaid: true,
+    });
   });
+  updates.map((transaction) => {
+    const transactionReference = transactionsCollectionReference.doc(
+      transaction.transaction_id
+    );
+
+    batch.update(transactionReference, {
+      cost: transaction.amount,
+      date: new Date(transaction.date),
+      transactionName: transaction.name,
+    });
+  });
+  deletes.map((transaction) => {
+    const transactionReference = transactionsCollectionReference.doc(
+      transaction.transaction_id
+    );
+    batch.delete(transactionReference);
+  });
+  batch.commit();
+};
+export const useUpdateTransactions = async (accessToken, cursor) => {
+  let hasMore = true;
+  let updatingCursor = cursor;
+
+  while (hasMore) {
+    let response;
+    if (updatingCursor === "") {
+      response = await fetch("https://sandbox.plaid.com/transactions/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          client_id: "63f3d7137ba715001385d56f",
+          secret: "3c60f5b3d2a47477e80b96e6baacde",
+          access_token: accessToken,
+        }),
+      });
+    } else {
+      response = await fetch("https://sandbox.plaid.com/transactions/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          client_id: "63f3d7137ba715001385d56f",
+          secret: "3c60f5b3d2a47477e80b96e6baacde",
+          access_token: accessToken,
+          cursor: updatingCursor,
+        }),
+      });
+    }
+    data = await response.json();
+    if (data.error_code !== undefined) {
+      firestore()
+        .collection("users")
+        .doc(auth().currentUser.uid)
+        .update({ refreshes: refreshes + 1 });
+    } else {
+      const added = data.added;
+      const modified = data.modified;
+      const removed = data.removed;
+      updatingCursor = data.next_cursor;
+      hasMore = data.has_more;
+      //applies all database updates
+      massUpdateFirebase(added, modified, removed);
+    }
+  }
+  //sets the final cursor after all updates are applied
+  firestore()
+    .collection("users")
+    .doc(auth().currentUser.uid)
+    .update({ cursor: updatingCursor });
 };
 
 export const getAccessToken = async (publicToken) => {
