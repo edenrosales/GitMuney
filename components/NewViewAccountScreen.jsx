@@ -328,7 +328,7 @@ const NewViewAccountScreen = (props) => {
                             Left
                           </Text>
                         </>
-                      ) : totalSpent > 0 ? (
+                      ) : totalSpent >= 0 ? (
                         <>
                           <Text
                             style={{ fontSize: 55, fontFamily: "SSP-Bold" }}

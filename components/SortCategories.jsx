@@ -329,7 +329,7 @@ const SortCategories = () => {
         >
           Sort
         </Text>
-        {accessToken !== "" ? (
+        {accessToken !== "" && userSettings.managementStyle !== "Manual" ? (
           <Pressable
             style={{
               position: "absolute",

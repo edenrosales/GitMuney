@@ -193,6 +193,10 @@ export const useLinkSuccess = async (success) => {
   firestore()
     .collection("users")
     .doc(auth().currentUser.uid)
-    .update({ accessToken: response.access_token, itemId: response.item_id })
+    .update({
+      accessToken: response.access_token,
+      itemId: response.item_id,
+      plaidUser: true,
+    })
     .catch((err) => console.log(err));
 };

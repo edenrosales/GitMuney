@@ -13,12 +13,21 @@ import {
 import { ScrollView, TextInput } from "react-native-gesture-handler";
 import auth from "@react-native-firebase/auth";
 import firestore from "@react-native-firebase/firestore";
-import { useAppStateUpdate, useAppState } from "./ContextProvider";
+import {
+  useAppStateUpdate,
+  useAppState,
+  useUserSettings,
+} from "./ContextProvider";
 import {
   GoogleSignin,
   statusCodes,
   isSignedIn,
 } from "@react-native-google-signin/google-signin";
+import {
+  useGenerateLinkToken,
+  useLinkSuccess,
+} from "../backend/PlaidConnector";
+import { PlaidLink, LinkSuccess, LinkExit } from "react-native-plaid-link-sdk";
 
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
@@ -26,13 +35,22 @@ const screenHeight = Dimensions.get("window").height;
 const FirstLoginConfig = ({ props, navigation, route }) => {
   // props.toggleFirstLogin()
   // console.log(props.visible);
+  const UserSettingsContext = useUserSettings();
+  const appStateContext = useAppState();
+  const onlyNumbersInput = RegExp("/^[0-9]+$/");
+
   const [managementStyle, setManagementStyle] = useState(undefined);
   const [budgetStyle, setBudgetStyle] = useState(undefined);
   const [budget, setBudget] = useState(undefined);
-  const onlyNumbersInput = RegExp("/^[0-9]+$/");
   const [inputStatus, setInputStatus] = useState(false);
-  const [authState, setAuthState] = useState();
-  const appStateContext = useAppState();
+  const [authState, setAuthState] = useState(undefined);
+  const [userSettings, setUserSettings] = useState(undefined);
+  const [loading, setLoading] = useState(true);
+  const [linkToken, setLinkToken] = useState("");
+
+  useEffect(() => {
+    setUserSettings(UserSettingsContext);
+  }, [UserSettingsContext]);
 
   useEffect(() => {
     console.log("Auth State");
@@ -59,7 +77,15 @@ const FirstLoginConfig = ({ props, navigation, route }) => {
 
   useEffect(() => {
     validInput();
-  }, [budgetStyle, managementStyle, budget]);
+  }, [budgetStyle, managementStyle, budget, userSettings]);
+
+  useEffect(() => {
+    setLoading(() => {
+      if (authState === undefined || userSettings === undefined) {
+        return true;
+      } else return false;
+    });
+  }, [authState, userSettings]);
 
   const navigateToAccountScreen = () => {
     navigation.navigate("MainContent");
@@ -67,14 +93,19 @@ const FirstLoginConfig = ({ props, navigation, route }) => {
   //returns a string identifying which valid input has been passed
   const validInput = () => {
     if (
-      managementStyle &&
-      ["Automatic (WIP)", "Free Style"].includes(budgetStyle)
+      ((managementStyle === "Automatic" || managementStyle === "Hybrid") &&
+        userSettings.plaidUser) ||
+      managementStyle === "Manual"
     ) {
-      setInputStatus("non-manual budget style");
-    } else if (managementStyle && budgetStyle === "Manual" && budget) {
-      setInputStatus("manual budget style");
+      if (["Automatic (WIP)", "Free Style"].includes(budgetStyle)) {
+        setInputStatus("non-manual budget style");
+      } else if (managementStyle && budgetStyle === "Manual" && budget) {
+        setInputStatus("manual budget style");
+      } else {
+        setInputStatus(false);
+      }
     } else {
-      return setInputStatus(false);
+      setInputStatus(false);
     }
   };
   const submitFirstLoginConfigForm = () => {
@@ -114,6 +145,14 @@ const FirstLoginConfig = ({ props, navigation, route }) => {
     }
     console.log("this ran");
   };
+  const handleGenerateLinkToken = async () => {
+    const response = await useGenerateLinkToken("");
+    setLinkToken(response.link_token);
+  };
+
+  if (loading) {
+    return <></>;
+  }
   return (
     <View
       style={{
@@ -140,14 +179,30 @@ const FirstLoginConfig = ({ props, navigation, route }) => {
           <View
             style={{ display: "flex", flexDirection: "row", top: 30, left: 15 }}
           >
-            <Text
-              style={{
-                fontFamily: "SSP-Bold",
-                fontSize: 30,
-              }}
-            >
-              First time?...
-            </Text>
+            {userSettings.trueFirstLogin ? (
+              <>
+                <Text
+                  style={{
+                    fontFamily: "SSP-Bold",
+                    fontSize: 30,
+                  }}
+                >
+                  First time?...
+                </Text>
+              </>
+            ) : (
+              <>
+                <Text
+                  style={{
+                    fontFamily: "SSP-Bold",
+                    fontSize: 30,
+                  }}
+                >
+                  Need a reset?...
+                </Text>
+              </>
+            )}
+
             {/* <Text
               style={{
                 // position: "absolute",
@@ -195,6 +250,9 @@ const FirstLoginConfig = ({ props, navigation, route }) => {
                 } else {
                   setManagementStyle("Automatic");
                 }
+                if (!userSettings.plaidUser && linkToken === "") {
+                  handleGenerateLinkToken();
+                }
               }}
               style={[
                 styles.button,
@@ -221,6 +279,9 @@ const FirstLoginConfig = ({ props, navigation, route }) => {
                   setManagementStyle(undefined);
                 } else {
                   setManagementStyle("Hybrid");
+                }
+                if (!userSettings.plaidUser && linkToken === "") {
+                  handleGenerateLinkToken();
                 }
               }}
               style={[
@@ -281,30 +342,75 @@ const FirstLoginConfig = ({ props, navigation, route }) => {
                   : 0,
             }}
           >
-            <Pressable
-              style={{
-                height: 40,
-                width: "80%",
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: "#7a3cf5",
-                // opacity: 0.7,
-                borderRadius: 1,
-              }}
-              onPress={() => {
-                console.log("this works");
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 18,
-                  color: "white",
-                  fontFamily: "SSP-SemiBold",
-                }}
-              >
-                Connect Bank or Card
-              </Text>
-            </Pressable>
+            {userSettings.plaidUser ? (
+              <>
+                <Pressable
+                  style={{
+                    height: 40,
+                    width: "80%",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: "gray",
+                    // opacity: 0.7,
+                    borderRadius: 1,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      color: "white",
+                      fontFamily: "SSP-SemiBold",
+                    }}
+                  >
+                    Bank Info Connected!
+                  </Text>
+                </Pressable>
+              </>
+            ) : (
+              linkToken !== "" && (
+                <View
+                  style={{
+                    height: 40,
+                    width: "80%",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: "#7a3cf5",
+                    // opacity: 0.7,
+                    borderRadius: 1,
+                  }}
+                >
+                  <PlaidLink
+                    tokenConfig={{ token: linkToken }}
+                    onSuccess={(success) => useLinkSuccess(success)}
+                    onExit={(exit) => console.log(exit)}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 18,
+                        color: "white",
+                        fontFamily: "SSP-SemiBold",
+                      }}
+                    >
+                      Connect Bank or Card
+                    </Text>
+                  </PlaidLink>
+                  {/* <Pressable
+                    style={{
+                      height: 40,
+                      width: "80%",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      backgroundColor: "#7a3cf5",
+                      // opacity: 0.7,
+                      borderRadius: 1,
+                    }}
+                    onPress={() => {
+                      console.log("this works");
+                    }}
+                  ></Pressable> */}
+                </View>
+              )
+            )}
           </View>
           <Text
             style={{

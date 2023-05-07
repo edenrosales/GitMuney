@@ -42,11 +42,6 @@ const SettingsAndAnalytics = () => {
       })();
     }
   }, [accessToken]);
-  useEffect(() => {
-    console.log("=======");
-    console.log(typeof linkToken);
-    console.log(linkToken);
-  }, [linkToken]);
 
   const signOut = async () => {
     auth()

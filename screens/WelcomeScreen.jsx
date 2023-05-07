@@ -32,6 +32,7 @@ import GoogleSignInButton from "../components/GoogleSignInButton";
 import firestore from "@react-native-firebase/firestore";
 import FirstLoginConfig from "../components/FirstLoginConfig";
 import SignUp from "../components/SignUp";
+import SortCategories from "./../components/SortCategories";
 
 function WelcomeScreen({ navigation, authCompleted }) {
   const [signUp, setSignUp] = useState(false);
@@ -57,16 +58,55 @@ function WelcomeScreen({ navigation, authCompleted }) {
           .collection("users")
           .doc(auth().currentUser.uid)
           .set({
-            categories: [
-              "Groceries",
-              "Rent",
-              "Entertainment",
-              "Bills",
-              "Taxes",
-              "Misc",
-              "Investing",
-            ],
             firstLogin: true,
+            refreshes: 2,
+            lastLogin: new Date(),
+            sortCategories: [
+              {
+                categoryBackgroundColor: "blue",
+                categoryIcon: "💸",
+                categoryName: "Bills",
+                categoryTextColor: "black",
+              },
+              {
+                categoryBackgroundColor: "blue",
+                categoryIcon: "🎭",
+                categoryName: "Entertainment",
+                categoryTextColor: "black",
+              },
+              {
+                categoryBackgroundColor: "blue",
+                categoryIcon: "🥫",
+                categoryName: "Groceries",
+                categoryTextColor: "black",
+              },
+              {
+                categoryBackgroundColor: "blue",
+                categoryIcon: "📈",
+                categoryName: "Investing",
+                categoryTextColor: "black",
+              },
+              {
+                categoryBackgroundColor: "blue",
+                categoryIcon: "🎲",
+                categoryName: "Misc",
+                categoryTextColor: "black",
+              },
+              {
+                categoryBackgroundColor: "blue",
+                categoryIcon: "🏠",
+                categoryName: "Rent",
+                categoryTextColor: "black",
+              },
+              {
+                categoryBackgroundColor: "blue",
+                categoryIcon: "🏛️",
+                categoryName: "Taxes",
+                categoryTextColor: "black",
+              },
+            ],
+            plaidUser: false,
+            trueFirstLogin: true,
           });
       }
     } else {
@@ -304,7 +344,13 @@ function WelcomeScreen({ navigation, authCompleted }) {
           }}
         >
           {!signUp ? (
-            <Text>Don't have an account? </Text>
+            <Text
+              onPress={() => {
+                auth().signOut();
+              }}
+            >
+              Don't have an account?{" "}
+            </Text>
           ) : (
             <Text>Go back to </Text>
           )}

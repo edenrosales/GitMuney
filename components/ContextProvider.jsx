@@ -185,11 +185,13 @@ export const ThemeProvider = ({ children }) => {
       .orderBy("date", "desc")
       .onSnapshot(
         (result) => {
+          // if (result !== undefined) {
           let currentSpent = 0;
           const transactions = {};
           const newCategories = {};
           const notSorted = {};
           const excluded = {};
+
           result.forEach((transaction) => {
             const data = transaction.data();
             if (data.excluded) {
@@ -296,6 +298,7 @@ export const ThemeProvider = ({ children }) => {
           // })
           setCategories(newCategories);
           setTotalSpent(currentSpent);
+          // }
         },
         (err) => {
           console.log("error here1");
@@ -303,7 +306,7 @@ export const ThemeProvider = ({ children }) => {
         }
       );
     return () => subscriber();
-  }, [authenticated, date]);
+  }, [authenticated, date, loading]);
 
   useEffect(() => {
     let subscriber;
@@ -315,39 +318,43 @@ export const ThemeProvider = ({ children }) => {
         .onSnapshot(
           (documentSnapshot) => {
             const data = documentSnapshot.data();
-            const categories = {};
-            data.sortCategories.forEach((category) => {
-              categories[category.categoryName] = {
-                categoryName: category.categoryName,
-                // categoryTotal: 0,
-                categoryIcon: category.categoryIcon,
-                categoryBackgroundColor: category.categoryBackgroundColor,
-                categoryTextColor: category.categoryTextColor,
-              };
-            });
-            // setCategoriesEmojis(data.categoriesEmojis);
             // debugger;
-            setSortCategories(categories);
-            setBudget(data.budget);
-            setAuthState(() => {
-              if (data.firstLogin === true) {
-                return authStates.ConfigNotCompleted;
+            if (data !== undefined) {
+              const categories = {};
+              data.sortCategories.forEach((category) => {
+                categories[category.categoryName] = {
+                  categoryName: category.categoryName,
+                  // categoryTotal: 0,
+                  categoryIcon: category.categoryIcon,
+                  categoryBackgroundColor: category.categoryBackgroundColor,
+                  categoryTextColor: category.categoryTextColor,
+                };
+              });
+              // setCategoriesEmojis(data.categoriesEmojis);
+              // debugger;
+              setSortCategories(categories);
+              setBudget(data.budget);
+              setAuthState(() => {
+                if (data.firstLogin === true) {
+                  return authStates.ConfigNotCompleted;
+                } else {
+                  return authStates.ConfigCompleted;
+                }
+              });
+              setUserSettings(data);
+              setAccessToken(() => {
+                return data.accessToken === undefined ? "" : data.accessToken;
+              });
+              setCursor(() => {
+                return data.cursor === undefined ? "" : data.cursor;
+              });
+              if (data.lastLogin.toDate().getDate() !== new Date().getDate()) {
+                handleRefreshes(true);
               } else {
-                return authStates.ConfigCompleted;
+                handleRefreshes(false);
               }
-            });
-            setUserSettings(data);
-            setAccessToken(() => {
-              return data.accessToken === undefined ? "" : data.accessToken;
-            });
-            setCursor(() => {
-              return data.cursor === undefined ? "" : data.cursor;
-            });
-            if (data.lastLogin.toDate().getDate() !== new Date().getDate()) {
-              handleRefreshes(true);
-            } else {
-              handleRefreshes(false);
             }
+            // }
           },
           (err) => {
             console.log("error here2");
@@ -360,7 +367,7 @@ export const ThemeProvider = ({ children }) => {
         subscriber();
       }
     };
-  }, [authenticated]);
+  }, [authenticated, loading]);
 
   useEffect(() => {
     const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
