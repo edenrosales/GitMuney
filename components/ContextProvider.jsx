@@ -199,7 +199,7 @@ export const ThemeProvider = ({ children }) => {
               };
               if (!("Excluded" in newCategories)) {
                 newCategories["Excluded"] = {
-                  total: data.cost,
+                  total: data.isWithdrawl ? data.cost : -data.cost,
                   categoryName: "Excluded",
                   categoryBackgroundColor: "#52575D",
                   categoryIcon: "🗑️",
@@ -207,7 +207,9 @@ export const ThemeProvider = ({ children }) => {
                   sortOrder: 3,
                 };
               } else {
-                newCategories["Excluded"].total += data.cost;
+                newCategories["Excluded"].total += data.isWithdrawl
+                  ? data.cost
+                  : -data.cost;
               }
             } else if (data.pendingSort) {
               notSorted[transaction.id] = {
@@ -215,32 +217,33 @@ export const ThemeProvider = ({ children }) => {
                 key: transaction.id,
               };
             } else {
-              if (data.isWithdrawl) {
-                currentSpent += data.cost;
-              } else {
-                currentSpent -= data.cost;
-              }
+              currentSpent += data.isWithdrawl ? data.cost : -data.cost;
+
               transactions[transaction.id] = {
                 ...data,
                 key: transaction.id,
               };
               if (!(data.categoryName in newCategories)) {
                 newCategories[data.categoryName] = {
-                  total: data.cost,
+                  total: data.isWithdrawl ? data.cost : -data.cost,
                   categoryName: data.categoryName,
                   categoryBackgroundColor: data.categoryBackgroundColor,
                   categoryIcon: data.categoryIcon,
                   categoryTextColor: data.categoryTextColor,
                 };
               } else {
-                newCategories[data.categoryName].total += data.cost;
+                newCategories[data.categoryName].total += data.isWithdrawl
+                  ? data.cost
+                  : -data.cost;
               }
               if (!data.isWithdrawl) {
                 if ("Income" in newCategories) {
-                  newCategories["Income"].total += data.cost;
+                  newCategories["Income"].total += data.isWithdrawl
+                    ? data.cost
+                    : -data.cost;
                 } else {
                   newCategories["Income"] = {
-                    total: data.cost,
+                    total: data.isWithdrawl ? data.cost : -data.cost,
                     categoryName: "Income",
                     categoryBackgroundColor: "#52575D",
                     categoryIcon: "💰",
@@ -250,10 +253,12 @@ export const ThemeProvider = ({ children }) => {
                 }
               }
               if ("Intentional" in newCategories) {
-                newCategories["Intentional"].total += data.cost;
+                newCategories["Intentional"].total += data.isWithdrawl
+                  ? data.cost
+                  : -data.cost;
               } else {
                 newCategories["Intentional"] = {
-                  total: data.cost,
+                  total: data.isWithdrawl ? data.cost : -data.cost,
                   categoryName: "Intentional",
                   categoryBackgroundColor: "#C7E9B0",
                   categoryIcon: "✔️",
@@ -283,7 +288,12 @@ export const ThemeProvider = ({ children }) => {
           setExcluded(() => {
             return { ...excluded };
           });
-          // debugger;
+          // // debugger;
+          // newCategories.forEach((category)=>{
+          //   if(category.total < 0){
+          //     return {...category,largerThanZero: }
+          //   }
+          // })
           setCategories(newCategories);
           setTotalSpent(currentSpent);
         },

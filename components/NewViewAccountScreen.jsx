@@ -312,7 +312,7 @@ const NewViewAccountScreen = (props) => {
                               textAlign: "right",
                             }}
                           >
-                            ${userSettings.budget - totalSpent}
+                            ${(userSettings.budget - totalSpent).toFixed(2)}
                           </Text>
                           <Text
                             style={{
@@ -328,10 +328,22 @@ const NewViewAccountScreen = (props) => {
                             Left
                           </Text>
                         </>
+                      ) : totalSpent > 0 ? (
+                        <>
+                          <Text
+                            style={{ fontSize: 55, fontFamily: "SSP-Bold" }}
+                          >{`$${totalSpent.toFixed(2)}`}</Text>
+                        </>
                       ) : (
-                        <Text
-                          style={{ fontSize: 55, fontFamily: "SSP-Bold" }}
-                        >{`$${totalSpent}`}</Text>
+                        <>
+                          <Text
+                            style={{
+                              fontSize: 55,
+                              fontFamily: "SSP-Bold",
+                              color: "green",
+                            }}
+                          >{`+$${-totalSpent.toFixed(2)}`}</Text>
+                        </>
                       )}
                     </Pressable>
                   </View>

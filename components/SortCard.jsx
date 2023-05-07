@@ -143,12 +143,30 @@ const SortCard = (props) => {
                 <Text style={{ fontFamily: "SSP-Regular", fontSize: 20 }}>
                   {props.transaction.transactionName}
                 </Text>
-                <Text
-                  style={{ fontFamily: "SSP-Bold", fontSize: 70 }}
-                  // allowFontScaling={true}
-                >
-                  ${props.transaction.cost}
-                </Text>
+                {props.transaction.isWithdrawl ? (
+                  <>
+                    <Text
+                      style={{ fontFamily: "SSP-Bold", fontSize: 70 }}
+                      // allowFontScaling={true}
+                    >
+                      ${props.transaction.cost}
+                    </Text>
+                  </>
+                ) : (
+                  <>
+                    <Text
+                      style={{
+                        fontFamily: "SSP-Bold",
+                        fontSize: 70,
+                        color: "green",
+                      }}
+                      // allowFontScaling={true}
+                    >
+                      +${props.transaction.cost}
+                    </Text>
+                  </>
+                )}
+
                 <Text
                   style={{
                     fontFamily: "SSP-Regular",

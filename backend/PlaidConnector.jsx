@@ -14,15 +14,27 @@ const massUpdateFirebase = async (adds, updates, deletes) => {
     const transactionReference = transactionsCollectionReference.doc(
       transaction.transaction_id
     );
-    batch.set(transactionReference, {
-      cost: transaction.amount,
-      date: new Date(transaction.date),
-      excluded: false,
-      isWithdrawl: true,
-      pendingSort: true,
-      transactionName: transaction.name,
-      fromPlaid: true,
-    });
+    if (transaction.amount < 0) {
+      batch.set(transactionReference, {
+        cost: -transaction.amount,
+        date: new Date(transaction.date),
+        excluded: false,
+        isWithdrawl: false,
+        pendingSort: true,
+        transactionName: transaction.name,
+        fromPlaid: true,
+      });
+    } else {
+      batch.set(transactionReference, {
+        cost: transaction.amount,
+        date: new Date(transaction.date),
+        excluded: false,
+        isWithdrawl: true,
+        pendingSort: true,
+        transactionName: transaction.name,
+        fromPlaid: true,
+      });
+    }
   });
   updates.map((transaction) => {
     const transactionReference = transactionsCollectionReference.doc(

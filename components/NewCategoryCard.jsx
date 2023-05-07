@@ -61,9 +61,25 @@ const NewCategoryCard = (props) => {
         >
           {props.categoryName}
         </Text>
-        <Text style={{ position: "absolute", right: 10 }}>
-          ${props.categoryAmount}
-        </Text>
+        {props.categoryAmount < 0 ? (
+          <>
+            <Text
+              style={{
+                position: "absolute",
+                right: 10,
+                color: "darkgreen",
+              }}
+            >
+              +${-props.categoryAmount.toFixed(2)}
+            </Text>
+          </>
+        ) : (
+          <>
+            <Text style={{ position: "absolute", right: 10 }}>
+              ${props.categoryAmount.toFixed(2)}
+            </Text>
+          </>
+        )}
       </Pressable>
     </View>
   );
