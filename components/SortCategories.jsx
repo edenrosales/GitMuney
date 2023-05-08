@@ -61,7 +61,9 @@ const SortCategories = () => {
   const [accessToken, setAccessToken] = useState();
   const [cursor, setCursor] = useState();
   const [userSettings, setUserSettings] = useState();
+  const [animateCards, setAnimateCards] = useState(true);
 
+  useEffect(() => {}, []);
   useEffect(() => {
     console.log(CursorContext);
     setCursor(CursorContext);

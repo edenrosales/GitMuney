@@ -424,7 +424,7 @@ const NewViewAccountScreen = (props) => {
                         totalSpent={totalSpent + totalExcluded}
                         loadingStyle={{
                           backgroundColor: item.categoryBackgroundColor,
-                          opacity: 0.7,
+                          // opacity: 0.7,
                         }}
                         handleCategorySelect={handleCategorySelect}
                         toggleTransactionsList={
@@ -467,7 +467,10 @@ const NewViewAccountScreen = (props) => {
                         categoryName={item.categoryName}
                         categoryAmount={item.total}
                         totalSpent={totalSpent}
-                        loadingStyle={{ backgroundColor: "blue", opacity: 0.7 }}
+                        loadingStyle={{
+                          backgroundColor: item.categoryBackgroundColor,
+                          // opacity: 0.7,
+                        }}
                         handleCategorySelect={handleCategorySelect}
                         toggleTransactionsList={
                           handleTransactionListVisibleToggle

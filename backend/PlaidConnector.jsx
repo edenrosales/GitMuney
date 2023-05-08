@@ -3,6 +3,16 @@ import auth from "@react-native-firebase/auth";
 import firestore, { Timestamp } from "@react-native-firebase/firestore";
 import keys from "./../keys.json";
 
+const massUpdateTransactions = async (changeObject) => {
+  const transactionsCollectionReference = await firestore()
+    .collection("users")
+    .doc(auth().currentUser.uid)
+    .collection("transactions")
+    .where("pendingSort", "==", "false")
+    .get();
+
+  const batch = firestore().batch();
+};
 const massUpdateFirebase = async (adds, updates, deletes) => {
   const transactionsCollectionReference = firestore()
     .collection("users")

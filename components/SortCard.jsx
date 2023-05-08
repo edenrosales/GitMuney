@@ -31,7 +31,13 @@ import Animated, {
 import { GestureDetector, Gesture } from "react-native-gesture-handler";
 import Emoji from "./Emoji";
 
+//each card has its own animation properties itself - however there are also animations that control ALL cards
+// this code will be kept outside of the cards implementation
+// ie the SortCategories component
 const SortCard = (props) => {
+  useEffect(() => {
+    console.log("re-rendered");
+  }, []);
   const excludeWrapper = () => {
     console.log("this works!");
     firestore()

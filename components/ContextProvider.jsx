@@ -161,6 +161,7 @@ export const ThemeProvider = ({ children }) => {
   }, [date]);
 
   useEffect(() => {
+    console.log("useEffect 1");
     if (!authenticated) {
       return;
     }
@@ -262,7 +263,7 @@ export const ThemeProvider = ({ children }) => {
                 newCategories["Intentional"] = {
                   total: data.isWithdrawl ? data.cost : -data.cost,
                   categoryName: "Intentional",
-                  categoryBackgroundColor: "#C7E9B0",
+                  categoryBackgroundColor: "#E3F1FF",
                   categoryIcon: "✔️",
                   categoryTextColor: "black",
                   sortOrder: 1,
@@ -309,6 +310,7 @@ export const ThemeProvider = ({ children }) => {
   }, [authenticated, date, loading]);
 
   useEffect(() => {
+    console.log("useEffect 2");
     let subscriber;
     if (authenticated) {
       console.log("this ran in");
@@ -374,9 +376,11 @@ export const ThemeProvider = ({ children }) => {
     return subscriber;
   }, []);
   useEffect(() => {
+    console.log("useEffect 3");
     console.log("AUTH STATE: " + authState);
   }, [authState]);
   useEffect(() => {
+    console.log("useEffect 4");
     console.log("AUTHENTICATION STATE: " + authenticated);
   }, [authenticated]);
   const onAuthStateChanged = async () => {
